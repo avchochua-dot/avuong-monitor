@@ -4,248 +4,304 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>A Vương • Vận hành & Giám sát hồ chứa • AI</title>
-  <meta name="theme-color" content="#050816" />
-   
+  <title>A Vương • Dashboard • AI</title>
+  <meta name="theme-color" content="#080b1a" />
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-   
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
   <style>
-    /* --- GIAO DIỆN CHUẨN --- */
+    /* --- CORE VARIABLES --- */
     :root{
-      --bg0:#050816; --bg1:#060314;
-      --card:rgba(10,15,40,.96); --stroke:rgba(255,255,255,.10);
-      --text:#E7ECFF; --text2:rgba(231,236,255,.86); --muted:rgba(231,236,255,.64); --muted2:rgba(231,236,255,.44);
-      --shadow: 0 18px 60px rgba(0,0,0,.45); --radius:18px; --radius2:22px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      --sans: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-       
-      --good:#34D399; --bad:#FB7185;
-       
-      /* Màu sắc biểu đồ */
-      --c-wl: 34,211,238;  /* Cyan */
-      --c-in: 59,130,246;  /* Blue */
-      --c-tb: 239,68,68;   /* Red (Q Máy) */
-      --c-sp: 251,191,36;  /* Yellow (Q Xả) */
-      --c-rn: 167,139,250; /* Purple */
-      --c-if: 255,152,0;   /* Orange */
-      --c-rn-real: 34, 197, 94; /* Green */
-      --c-acc: 250, 204, 21; /* Yellow Accumulation */
-       
-      --nav-height: 65px;
+      --bg-app: #080b1a; 
+      --card-bg: #10152b; 
+      --card-border: rgba(66, 153, 225, 0.15);
+      
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      
+      /* RGB Colors */
+      --c-wl: 34, 211, 238;   /* Cyan */
+      --c-in: 59, 130, 246;   /* Blue */
+      --c-tb: 245, 158, 11;   /* Orange */
+      --c-sp: 239, 68, 68;    /* Red */
+      --c-rn: 167, 139, 250;  /* Purple */
+      --c-green: 16, 185, 129;
+      --c-rn-real: 34, 197, 94;
+      --c-acc: 250, 204, 21;  /* Yellow Accumulation */
+
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      --nav-height: 60px;
     }
     
-    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; } 
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
     ::-webkit-scrollbar { display: none; }
-    html, body{ height:100%; overflow: hidden; scrollbar-width: none; }
-    
-    body{
-      margin:0; font-family:var(--sans); color:var(--text);
-      background: linear-gradient(180deg,var(--bg0),var(--bg1));
-      display: flex; flex-direction: column;
+    html, body { 
+      height: 100%; margin: 0; overflow: hidden; 
+      background: var(--bg-app); font-family: var(--font-sans); color: var(--text-main);
+      -ms-overflow-style: none; scrollbar-width: none;
     }
     
-    .app-container {
-      display: flex; flex-direction: column;
-      height: 100%; width: 100%; max-width: 600px; margin: 0 auto;
-      position: relative; background: var(--bg0);
+    .app-container { display: flex; flex-direction: column; height: 100%; max-width: 600px; margin: 0 auto; background: var(--bg-app); position: relative; }
+    
+    /* TOPBAR */
+    .topbar {
+      flex-shrink: 0;
+      padding: 10px 12px; background: rgba(16, 21, 43, 0.95); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; z-index: 20;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    
+    /* LOGO (Hình chữ nhật bo góc) */
+    .logo-img {
+      width: 110px; height: 38px; 
+      border-radius: 20px; 
+      background-color: rgba(255, 255, 255, 0.95);
+      background-image: url('https://ycthhachfxczwkburnfa.supabase.co/storage/v1/object/public/Image/Logo%20AVC.png');
+      background-size: 80%; background-position: center; background-repeat: no-repeat;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
 
-    .topbar{
-      flex-shrink: 0; padding:10px 12px; z-index: 20;
-      background: rgba(5,8,22,.95); backdrop-filter: blur(10px);
-      border-bottom:1px solid rgba(255,255,255,.06);
-    }
-    .titleRow{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
-    .brand{ display:flex; align-items:center; gap:10px; }
-    .logo{
-      width:38px; height:38px; border-radius:12px;
-      background: radial-gradient(circle at 30% 20%, rgba(96,165,250,.40), rgba(96,165,250,.12));
-      border:1px solid rgba(96,165,250,.22); box-shadow: 0 14px 34px rgba(0,0,0,.35);
-    }
-    .titleCol{ display:flex; flex-direction:column; gap:2px; }
-    h1{ margin:0; font-size:15px; color:var(--text2); line-height:1.1; }
-    small{ color:var(--muted); font-size:11px; }
-    .chip{
-      display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:99px;
-      border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.03);
-      color:var(--muted); font-size:11px; white-space:nowrap;
-    }
-    .dot{ width:8px; height:8px; border-radius:99px; background:rgba(255,255,255,.35); }
-    .dot.ok{ background:var(--good); box-shadow:0 0 0 4px rgba(52,211,153,.17); }
-    .dot.err{ background:var(--bad); }
+    .brand-text h1 { margin: 0; font-size: 14px; font-weight: 700; color: white; letter-spacing: -0.3px; }
+    .brand-text small { font-size: 10px; color: rgb(var(--c-wl)); display: block; margin-top: -2px; }
+    .status-badge { font-size: 9px; font-weight: 800; background: rgba(16, 185, 129, 0.15); color: rgb(var(--c-green)); padding: 3px 6px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3); letter-spacing: 0.5px; }
 
-    .main-content {
-      flex: 1; overflow-y: auto; overflow-x: hidden;
-      padding: 12px 12px 80px 12px; 
-      scroll-behavior: smooth;
-    }
-
-    .tab-pane { display: none; animation: fadeIn 0.3s ease; }
+    /* CONTENT */
+    .main-content { flex: 1; overflow-y: auto; padding: 12px; padding-bottom: 70px; }
+    .tab-pane { display: none; animation: fadeUp 0.3s ease; }
     .tab-pane.active { display: block; }
-    @keyframes fadeIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .card{
-      background:var(--card); border-radius:var(--radius2); border:1px solid var(--stroke);
-      box-shadow: var(--shadow); overflow:hidden; margin-bottom:12px;
+    /* --- COMPONENTS (COMPACT STYLE FOR OVERVIEW) --- */
+    .safety-card {
+      background: linear-gradient(145deg, rgba(16, 21, 43, 1), rgba(6, 50, 90, 0.3));
+      border-radius: 16px; border: 1px solid var(--card-border);
+      padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     }
-    .cardHead{
-      padding:12px 14px; border-bottom:1px solid rgba(255,255,255,.08);
-      display:flex; justify-content:space-between; align-items:center; gap:10px;
-      background:linear-gradient(90deg,rgba(255,255,255,.05),rgba(255,255,255,.01));
-    }
-    .cardHead b{ font-size:13px; color:var(--text2); }
-    .cardBody{ padding:12px 14px 14px; }
-     
-    .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .card-title { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .warning-tag { background: rgba(245, 158, 11, 0.2); color: rgb(var(--c-tb)); padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; border: 1px solid rgba(245, 158, 11, 0.3); }
     
-    .kpi{
-      padding:10px; border-radius:16px; border:1px solid rgba(255,255,255,.12);
-      background: radial-gradient(circle at 0% 0%, rgba(255,255,255,.07), rgba(7,11,30,.98));
-      min-height:74px; position:relative; overflow:hidden;
-    }
-    .kpi[data-rgb]{ border-color: rgba(var(--k-rgb), .20); }
-    .kpi .label{ font-size:11px; color:var(--muted); margin-bottom:4px; display:block; }
-    .kpi .value{ font-size:17px; font-weight:800; color:var(--text); }
-    .kpi[data-rgb] .value{ color: rgba(var(--k-rgb), .98); text-shadow: 0 0 18px rgba(var(--k-rgb), .18); }
-     
-    .k_wl{ --k-rgb: var(--c-wl); } .k_in{ --k-rgb: var(--c-in); }
-    .k_tb{ --k-rgb: var(--c-tb); } .k_sp{ --k-rgb: var(--c-sp); }
-    .k_rn{ --k-rgb: var(--c-rn); } .k_rf{ --k-rgb: var(--c-rn-real); }
+    .big-number-box { text-align: center; margin-bottom: 18px; }
+    .big-label { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+    .big-value { font-size: 38px; font-weight: 800; color: rgb(var(--c-wl)); line-height: 1; text-shadow: 0 0 25px rgba(34, 211, 238, 0.2); font-family: var(--font-sans); letter-spacing: -1px; }
+    .unit-sub { font-size: 14px; font-weight: 600; color: var(--text-muted); margin-left: 2px; }
 
-    .row{ display:flex; gap:10px; align-items:end; }
-    .control{ flex:1; display:flex; flex-direction:column; gap:4px; }
-    label{ font-size:11px; color:var(--muted); }
-    input, button{
-      font-family:var(--sans); font-size:14px; color:var(--text);
-      background:rgba(255,255,255,.04); border-radius:12px; border:1px solid rgba(255,255,255,.16);
-      padding:10px 12px; outline:none; width:100%;
-    }
-    button{ background:rgba(96,165,250,.15); border-color:rgba(96,165,250,.4); color:#60a5fa; font-weight:700; }
+    .level-list { display: flex; flex-direction: column; gap: 8px; }
+    .level-item { display: flex; align-items: center; font-size: 11px; color: var(--text-muted); }
+    .lvl-name { white-space: nowrap; color: #cbd5e1; font-weight: 500; }
+    .lvl-dots { flex: 1; border-bottom: 1px dashed rgba(255,255,255,0.1); margin: 0 8px; position: relative; top: -3px; }
+    .lvl-diff { font-family: var(--font-mono); font-weight: 700; font-size: 11px; }
+    .diff-pos { color: rgb(var(--c-orange)); } 
+    .diff-neg { color: var(--text-muted); opacity: 0.7; } 
+    .diff-danger { color: rgb(var(--c-sp)); }
 
-    /* --- CHART TABS --- */
-    .tabs{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
-    .tab{
-      padding:6px 12px; border-radius:99px; border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.03); color:var(--muted); font-size:11px;
-      display:inline-flex; align-items:center; gap:6px; cursor:pointer; white-space: nowrap; 
-    }
-    .swatch{ width:8px; height:8px; border-radius:99px; flex-shrink: 0; }
-    .tab.active{ background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.3); color:white; font-weight:600; }
-    canvas{ width:100% !important; height:280px !important; }
-
-    /* --- TABLE STYLE --- */
-    .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0; padding-bottom: 5px; }
-    table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 11px; white-space: nowrap; }
-    th { 
-      text-align: center; color: var(--muted); padding: 10px 6px; 
-      font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); 
-      background: #0d1221; position: sticky; top: 0; z-index: 10;
-    }
-    th:first-child { text-align: left; padding-left: 12px; position: sticky; left: 0; z-index: 12; border-right: 1px solid rgba(255,255,255,0.08); }
-    td { text-align: center; padding: 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.03); font-family: var(--mono); font-weight: 500; }
-    tbody tr:nth-child(even) td { background-color: rgba(255, 255, 255, 0.04); }
-    td:first-child { 
-      text-align: left; padding-left: 12px; position: sticky; left: 0; border-right: 1px solid rgba(255,255,255,0.08); 
-      color: #fff; font-weight: 600; z-index: 5; font-family: var(--sans); font-size: 10px;
-    }
-    tbody tr:nth-child(even) td:first-child { background-color: #171c33; } 
-    tbody tr:nth-child(odd) td:first-child { background-color: var(--card); }
-    tr:last-child td { border-bottom: none; }
-     
-    /* --- BẢN TIN (ACCORDION STYLE) --- */
-    .list-item {
-      display: flex; flex-direction: column; /* Đổi thành column để chứa nội dung mở rộng */
-      padding: 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-      background: var(--card);
-    }
-    .accordion-header {
-      display: flex; gap: 12px; padding: 12px; align-items: flex-start; cursor: pointer;
-      transition: background 0.2s;
-    }
-    .accordion-header:active { background: rgba(255,255,255,0.03); }
-    
-    .icon-box {
-      width: 40px; height: 40px; border-radius: 10px; background: rgba(59,130,246,0.15);
-      display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;
-    }
-    .item-content { flex: 1; }
-    .item-content h4 { margin: 0 0 4px; font-size: 14px; color: var(--text); font-weight: 600; line-height: 1.3; }
-    .item-content p { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.4; }
-    .item-date { font-size: 11px; color: var(--muted2); margin-top: 6px; display: block; }
-    
-    /* Nội dung sổ xuống */
-    .accordion-body {
-      display: none; padding: 0 15px 15px 64px; /* Thụt vào thẳng hàng với text trên */
-      color: var(--text2); font-size: 13px; line-height: 1.6;
-      white-space: pre-wrap; /* Quan trọng: Giữ định dạng xuống dòng từ văn bản gốc */
-      border-top: 1px dashed rgba(255,255,255,0.1); margin-top: -5px;
-    }
-    .accordion-body.open { display: block; animation: slideDown 0.3s ease; }
-    
-    @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* Bottom Nav */
-    .bottom-nav {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      height: var(--nav-height); background: rgba(6,3,20,0.95);
-      backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1);
-      display: grid; grid-template-columns: repeat(5, 1fr);
-      z-index: 100;
-    }
-    .nav-item {
+    .section-title { font-size: 11px; font-weight: 800; color: var(--text-muted); margin: 20px 0 8px 4px; text-transform: uppercase; display: block; letter-spacing: 0.5px; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .stat-box {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px; padding: 10px 4px; text-align: center;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 4px; color: var(--muted); cursor: pointer; -webkit-tap-highlight-color: transparent;
     }
-    .nav-item svg { width: 22px; height: 22px; fill: currentColor; transition: 0.2s; }
-    .nav-item span { font-size: 9px; font-weight: 500; }
-    .nav-item.active { color: var(--c-in); }
-    .nav-item.active svg { transform: translateY(-2px); filter: drop-shadow(0 0 8px rgba(59,130,246,0.4)); }
+    .stat-label { font-size: 9px; color: var(--text-muted); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .stat-val { font-size: 15px; font-weight: 700; color: white; font-family: var(--font-mono); }
+    .stat-sub { font-size: 8px; color: #64748b; margin-top: 2px; }
+    
+    .forecast-row {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px;
+      padding: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .fc-info { display: flex; flex-direction: column; gap: 2px; }
+    .fc-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .fc-desc { font-size: 9px; color: #64748b; }
+    .fc-range { font-family: var(--font-mono); font-size: 13px; color: var(--text-main); font-weight: 700; }
+    .fc-highlight { color: rgb(var(--c-wl)); }
+    .fc-rain { color: rgb(var(--c-green)); }
 
-    .toast{
-      position:fixed; left:50%; bottom:80px; transform:translateX(-50%);
-      padding:10px 16px; border-radius:30px; border:1px solid rgba(255,255,255,.1);
-      background:rgba(20,20,30,.9); color:white; font-size:12px; display:none; z-index: 200;
+    /* --- COMPONENTS FOR OTHER TABS --- */
+    .card {
+      background: var(--card-bg); border-radius: 16px; border: 1px solid var(--card-border);
+      padding: 12px; margin-bottom: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      position: relative; overflow: hidden;
     }
+    .cardHead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; }
+    .cardHead b { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+
+    .row { display: flex; gap: 8px; margin-bottom: 12px; align-items: flex-end; }
+    .control { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    label { font-size: 11px; color: var(--text-muted); }
+    input[type=date], .btn-action, button {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: white;
+      padding: 8px; border-radius: 8px; font-family: var(--font-sans); width: 100%; font-size: 12px; outline:none;
+    }
+    .btn-action, button { background: rgba(59, 130, 246, 0.2); color: #60a5fa; font-weight: 700; width: auto; white-space: nowrap; padding: 8px 16px; cursor: pointer; }
+    
+    .chip {
+      display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:99px;
+      border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.03);
+      color:var(--text-muted); font-size:10px; white-space:nowrap;
+    }
+
+    /* Tabs & Chart */
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .tab {
+      padding: 4px 10px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03); color: var(--text-muted); font-size: 10px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; gap: 4px;
+    }
+    .tab.active { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white; }
+    .swatch { width: 6px; height: 6px; border-radius: 50%; }
+    canvas { width: 100% !important; height: 280px !important; }
+
+    /* Table */
+    .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; white-space: nowrap; }
+    th { background: #161e33; color: #94a3b8; padding: 8px; text-align: center; font-weight: 600; font-size: 10px; text-transform: uppercase; }
+    td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); text-align: center; font-family: var(--font-mono); }
+    td:first-child { text-align: left; padding-left: 12px; position: sticky; left: 0; background: #0f1426; z-index: 1; border-right: 1px solid rgba(255,255,255,0.08); color: white; font-weight: 600; }
+
+    /* Accordion */
+    .list-item { background: var(--card-bg); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; }
+    .accordion-header { display: flex; gap: 10px; padding: 10px; align-items: flex-start; cursor: pointer; }
+    .icon-box { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .item-content h4 { margin: 0 0 2px; font-size: 12px; color: var(--text-main); }
+    .item-content p { margin: 0; font-size: 10px; color: var(--text-muted); }
+    .accordion-body { display: none; padding: 0 10px 10px 52px; color: var(--text-muted); font-size: 11px; line-height: 1.5; white-space: pre-wrap; }
+    .accordion-body.open { display: block; }
+
+    /* Nav */
+    .bottom-nav {
+      position: absolute; bottom: 0; left: 0; right: 0; height: var(--nav-height);
+      background: rgba(6, 8, 20, 0.98); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.08);
+      display: grid; grid-template-columns: repeat(5, 1fr); z-index: 100;
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #526071; }
+    .nav-item.active { color: rgb(var(--c-in)); }
+    .nav-item svg { width: 20px; height: 20px; fill: currentColor; }
+    .nav-item span { font-size: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+
+    .toast{ position:fixed; left:50%; bottom:80px; transform:translateX(-50%); padding:8px 12px; border-radius:20px; background:rgba(255,255,255,0.1); backdrop-filter:blur(5px); color:white; font-size:11px; display:none; z-index: 200; }
   </style>
 </head>
 <body>
 
 <div class="app-container">
-   
   <div class="topbar">
-    <div class="titleRow">
-      <div class="brand">
-        <div class="logo"></div>
-        <div class="titleCol">
-          <h1>A Vương • Vận hành & Giám sát hồ chứa • AI</h1>
-          <small id="statusText">Kết nối...</small>
-        </div>
+    <div class="brand">
+      <div class="logo-img"></div>
+      <div class="brand-text">
+        <h1>A Vương AI</h1>
+        <small id="lastUpdate">--:--</small>
       </div>
-      <span class="chip"><span id="dot" class="dot"></span><span id="connText">...</span></span>
     </div>
+    <div class="status-badge">ONLINE</div>
   </div>
 
   <div class="main-content">
-     
-    <div id="tab-home" class="tab-pane active">
-      <section class="card">
-        <div class="cardHead"><b>Tổng quan (Realtime)</b> <span class="chip" id="nowTime">-:-</span></div>
-        <div class="cardBody">
-          <div class="grid3">
-            <div class="kpi k_wl" data-rgb><span class="label">MNH (m)</span><span class="value" id="kWL">-</span></div>
-            <div class="kpi k_in" data-rgb><span class="label">Q về (m³/s)</span><span class="value" id="kIn">-</span></div>
-            <div class="kpi k_tb" data-rgb><span class="label">Q máy (m³/s)</span><span class="value" id="kTb">-</span></div>
+    
+    <div id="tab-overview" class="tab-pane active">
+      
+      <section class="safety-card">
+        <div class="card-header">
+          <span class="card-title">An Toàn Công Trình</span>
+          <span class="warning-tag" id="floodStatus">Bình thường</span>
+        </div>
+        
+        <div class="big-number-box">
+          <div class="big-label">Mực nước hồ hiện tại</div>
+          <div class="big-value">
+            <span id="txtWL">---</span><span class="unit-sub">m</span>
           </div>
-          <div class="grid3" style="margin-top:8px;">
-            <div class="kpi k_sp" data-rgb><span class="label">Q xả (m³/s)</span><span class="value" id="kSp">-</span></div>
-            <div class="kpi k_rn" data-rgb><span class="label">Mưa 1h (mm)</span><span class="value" id="kRainHour">-</span></div>
-            <div class="kpi k_rf" data-rgb><span class="label">Mưa 24h (mm)</span><span class="value" id="kRainDay">-</span></div>
+        </div>
+
+        <div class="level-list">
+          <div class="level-item">
+            <span class="lvl-name">MN Kiểm tra (382.2)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_KiemTra">--</span>
+          </div>
+          <div class="level-item">
+            <span class="lvl-name" style="color:#fff; font-weight:600;">MN Dâng BT (380.0)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_MNDBT">--</span>
+          </div>
+          <div class="level-item">
+            <span class="lvl-name">MN Đón lũ (376.0)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_DonLu">--</span>
+          </div>
+          <div class="level-item">
+            <span class="lvl-name">MN Chết (340.0)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_Chet">--</span>
           </div>
         </div>
       </section>
 
+      <span class="section-title">Số liệu vận hành</span>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <span class="stat-label">Q về (m³/s)</span>
+          <span class="stat-val" style="color:rgb(var(--c-in))" id="txtQin">--</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Q máy (m³/s)</span>
+          <span class="stat-val" style="color:rgb(var(--c-tb))" id="txtQtb">--</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Q xả (m³/s)</span>
+          <span class="stat-val" style="color:rgb(var(--c-sp))" id="txtQsp">0</span>
+        </div>
+        
+        <div class="stat-box">
+          <span class="stat-label">Dung tích (Tr.m³)</span>
+          <span class="stat-val" style="color:#fff" id="txtVol">--</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">% Hữu ích</span>
+          <span class="stat-val" style="color:rgb(var(--c-wl))" id="txtPctUseful">--%</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Mưa 1h (mm)</span>
+          <span class="stat-val" style="color:rgb(var(--c-rn))" id="txtRain1h">--</span>
+        </div>
+      </div>
+      
+      <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="stat-box">
+          <span class="stat-label">DT Hữu ích còn lại</span>
+          <span class="stat-val" style="font-size:14px; color:#cbd5e1;" id="txtVolUsefulLeft">--</span>
+          <span class="stat-sub">(Trên MN Chết)</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">DT hồ còn lại</span>
+          <span class="stat-val" style="font-size:14px; color:#cbd5e1;" id="txtVolRemain">--</span>
+          <span class="stat-sub">(Đến MNDBT)</span>
+        </div>
+      </div>
+      <div class="stat-box" style="margin-bottom:12px; border-color:rgba(34,211,238,0.15);">
+        <span class="stat-label">% Dung tích toàn bộ</span>
+        <span class="stat-val" style="color:rgb(var(--c-wl))" id="txtPctTotal">--%</span>
+      </div>
+
+      <span class="section-title">Dự báo 7 ngày tới</span>
+      
+      <div class="forecast-row">
+        <div class="fc-info">
+          <span class="fc-title">Lưu lượng về (Min-Max)</span>
+          <span class="fc-desc">Dự báo tổ hợp Ensemble</span>
+        </div>
+        <div class="fc-range fc-highlight" id="fcFlowRange">-- - --</div>
+      </div>
+
+      <div class="forecast-row">
+        <div class="fc-info">
+          <span class="fc-title">Mưa ngày (Min-Max)</span>
+          <span class="fc-desc">Lượng mưa tích lũy 24h</span>
+        </div>
+        <div class="fc-range fc-rain" id="fcRainRange">-- - --</div>
+      </div>
+
+    </div>
+
+    <div id="tab-chart" class="tab-pane">
       <section class="card">
         <div class="cardHead"><b>Điều khiển</b></div>
         <div class="cardBody">
@@ -255,12 +311,10 @@
           </div>
         </div>
       </section>
-
       <section class="card">
         <div class="cardHead"><b>Biểu đồ</b> <span class="chip" id="chartRange">...</span></div>
         <div class="cardBody">
-          <div class="tabs" id="tabs">
-            </div>
+          <div class="tabs" id="tabs"></div>
           <div style="height:280px; position:relative;">
             <canvas id="chart"></canvas>
           </div>
@@ -272,10 +326,10 @@
       <div class="card">
         <div class="cardHead">
             <b>Bản tin Dự báo (10 gần nhất)</b> 
-            <button onclick="loadForecasts()" style="width:auto; padding:4px 8px; font-size:10px; margin-left:auto;">Cập nhật</button>
+            <button onclick="loadForecasts()" style="width:auto; padding:4px 8px; font-size:10px; margin-left:auto; background:rgba(59,130,246,0.2);">Cập nhật</button>
         </div>
         <div id="forecast-list" style="padding:0;">
-          <div style="padding:20px; text-align:center; color:var(--muted); font-size:12px;">Đang tải bản tin...</div>
+          <div style="padding:20px; text-align:center; color:var(--text-muted); font-size:12px;">Đang tải bản tin...</div>
         </div>
       </div>
     </div>
@@ -297,7 +351,7 @@
                 </tr>
               </thead>
               <tbody id="tableBody">
-                <tr><td colspan="6" style="text-align:center; padding:20px; color:var(--muted)">Đang tải dữ liệu...</td></tr>
+                <tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted)">Đang tải dữ liệu...</td></tr>
               </tbody>
             </table>
           </div>
@@ -307,41 +361,36 @@
 
     <div id="tab-notif" class="tab-pane">
       <div class="card" style="background:transparent; border:none; box-shadow:none;">
-        <div class="list-item" style="background:var(--card); border-radius:16px; margin-bottom:10px; border:1px solid var(--stroke);">
+        <div class="list-item" style="background:var(--card-bg); border-radius:16px; margin-bottom:10px; border:1px solid var(--card-border);">
           <div class="accordion-header">
              <div class="icon-box">📢</div>
              <div class="item-content">
-                <h4>Thông báo Demo</h4>
-                <p>Nội dung thông báo mẫu...</p>
+                <h4>Kế hoạch chạy máy Tết 2026</h4>
+                <p>Thông báo phương thức vận hành đảm bảo điện áp...</p>
              </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <div id="tab-contact" class="tab-pane">
       <div class="card">
         <div class="cardBody" style="text-align:center; padding:30px 20px;">
-          <div class="logo" style="width:60px; height:60px; margin:0 auto 15px; border-radius:16px;"></div>
-          <h3 style="color:var(--text); margin:0 0 5px;">Công ty CP Thủy điện A Vương</h3>
-          <p style="color:var(--muted); font-size:13px; margin-bottom:25px;">Thôn Dung, xã Thạnh Mỹ, TP. Đà Nẵng</p>
+          <div class="logo-img" style="width:80px; height:80px; margin:0 auto 15px; border-radius:20px;"></div>
+          <h3 style="color:var(--text-main); margin:0 0 5px;">Công ty CP Thủy điện A Vương</h3>
+          <p style="color:var(--text-muted); font-size:13px; margin-bottom:25px;">Thôn Dung, xã Thạnh Mỹ, TP. Đà Nẵng</p>
           <div style="text-align:left; background:rgba(255,255,255,0.03); border-radius:12px; padding:15px; margin-bottom:10px;">
-            <small style="color:var(--muted);">Hotline Admin</small>
+            <small style="color:var(--text-muted);">Hotline Admin</small>
             <div style="font-size:16px; font-weight:600; color:#3b82f6;">0963.43.43.10</div>
-          </div>
-          <div style="text-align:left; background:rgba(255,255,255,0.03); border-radius:12px; padding:15px;">
-            <small style="color:var(--muted);">Email hỗ trợ</small>
-            <div style="font-size:16px; font-weight:600; color:var(--text);">Phongavc102@gmail.com</div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-  </div> 
-  
   <nav class="bottom-nav">
-    <div class="nav-item active" onclick="goTab('home', this)">
-      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Trang chủ</span>
+    <div class="nav-item active" onclick="goTab('overview', this)">
+      <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg><span>Tổng quan</span>
+    </div>
+    <div class="nav-item" onclick="goTab('chart', this)">
+      <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg><span>Biểu đồ</span>
     </div>
     <div class="nav-item" onclick="goTab('forecast', this)">
       <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg><span>Dự báo</span>
@@ -352,9 +401,6 @@
     <div class="nav-item" onclick="goTab('notif', this)">
       <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg><span>Thông báo</span>
     </div>
-    <div class="nav-item" onclick="goTab('contact', this)">
-      <svg viewBox="0 0 24 24"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57-.35-.11-.74-.03-1.02.24l-2.2 2.2c-2.83-1.44-5.15-3.75-6.59-6.59l2.2-2.21c.28-.26.36-.65.25-1C8.7 6.45 8.5 5.25 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1zM19 12h2a9 9 0 0 0-9-9v2c3.87 0 7 3.13 7 7zm-4 0h2c0-2.76-2.24-5-5-5v2c1.66 0 3 1.34 3 3z"/></svg><span>Liên hệ</span>
-    </div>
   </nav>
 
 </div>
@@ -364,38 +410,18 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <script>
-  // --- UI CONTROLLER ---
-  function goTab(name, el){
-    document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
-     
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    el.classList.add('active');
-
-    if(name === 'data') loadTableData();
-    if(name === 'forecast') loadForecasts(); 
-  }
-
-  function toast(msg){
-    const t = document.getElementById("toast"); t.textContent = msg; t.style.display = "block";
-    setTimeout(()=>t.style.display="none", 2500);
-  }
-
-  // --- CONFIG ---
-  const SB_URL = "https://ycthhachfxczwkburnfa.supabase.co";
-  const SB_KEY = "sb_publishable_Q0KbTLPBE4owO72Mz-GN6A_khF9z_Ss";
+  // --- HELPERS (ORIGINAL) ---
   const $ = (id) => document.getElementById(id);
-  const fmt2 = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 2 });
+  const fmt2 = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+  const fmt1 = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1, minimumFractionDigits: 1 });
   const fmt0 = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 });
-
-  // Helpers
+  
   function getRain(r){ return r && r.rainfall_mm !== undefined ? Number(r.rainfall_mm) : 0; }
   function getFlowFc(r){
     if(!r) return 0;
     if(r.inflow_m3s !== undefined && r.inflow_m3s !== null) return Number(r.inflow_m3s);
     return r.inflow !== undefined ? Number(r.inflow) : 0;
   }
-   
   function parseLiteral(iso) {
     if(!iso) return null;
     const datePart = iso.substring(0, 10); 
@@ -403,14 +429,46 @@
     const [y,m,d] = datePart.split('-');
     return { day: d, month: m, year: y, time: timePart };
   }
-
   function formatTimeVN(iso){ const p = parseLiteral(iso); return p ? p.time : "-"; }
   function formatDateTimeVN(iso){ const p = parseLiteral(iso); return p ? `${p.time} ${p.day}/${p.month}/${p.year}` : "-"; }
   function formatChartLabel(iso){ const p = parseLiteral(iso); return p ? `${p.time} ${p.day}/${p.month}` : "-"; }
   function cssRGB(varName){ return getComputedStyle(document.documentElement).getPropertyValue(varName).trim(); }
   function rgba(rgb,a){ return `rgba(${rgb}, ${a})`; }
-   
-  // LỌC DỮ LIỆU
+  function toast(msg){ const t=$("toast"); t.textContent=msg; t.style.display="block"; setTimeout(()=>t.style.display="none", 2500); }
+
+  // --- CONFIG ---
+  const SB_URL = "https://ycthhachfxczwkburnfa.supabase.co";
+  const SB_KEY = "sb_publishable_Q0KbTLPBE4owO72Mz-GN6A_khF9z_Ss";
+  
+  // CONSTANTS A VƯƠNG
+  const RES_CONST = {
+    WL_MAX_CHECK: 382.2, WL_NORMAL: 380.0, WL_FLOOD: 376.0, WL_DEAD: 340.0,
+    VOL_DEAD: 77.0, VOL_MAX: 343.5       
+  };
+
+  // --- STATE ---
+  let sb = null, chart = null;
+  let currentTab = "WL_24H";
+  
+  const tabMeta = {
+    WL_24H: { name:"MNH 24h", hint:"Mực nước 24h qua", color: "34,211,238" },
+    FLOW_24H: { name:"Q 24h", hint:"Dòng chảy 24h qua", color: "59,130,246" },
+    WL_7D: { name:"MNH 7D", hint:"Mực nước 7 ngày", color: "34,211,238" },
+    FLOW_7D: { name:"Q Tổng hợp", hint:"Q về/máy/xả 7 ngày", color: "59,130,246" },
+    IN_OBS_FC_3D: { name:"Q Về vs DB", hint:"Q về Thực tế & Dự báo D±3", color: "255,152,0" },
+    IN_FC_7D: { name:"Q Dự báo", hint:"Dự báo 7 ngày tới (Ensemble)", color: "255,152,0" },
+    RF_DAILY_FC: { name:"Mưa Ngày", hint:"Mưa ngày & Lũy kế", color: "167,139,250" },
+    RF_HOURLY_ACC: { name:"Mưa Giờ", hint:"Mưa giờ & Lũy kế", color: "167,139,250" },
+    RF_COMPARE: { name:"Mưa Thực vs DB", hint:"So sánh mưa Thực & DB", color: "34, 197, 94" }
+  };
+  
+  const state = { 
+    hourly24h: [], hourly3D: [], hourly7D_Obs: [],
+    inflowFc: [], rainFc: [], rainObs7D: [], rain24hRaw: [], 
+    latest24h: [], fcEnsemble: {}, 
+    lastObs: null, rainAtHour: 0, rain24hSum: 0, storage: null 
+  };
+
   function getLatestUniqueData(dataArray, timeKey) {
     if(!dataArray) return [];
     const map = new Map();
@@ -419,42 +477,27 @@
         const tB = b.created_at ? new Date(b.created_at).getTime() : 0;
         return tB - tA;
     });
-    sorted.forEach(item => {
-        const t = item[timeKey];
-        if(!map.has(t)) map.set(t, item);
-    });
+    sorted.forEach(item => { const t = item[timeKey]; if(!map.has(t)) map.set(t, item); });
     return Array.from(map.values()).sort((a,b) => new Date(a[timeKey]) - new Date(b[timeKey]));
   }
 
-  // --- STATE ---
-  const tabMeta = {
-    WL_24H: { name:"MNH 24h", hint:"Mực nước 24 giờ gần nhất", color: "34,211,238" },
-    FLOW_24H: { name:"Q 24h", hint:"Dòng chảy 24 giờ gần nhất", color: "59,130,246" },
-    WL_7D: { name:"MNH 7D", hint:"Mực nước hồ 7 ngày", color: "34,211,238" },
-    FLOW_7D: { name:"Q Tổng hợp", hint:"Q về, Q máy, Q xả 7 ngày", color: "59,130,246" },
-    IN_OBS_FC_3D: { name:"Q Về vs DB", hint:"Q về thực tế & Dự báo D±3", color: "255,152,0" },
-    IN_FC_7D: { name:"Q Dự báo", hint:"Dự báo Q về 7 ngày tới (Ensemble)", color: "255,152,0" },
-    RF_DAILY_FC: { name:"Mưa Ngày", hint:"Mưa ngày & Lũy kế", color: "167,139,250" },
-    RF_HOURLY_ACC: { name:"Mưa Giờ", hint:"Mưa giờ & Lũy kế", color: "167,139,250" },
-    RF_COMPARE: { name:"Mưa Thực tế vs DB", hint:"Mưa thực tế vs DB", color: "34, 197, 94" }
-  };
-  let currentTab = "WL_24H";
-  let sb = null, chart = null;
-   
-  const state = { 
-    hourly24h: [], hourly3D: [], hourly7D_Obs: [],
-    inflowFc: [], rainFc: [], rainObs7D: [], rain24hRaw: [], 
-    latest24h: [], fcEnsemble: {}, 
-    lastObs: null, rainAtHour: 0, rain24hSum: 0, storage: null
-  };
+  function aggregateByDay(data, timeKey) {
+    const map = {};
+    data.forEach(r => {
+      const p = parseLiteral(r[timeKey]);
+      if(p) { const dateStr = `${p.day}/${p.month}`; map[dateStr] = (map[dateStr] || 0) + getRain(r); }
+    });
+    return map;
+  }
 
-  window.addEventListener("load", ()=>{
+  // --- INIT ---
+  window.addEventListener("load", () => {
     const tc = $("tabs");
     Object.keys(tabMeta).forEach(k => {
       const t = document.createElement("span"); 
       t.className = `tab ${k===currentTab?'active':''}`;
       t.innerHTML = `<span class="swatch" style="background:rgb(${tabMeta[k].color})"></span>${tabMeta[k].name}`;
-      t.onclick = ()=>{
+      t.onclick = () => {
         document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
         t.classList.add("active"); currentTab=k; renderChart();
       };
@@ -462,32 +505,37 @@
     });
 
     const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
+    const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0');
     $("day").value = `${y}-${m}-${day}`;
-     
-    sb = window.supabase.createClient(SB_URL, SB_KEY);
-    loadData();
+    
+    if(window.supabase) {
+        sb = window.supabase.createClient(SB_URL, SB_KEY);
+        loadData();
+    }
   });
 
   $("btnLoad").onclick = loadData;
   $("day").onchange = loadData;
 
-  async function loadData(){
+  // --- MAIN LOAD (ORIGINAL LOGIC + FUTURE) ---
+  async function loadData() {
     const btn = $("btnLoad"); btn.disabled=true; btn.innerText="...";
     try {
       const dateVal = $("day").value;
       const [y,m,d] = dateVal.split('-');
       const dSelected = new Date(Number(y), Number(m)-1, Number(d));
-       
+      
       const tStart = dateVal + "T00:00:00Z";
       const tEnd = dateVal + "T23:59:59Z";
       const t7DaysAgo = new Date(dSelected.getTime() - 6*86400000).toISOString();
       const tFcStart = new Date(dSelected.getTime() - 1*86400000).toISOString();
       const tFcEnd = new Date(dSelected.getTime() + 10*86400000).toISOString();
+      
+      // Cho Overview widget
+      const now = new Date();
+      const future7d = new Date(now.getTime() + 7 * 24 * 3600 * 1000).toISOString();
 
-      const [res1, res2, res4, res5, res6, res7, res8, resLatest] = await Promise.all([
+      const [res1, res2, res4, res5, res6, res7, res8, resLatest, resRainFc, resFcFuture, resRainFcFuture] = await Promise.all([
         sb.from('reservoir_hourly_data').select('*').gte('time', tStart).lte('time', tEnd).order('time', {ascending: true}),
         sb.from('inflow_forecast').select('*').gte('forecast_time', tFcStart).lte('forecast_time', tFcEnd).order('created_at', {ascending: false}), 
         sb.from('reservoir_hourly_data').select('time, inflow').gte('time', tFcStart).lte('time', tEnd).order('time', {ascending: true}), 
@@ -495,20 +543,21 @@
         sb.from('v_current_storage').select('*').order('time', {ascending: false}).limit(1), 
         sb.from('reservoir_hourly_data').select('*').gte('time', t7DaysAgo).lte('time', tEnd).order('time', {ascending: true}), 
         sb.from('rainfall_observed').select('*').gte('time', t7DaysAgo).lte('time', tEnd).order('time', {ascending: true}),
-        sb.from('reservoir_hourly_data').select('*').order('time', {ascending: false}).limit(24)
+        sb.from('reservoir_hourly_data').select('*').order('time', {ascending: false}).limit(24),
+        sb.from('rainfall_forecast').select('*').gte('forecast_time', tFcStart).lte('forecast_time', tFcEnd).order('created_at', {ascending: false}),
+        // Fetch Future for Overview Widgets
+        sb.from('inflow_forecast').select('*').gte('forecast_time', now.toISOString()).lte('forecast_time', future7d),
+        sb.from('rainfall_forecast').select('*').gte('forecast_time', now.toISOString()).lte('forecast_time', future7d)
       ]);
 
       state.hourly24h = getLatestUniqueData(res1.data, 'time');
       const rawFc = res2.data || [];
       state.inflowFc = getLatestUniqueData(rawFc, 'forecast_time');
-      state.rainFc = state.inflowFc.map(item => ({ forecast_time: item.forecast_time, rainfall_mm: item.rain_mm || 0 }));
-
+      const uniqueRain = getLatestUniqueData(resRainFc.data || [], 'forecast_time');
+      state.rainFc = uniqueRain.map(item => ({forecast_time:item.forecast_time, rainfall_mm:Number(item.rainfall_mm)||0}));
+      
       const mapFc = {};
-      rawFc.forEach(item => {
-        const t = item.forecast_time;
-        if(!mapFc[t]) mapFc[t] = [];
-        mapFc[t].push(item);
-      });
+      rawFc.forEach(item => { const t = item.forecast_time; if(!mapFc[t]) mapFc[t]=[]; mapFc[t].push(item); });
       state.fcEnsemble = mapFc;
 
       state.hourly3D = getLatestUniqueData(res4.data, 'time');
@@ -522,129 +571,97 @@
       let rainCur = 0;
       if (state.lastObs) {
         const tObs = new Date(state.lastObs.time).getTime();
-        if(state.rain24hRaw.length){
-             const match = state.rain24hRaw.find(r => Math.abs(new Date(r.time).getTime() - tObs) < 1800000);
-             if(match) rainCur = getRain(match);
+        if(state.rain24hRaw.length){ 
+            const match = state.rain24hRaw.find(r => Math.abs(new Date(r.time).getTime() - tObs) < 1800000); 
+            if(match) rainCur = getRain(match);
         }
       }
       state.rainAtHour = rainCur;
       state.rain24hSum = state.rain24hRaw.reduce((s,r)=>s+getRain(r), 0);
 
-      renderOverview();
+      renderOverview(resFcFuture.data, resRainFcFuture.data);
       renderChart();
       if(document.getElementById('tab-data').classList.contains('active')) loadTableData();
       if(document.getElementById('tab-forecast').classList.contains('active')) loadForecasts();
-       
+      
       toast("Đã cập nhật dữ liệu");
       $("connText").textContent = "Online"; $("dot").className="dot ok";
 
-    } catch(e){ console.error(e); toast("Lỗi tải dữ liệu"); $("connText").textContent = "Lỗi"; $("dot").className="dot err"; }
+    } catch(e){ console.error(e); toast("Lỗi dữ liệu"); $("connText").textContent = "Lỗi"; $("dot").className="dot err"; }
     finally{ btn.disabled=false; btn.innerText="XEM"; }
   }
 
-  function renderOverview(){
+  // --- RENDER OVERVIEW (COMPACT MAPPING) ---
+  function renderOverview(fcFlowData, fcRainData){
     const l = state.lastObs;
-    $("kWL").textContent = l ? fmt2.format(l.water_level) : "—";
-    $("kIn").textContent = l ? fmt0.format(l.inflow) : "—";
-    $("kTb").textContent = l ? fmt0.format(l.turbine_flow) : "—";
-    $("kSp").textContent = l ? fmt0.format(l.spillway_flow) : "—";
-    $("nowTime").textContent = l ? formatTimeVN(l.time) : "—";
-    $("kRainHour").textContent = fmt2.format(state.rainAtHour);
-    $("kRainDay").textContent = fmt2.format(state.rain24hSum);
-    $("statusText").textContent = l ? "Cập nhật " + formatTimeVN(l.time) : "Chưa có số liệu";
-  }
+    if (!l) return;
+    
+    // 1. Safety
+    const wl = l.water_level;
+    const t = new Date(l.time);
+    
+    if($("txtWL")) $("txtWL").textContent = fmt2.format(wl);
+    if($("lastUpdate")) $("lastUpdate").textContent = `${t.getHours()}:${String(t.getMinutes()).padStart(2,'0')} ${t.getDate()}/${t.getMonth()+1}`;
 
-  async function loadTableData() {
-    const tb = $("tableBody");
-    tb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--muted);">Đang lấy 24h số liệu gần nhất...</td></tr>`;
-    try {
-      const resHydro = await sb.from('reservoir_hourly_data').select('*').order('time', {ascending: false}).limit(24);
-      const hydroData = resHydro.data || [];
-      if(hydroData.length === 0) { tb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px;">Không có dữ liệu</td></tr>`; return; }
-
-      const tMax = hydroData[0].time; const tMin = hydroData[hydroData.length-1].time;
-      const resRain = await sb.from('rainfall_observed').select('*').gte('time', tMin).lte('time', tMax);
-      const rainData = resRain.data || [];
-
-      tb.innerHTML = "";
-      hydroData.forEach(row => {
-        const tRow = new Date(row.time).getTime();
-        const rItem = rainData.find(x => Math.abs(new Date(x.time).getTime() - tRow) < 1800000);
-        const rVal = getRain(rItem);
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${formatDateTimeVN(row.time)}</td>
-          <td style="color:rgb(34,211,238)">${fmt2.format(row.water_level)}</td>
-          <td style="color:rgb(59,130,246)">${fmt0.format(row.inflow)}</td>
-          <td style="color:rgb(250,204,21)">${fmt0.format(row.turbine_flow)}</td>
-          <td style="color:rgb(239,68,68)">${fmt0.format(row.spillway_flow)}</td>
-          <td style="color:${rVal>0?'rgb(52, 211, 153)':'#64748b'}">${rVal>0 ? fmt2.format(rVal) : '-'}</td>
-        `;
-        tb.appendChild(tr);
-      });
-    } catch(e) { console.error(e); }
-  }
-
-  // --- HÀM TẢI BẢN TIN (ACCORDION) ---
-  async function loadForecasts() {
-    const container = $("forecast-list");
-    try {
-      // Sắp xếp giảm dần theo ngày tạo
-      const { data, error } = await sb.from('bulletins').select('*').order('created_at', { ascending: false }).limit(10);
-      if (error) throw error;
-      if (!data || data.length === 0) {
-        container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--muted);">Chưa có bản tin nào.</div>`;
-        return;
+    const setDiff = (id, val) => {
+      const diff = wl - val; const el = $(id);
+      if(el){
+        el.innerText = `${diff > 0 ? "+" : ""}${fmt2.format(diff)}`;
+        el.className = `lvl-diff ${diff > 0 ? 'diff-pos' : 'diff-neg'} ${id==='diff_KiemTra'&&diff>-0.5?'diff-danger':''}`;
       }
-      container.innerHTML = "";
-      
-      data.forEach((item, index) => {
-        let icon = "🌤️"; let bg = "rgba(16,185,129,0.15)"; let color = "#10b981";
-        if (item.type === 'warning') { icon = "⚡"; bg = "rgba(245,158,11,0.15)"; color = "#f59e0b"; } 
-        else if (item.type === 'urgent') { icon = "📢"; bg = "rgba(239,68,68,0.15)"; color = "#ef4444"; }
-        
-        const timeStr = formatDateTimeVN(item.created_at);
-        // Tự tạo tóm tắt nếu không có
-        const summary = item.summary || (item.content ? item.content.substring(0, 80) + "..." : "Xem chi tiết");
-        // Giữ nguyên định dạng xuống dòng
-        const content = item.content || "Không có nội dung";
+    };
+    setDiff('diff_KiemTra', RES_CONST.WL_MAX_CHECK);
+    setDiff('diff_MNDBT', RES_CONST.WL_NORMAL);
+    setDiff('diff_DonLu', RES_CONST.WL_FLOOD);
+    setDiff('diff_Chet', RES_CONST.WL_DEAD);
 
-        const div = document.createElement("div");
-        div.className = "list-item";
-        div.innerHTML = `
-            <div class="accordion-header" onclick="toggleAccordion(this)">
-               <div class="icon-box" style="background:${bg}; color:${color};">${icon}</div>
-               <div class="item-content">
-                  <h4>${item.title || 'Bản tin dự báo'}</h4>
-                  <p>${summary}</p>
-                  <span class="item-date">${timeStr}</span>
-               </div>
-            </div>
-            <div class="accordion-body">${content}</div>
-        `;
-        container.appendChild(div);
-      });
-    } catch (e) {
-      console.error(e);
-      container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--bad);">Lỗi tải bản tin.</div>`;
+    const tag = $("floodStatus");
+    if(tag) {
+        if(wl >= RES_CONST.WL_FLOOD) { tag.innerText = "CẢNH BÁO LŨ"; tag.style.color="rgb(var(--c-tb))"; tag.style.borderColor="rgb(var(--c-tb))"; tag.style.background="rgba(239,68,68,0.15)"; }
+        else { tag.innerText = "BÌNH THƯỜNG"; tag.style.color="rgb(var(--c-green))"; tag.style.borderColor="rgb(var(--c-green))"; tag.style.background="rgba(16,185,129,0.15)"; }
+    }
+
+    // 2. Stats
+    if($("txtQin")) $("txtQin").textContent = fmt0.format(l.inflow);
+    if($("txtQtb")) $("txtQtb").textContent = fmt0.format(l.turbine_flow);
+    if($("txtQsp")) $("txtQsp").textContent = fmt0.format(l.spillway_flow);
+    if($("txtRain1h")) $("txtRain1h").textContent = fmt1.format(state.rainAtHour);
+
+    // 3. Volume
+    let curVol = 0;
+    if (state.storage && (state.storage.volume || state.storage.current_volume)) {
+        curVol = Number(state.storage.volume || state.storage.current_volume);
+    } else {
+        if(wl > 340) curVol = RES_CONST.VOL_DEAD + ((wl - 340)/40)*(RES_CONST.VOL_MAX - RES_CONST.VOL_DEAD);
+    }
+    if($("txtVol")) $("txtVol").textContent = fmt2.format(curVol);
+
+    const volUsefulCurrent = Math.max(0, curVol - RES_CONST.VOL_DEAD);
+    if($("txtVolUsefulLeft")) $("txtVolUsefulLeft").textContent = fmt2.format(volUsefulCurrent);
+
+    const pctUseful = (volUsefulCurrent / (RES_CONST.VOL_MAX - RES_CONST.VOL_DEAD)) * 100;
+    if($("txtPctUseful")) $("txtPctUseful").textContent = fmt2.format(pctUseful) + "%";
+
+    const volRemain = Math.max(0, RES_CONST.VOL_MAX - curVol);
+    if($("txtVolRemain")) $("txtVolRemain").textContent = fmt2.format(volRemain);
+
+    const pctTotal = (curVol / RES_CONST.VOL_MAX) * 100;
+    if($("txtPctTotal")) $("txtPctTotal").textContent = fmt2.format(pctTotal) + "%";
+
+    // 4. Forecast Widgets
+    if(fcFlowData && fcFlowData.length){
+        const flows = fcFlowData.map(f => getFlowFc(f));
+        if($("fcFlowRange")) $("fcFlowRange").textContent = `${fmt0.format(Math.min(...flows))} - ${fmt0.format(Math.max(...flows))}`;
+    }
+    if(fcRainData && fcRainData.length){
+        const dayMap = {};
+        fcRainData.forEach(r => { const d = r.forecast_time.substring(0,10); dayMap[d] = (dayMap[d]||0) + Number(r.rainfall_mm); });
+        const rains = Object.values(dayMap);
+        if(rains.length && $("fcRainRange")) $("fcRainRange").textContent = `${fmt2.format(Math.min(...rains))} - ${fmt2.format(Math.max(...rains))}`;
     }
   }
 
-  // Hàm xử lý đóng/mở
-  function toggleAccordion(header) {
-    const body = header.nextElementSibling;
-    body.classList.toggle("open");
-  }
-
-  function aggregateByDay(data, timeKey) {
-    const map = {};
-    data.forEach(r => {
-      const p = parseLiteral(r[timeKey]);
-      if(p) { const dateStr = `${p.day}/${p.month}`; map[dateStr] = (map[dateStr] || 0) + getRain(r); }
-    });
-    return map;
-  }
-
+  // --- RENDER CHART (ORIGINAL) ---
   function renderChart(){
     if(chart) chart.destroy();
     const ctx = $("chart").getContext("2d");
@@ -659,9 +676,8 @@
       }
     };
 
-    let labels=[], datasets=[];
-     
-    // (Các tab WL_24H... giữ nguyên logic cũ, chỉ thay đổi tab IN_FC_7D bên dưới)
+    let labels=[], datasets=[]; 
+    
     if (currentTab === 'WL_24H') {
       const data = state.latest24h; labels = data.map(r => formatChartLabel(r.time));
       const rgb = cssRGB("--c-wl");
@@ -697,63 +713,48 @@
       labels = allT.map(t => formatChartLabel(t));
       const dObs = allT.map(t => obsData.find(x => x.time === t)?.inflow ?? null);
       const dFc = allT.map(t => { const item = fcData.find(x => x.forecast_time === t); return item ? getFlowFc(item) : null; });
-      datasets = [
-        { label: 'Q Thực đo', data: dObs, borderColor:rgba(cssRGB("--c-in"),1), borderWidth:2, pointRadius:0, tension:0.3 },
-        { label: 'Q Dự báo', data: dFc, borderColor:rgba(cssRGB("--c-if"),1), borderDash:[4,4], borderWidth:2, pointRadius:0, tension:0.3 }
-      ];
-    }
-    
-    // --- 6. LOGIC MỚI: DẢI ĐỆM NHÂN TẠO (60-70% phía trên) ---
-    else if (currentTab === 'IN_FC_7D') {
-      const tLimit = new Date($("day").value).setHours(0,0,0,0) + 7*86400000; 
-      const times = Object.keys(state.fcEnsemble || {}).filter(t => {
-           const time = new Date(t).getTime(); return time >= new Date($("day").value).setHours(0,0,0,0) && time <= tLimit;
-        }).sort();
-      labels = times.map(t => formatChartLabel(t));
       
-      const getVal = (t, src) => {
-          const group = state.fcEnsemble[t] || [];
-          const found = group.find(i => i.source === src);
-          return found ? getFlowFc(found) : null;
-      };
-
-      const d_high_raw = []; const d_low_raw = []; const d_mean = [];
-
-      times.forEach(t => {
-          let vMean = getVal(t, 'rf2q_v7');
-          if (vMean === null) vMean = 0;
-
-          // LOGIC: Tạo dải đệm nhân tạo để đường Mean luôn đẹp
-          // Upper = Mean + 15% (Thoáng phía trên)
-          // Lower = Mean - 30% (Dày phía dưới - rủi ro thấp)
-          const realMax = vMean * 1.15;
-          const realMin = vMean * 0.70;
-
-          d_high_raw.push(realMax);
-          d_low_raw.push(realMin);
-          d_mean.push(vMean);
+      const obsMap = new Map();
+      state.hourly7D_Obs.forEach(x => obsMap.set(new Date(x.time).getTime(), x.inflow));
+      const lastObsTime = state.lastObs ? new Date(state.lastObs.time).getTime() : 0;
+      const dMA = allT.map(tStr => {
+        const tCurrent = new Date(tStr).getTime(); if (tCurrent > lastObsTime) return null;
+        let sum=0, cnt=0;
+        for(let i=0; i<24; i++){ 
+           const tPrev = tCurrent - i*3600000; 
+           if(obsMap.has(tPrev)){ const val = obsMap.get(tPrev); if(val !== null && val !== undefined) { sum += val; cnt++; } }
+        }
+        return cnt > 0 ? sum/cnt : null;
       });
 
       datasets = [
-        { 
-          label: 'Biên trên (Upper)', data: d_high_raw, 
-          borderColor: 'transparent', backgroundColor: 'rgba(34, 211, 238, 0.15)',
-          pointRadius: 0, fill: '+1', tension: 0.4, order: 3
-        },
-        { 
-          label: 'Biên dưới (Lower)', data: d_low_raw, 
-          borderColor: 'transparent', backgroundColor: 'transparent',
-          pointRadius: 0, fill: false, tension: 0.4, order: 2
-        },
-        { 
-          label: 'Dự báo Trung bình (Mean)', data: d_mean, 
-          borderColor: 'rgba(255, 152, 0, 1)', borderWidth: 3, pointRadius: 0, 
-          tension: 0.4, fill: false, order: 1 
-        }
+        { label: 'Q Thực đo', data: dObs, borderColor:rgba(cssRGB("--c-in"),1), borderWidth:2, pointRadius:0, tension:0.3 },
+        { label: 'MA 24h', data: dMA, borderColor:'#e879f9', borderWidth:1.5, pointRadius:0, tension:0.4, borderDash:[2,2], fill:false },
+        { label: 'Q Dự báo', data: dFc, borderColor:rgba(cssRGB("--c-if"),1), borderDash:[4,4], borderWidth:2, pointRadius:0, tension:0.3 }
       ];
     }
-    
-    // (Các tab mưa giữ nguyên)
+    else if (currentTab === 'IN_FC_7D') {
+      const tLimit = new Date($("day").value).setHours(0,0,0,0) + 7*86400000; 
+      const times = Object.keys(state.fcEnsemble || {}).filter(t => { 
+           const time = new Date(t).getTime(); return time >= new Date($("day").value).setHours(0,0,0,0) && time <= tLimit;
+        }).sort();
+      labels = times.map(t => formatChartLabel(t));
+      const getVal = (t, src) => { 
+          const group = state.fcEnsemble[t] || []; const found = group.find(i => i.source === src); 
+          return found ? getFlowFc(found) : null; 
+      };
+      const d_high_raw = []; const d_low_raw = []; const d_mean = [];
+      times.forEach(t => {
+          let vMean = getVal(t, 'rf2q_v7'); if (vMean === null) vMean = 0;
+          const realMax = vMean * 1.15; const realMin = vMean * 0.70;
+          d_high_raw.push(realMax); d_low_raw.push(realMin); d_mean.push(vMean);
+      });
+      datasets = [
+        { label: 'Biên trên (Upper)', data: d_high_raw, borderColor: 'transparent', backgroundColor: 'rgba(34, 211, 238, 0.15)', pointRadius: 0, fill: '+1', tension: 0.4, order: 3 },
+        { label: 'Biên dưới (Lower)', data: d_low_raw, borderColor: 'transparent', backgroundColor: 'transparent', pointRadius: 0, fill: false, tension: 0.4, order: 2 },
+        { label: 'Dự báo Trung bình (Mean)', data: d_mean, borderColor: 'rgba(255, 152, 0, 1)', borderWidth: 3, pointRadius: 0, tension: 0.4, fill: false, order: 1 }
+      ];
+    }
     else if (currentTab === 'RF_DAILY_FC') {
       const tLimit = new Date($("day").value).setHours(0,0,0,0) + 7*86400000;
       const filtered = state.rainFc.filter(r => { const t = new Date(r.forecast_time).getTime(); return t >= (new Date($("day").value).setHours(0,0,0,0)) && t < tLimit; });
@@ -799,6 +800,82 @@
     const isMixed = (currentTab === 'RF_HOURLY_ACC' || currentTab === 'RF_DAILY_FC');
     const type = (currentTab.startsWith('RF_') && !isMixed) ? 'bar' : 'line';
     chart = new Chart(ctx, { type: (isMixed ? 'bar' : type), data:{labels, datasets}, options:opts });
+  }
+
+  function goTab(name, el){
+    document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+
+    if(name === 'data') loadTableData();
+    if(name === 'forecast') loadForecasts(); 
+    if(name === 'chart' && chart) chart.resize();
+  }
+
+  async function loadTableData() {
+    const tb = $("tableBody");
+    tb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Đang lấy 24h số liệu gần nhất...</td></tr>`;
+    try {
+      const data = state.latest24h;
+      if(data.length === 0) { tb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px;">Không có dữ liệu</td></tr>`; return; }
+
+      const tMax = data[0].time; const tMin = data[data.length-1].time;
+      const resRain = await sb.from('rainfall_observed').select('*').gte('time', tMin).lte('time', tMax);
+      const rainData = resRain.data || [];
+
+      tb.innerHTML = "";
+      data.forEach(row => {
+        const tRow = new Date(row.time).getTime();
+        const rItem = rainData.find(x => Math.abs(new Date(x.time).getTime() - tRow) < 1800000);
+        const rVal = getRain(rItem);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${formatDateTimeVN(row.time)}</td>
+          <td style="color:rgb(34,211,238)">${fmt2.format(row.water_level)}</td>
+          <td style="color:rgb(59,130,246)">${fmt0.format(row.inflow)}</td>
+          <td style="color:rgb(250,204,21)">${fmt0.format(row.turbine_flow)}</td>
+          <td style="color:rgb(239,68,68)">${fmt0.format(row.spillway_flow)}</td>
+          <td style="color:${rVal>0?'rgb(52, 211, 153)':'#64748b'}">${rVal>0 ? fmt2.format(rVal) : '-'}</td>
+        `;
+        tb.appendChild(tr);
+      });
+    } catch(e) { console.error(e); }
+  }
+
+  async function loadForecasts() {
+    const container = $("forecast-list");
+    try {
+      const { data, error } = await sb.from('bulletins').select('*').order('created_at', { ascending: false }).limit(10);
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted);">Chưa có bản tin nào.</div>`;
+        return;
+      }
+      container.innerHTML = "";
+      data.forEach((item, index) => {
+        let icon = "🌤️"; let bg = "rgba(16,185,129,0.15)"; let color = "#10b981";
+        if (item.type === 'warning') { icon = "⚡"; bg = "rgba(245,158,11,0.15)"; color = "#f59e0b"; } 
+        else if (item.type === 'urgent') { icon = "📢"; bg = "rgba(239,68,68,0.15)"; color = "#ef4444"; }
+        const timeStr = formatDateTimeVN(item.created_at);
+        const summary = item.summary || (item.content ? item.content.substring(0, 80) + "..." : "Xem chi tiết");
+        const content = item.content || "Không có nội dung";
+        const div = document.createElement("div");
+        div.className = "list-item";
+        div.innerHTML = `
+            <div class="accordion-header" onclick="this.nextElementSibling.classList.toggle('open')">
+               <div class="icon-box" style="background:${bg}; color:${color};">${icon}</div>
+               <div class="item-content">
+                  <h4>${item.title || 'Bản tin dự báo'}</h4>
+                  <p>${summary}</p>
+                  <span class="item-date">${timeStr}</span>
+               </div>
+            </div>
+            <div class="accordion-body">${content}</div>
+        `;
+        container.appendChild(div);
+      });
+    } catch (e) { console.error(e); }
   }
 </script>
 </body>
