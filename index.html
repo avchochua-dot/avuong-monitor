@@ -21,7 +21,7 @@
       --text-main: #e2e8f0;
       --text-muted: #94a3b8;
       
-      /* RGB Colors */
+      /* COLORS (RGB) */
       --c-wl: 34, 211, 238;   /* Cyan */
       --c-in: 59, 130, 246;   /* Blue */
       --c-tb: 245, 158, 11;   /* Orange */
@@ -29,20 +29,21 @@
       --c-rn: 167, 139, 250;  /* Purple */
       --c-green: 16, 185, 129;
       --c-rn-real: 34, 197, 94;
-      --c-acc: 250, 204, 21;  /* Yellow Accumulation */
+      --c-acc: 250, 204, 21;  /* Yellow */
 
       --font-sans: 'Inter', system-ui, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
       
-      --nav-height: 60px;
+      --nav-height: 65px;
     }
     
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    
     ::-webkit-scrollbar { display: none; }
+    
     html, body { 
       height: 100%; margin: 0; overflow: hidden; 
       background: var(--bg-app); font-family: var(--font-sans); color: var(--text-main);
+      font-size: 15px; 
       -ms-overflow-style: none; scrollbar-width: none;
     }
     
@@ -50,128 +51,124 @@
     
     /* TOPBAR */
     .topbar {
-      flex-shrink: 0;
-      padding: 10px 12px; background: rgba(16, 21, 43, 0.95); backdrop-filter: blur(10px);
+      flex-shrink: 0; padding: 12px 16px; 
+      background: rgba(16, 21, 43, 0.95); backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; z-index: 20;
     }
     .brand { display: flex; align-items: center; gap: 12px; }
-    
-    /* LOGO (Hình chữ nhật bo góc) */
     .logo-img {
-      width: 110px; height: 38px; 
-      border-radius: 20px; 
+      width: 120px; height: 42px; 
+      border-radius: 24px; 
       background-color: rgba(255, 255, 255, 0.95);
       background-image: url('https://ycthhachfxczwkburnfa.supabase.co/storage/v1/object/public/Image/Logo%20AVC.png');
       background-size: 80%; background-position: center; background-repeat: no-repeat;
       border: 1px solid rgba(255, 255, 255, 0.2);
       box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
-
-    .brand-text h1 { margin: 0; font-size: 14px; font-weight: 700; color: white; letter-spacing: -0.3px; }
-    .brand-text small { font-size: 10px; color: rgb(var(--c-wl)); display: block; margin-top: -2px; }
-    .status-badge { font-size: 9px; font-weight: 800; background: rgba(16, 185, 129, 0.15); color: rgb(var(--c-green)); padding: 3px 6px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3); letter-spacing: 0.5px; }
+    .brand-text h1 { margin: 0; font-size: 16px; font-weight: 700; color: white; }
+    .brand-text small { font-size: 12px; color: rgb(var(--c-wl)); display: block; margin-top: 0px; }
+    .status-badge { font-size: 11px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: rgb(var(--c-green)); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); }
 
     /* CONTENT */
-    .main-content { flex: 1; overflow-y: auto; padding: 12px; padding-bottom: 70px; }
+    .main-content { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 80px; }
     .tab-pane { display: none; animation: fadeUp 0.3s ease; }
     .tab-pane.active { display: block; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* --- COMPONENTS (COMPACT STYLE FOR OVERVIEW) --- */
+    /* --- DASHBOARD STYLES --- */
     .safety-card {
       background: linear-gradient(145deg, rgba(16, 21, 43, 1), rgba(6, 50, 90, 0.3));
-      border-radius: 16px; border: 1px solid var(--card-border);
-      padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      border-radius: 18px; border: 1px solid var(--card-border);
+      padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 25px rgba(0,0,0,0.4);
     }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .card-title { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .warning-tag { background: rgba(245, 158, 11, 0.2); color: rgb(var(--c-tb)); padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .card-title { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .warning-tag { background: rgba(245, 158, 11, 0.2); color: rgb(var(--c-tb)); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid rgba(245, 158, 11, 0.3); }
     
-    .big-number-box { text-align: center; margin-bottom: 18px; }
-    .big-label { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
-    .big-value { font-size: 38px; font-weight: 800; color: rgb(var(--c-wl)); line-height: 1; text-shadow: 0 0 25px rgba(34, 211, 238, 0.2); font-family: var(--font-sans); letter-spacing: -1px; }
-    .unit-sub { font-size: 14px; font-weight: 600; color: var(--text-muted); margin-left: 2px; }
+    .big-number-box { text-align: center; margin-bottom: 20px; }
+    .big-label { font-size: 14px; color: var(--text-muted); margin-bottom: 4px; }
+    .big-value { font-size: 56px; font-weight: 800; color: rgb(var(--c-wl)); line-height: 1; text-shadow: 0 0 30px rgba(34, 211, 238, 0.25); font-family: var(--font-sans); letter-spacing: -2px; }
+    .unit-sub { font-size: 20px; font-weight: 600; color: var(--text-muted); margin-left: 4px; }
 
-    .level-list { display: flex; flex-direction: column; gap: 8px; }
-    .level-item { display: flex; align-items: center; font-size: 11px; color: var(--text-muted); }
-    .lvl-name { white-space: nowrap; color: #cbd5e1; font-weight: 500; }
-    .lvl-dots { flex: 1; border-bottom: 1px dashed rgba(255,255,255,0.1); margin: 0 8px; position: relative; top: -3px; }
-    .lvl-diff { font-family: var(--font-mono); font-weight: 700; font-size: 11px; }
-    .diff-pos { color: rgb(var(--c-orange)); } 
-    .diff-neg { color: var(--text-muted); opacity: 0.7; } 
-    .diff-danger { color: rgb(var(--c-sp)); }
+    .level-list { display: flex; flex-direction: column; gap: 12px; }
+    .level-item { display: flex; align-items: center; font-size: 13px; color: var(--text-main); font-weight: 500; }
+    .lvl-name { white-space: nowrap; }
+    .lvl-dots { flex: 1; border-bottom: 1px dashed rgba(255,255,255,0.1); margin: 0 10px; position: relative; top: -3px; }
+    .lvl-diff { font-family: var(--font-mono); font-weight: 700; font-size: 13px; }
+    
+    .lvl-kt { color: #ef4444; } 
+    .lvl-dbt { color: #f59e0b; } 
+    .lvl-dl { color: #3b82f6; }  
+    .lvl-ch { color: #a855f7; }  
 
-    .section-title { font-size: 11px; font-weight: 800; color: var(--text-muted); margin: 20px 0 8px 4px; text-transform: uppercase; display: block; letter-spacing: 0.5px; }
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .section-title { font-size: 13px; font-weight: 700; color: var(--text-muted); margin: 24px 0 10px 4px; text-transform: uppercase; display: block; letter-spacing: 0.5px; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
     .stat-box {
-      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 12px; padding: 10px 4px; text-align: center;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 12px 6px; text-align: center;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
-    .stat-label { font-size: 9px; color: var(--text-muted); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.3px; }
-    .stat-val { font-size: 15px; font-weight: 700; color: white; font-family: var(--font-mono); }
-    .stat-sub { font-size: 8px; color: #64748b; margin-top: 2px; }
+    .stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; font-weight: 600; }
+    .stat-val { font-size: 18px; font-weight: 700; color: white; font-family: var(--font-mono); }
+    .stat-sub { font-size: 10px; color: #64748b; margin-top: 3px; }
     
     .forecast-row {
-      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px;
-      padding: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px;
+      padding: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
     }
-    .fc-info { display: flex; flex-direction: column; gap: 2px; }
-    .fc-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-    .fc-desc { font-size: 9px; color: #64748b; }
-    .fc-range { font-family: var(--font-mono); font-size: 13px; color: var(--text-main); font-weight: 700; }
+    .fc-info { display: flex; flex-direction: column; gap: 3px; }
+    .fc-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .fc-desc { font-size: 11px; color: #64748b; }
+    .fc-range { font-family: var(--font-mono); font-size: 16px; color: var(--text-main); font-weight: 700; }
     .fc-highlight { color: rgb(var(--c-wl)); }
     .fc-rain { color: rgb(var(--c-green)); }
 
-    /* --- COMPONENTS FOR OTHER TABS --- */
+    /* CARD GENERAL */
     .card {
       background: var(--card-bg); border-radius: 16px; border: 1px solid var(--card-border);
-      padding: 12px; margin-bottom: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      padding: 14px; margin-bottom: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
       position: relative; overflow: hidden;
     }
-    .cardHead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; }
-    .cardHead b { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+    .cardHead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+    .cardHead b { font-size: 14px; color: var(--text-muted); text-transform: uppercase; }
 
-    .row { display: flex; gap: 8px; margin-bottom: 12px; align-items: flex-end; }
-    .control { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-    label { font-size: 11px; color: var(--text-muted); }
+    /* Controls */
+    .row { display: flex; gap: 10px; margin-bottom: 14px; align-items: flex-end; }
+    .control { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+    label { font-size: 12px; color: var(--text-muted); }
     input[type=date], .btn-action, button {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: white;
-      padding: 8px; border-radius: 8px; font-family: var(--font-sans); width: 100%; font-size: 12px; outline:none;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: white;
+      padding: 10px; border-radius: 10px; font-family: var(--font-sans); width: 100%; font-size: 14px; outline:none;
     }
-    .btn-action, button { background: rgba(59, 130, 246, 0.2); color: #60a5fa; font-weight: 700; width: auto; white-space: nowrap; padding: 8px 16px; cursor: pointer; }
+    .btn-action, button { background: rgba(59, 130, 246, 0.2); color: #60a5fa; font-weight: 700; width: auto; white-space: nowrap; padding: 10px 18px; cursor: pointer; }
     
-    .chip {
-      display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:99px;
-      border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.03);
-      color:var(--text-muted); font-size:10px; white-space:nowrap;
-    }
+    .chip { padding:4px 10px; border-radius:99px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); color:var(--text-muted); font-size:11px; }
 
     /* Tabs & Chart */
-    .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
     .tab {
-      padding: 4px 10px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.03); color: var(--text-muted); font-size: 10px; font-weight: 600;
-      cursor: pointer; display: flex; align-items: center; gap: 4px;
+      padding: 6px 12px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03); color: var(--text-muted); font-size: 12px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; gap: 5px;
     }
     .tab.active { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white; }
-    .swatch { width: 6px; height: 6px; border-radius: 50%; }
-    canvas { width: 100% !important; height: 280px !important; }
+    .swatch { width: 8px; height: 8px; border-radius: 50%; }
+    canvas { width: 100% !important; height: 320px !important; }
 
     /* Table */
     .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
-    table { width: 100%; border-collapse: collapse; font-size: 11px; white-space: nowrap; }
-    th { background: #161e33; color: #94a3b8; padding: 8px; text-align: center; font-weight: 600; font-size: 10px; text-transform: uppercase; }
-    td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); text-align: center; font-family: var(--font-mono); }
-    td:first-child { text-align: left; padding-left: 12px; position: sticky; left: 0; background: #0f1426; z-index: 1; border-right: 1px solid rgba(255,255,255,0.08); color: white; font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+    th { background: #161e33; color: #94a3b8; padding: 10px; text-align: center; font-weight: 600; font-size: 12px; text-transform: uppercase; }
+    td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.04); text-align: center; font-family: var(--font-mono); }
+    td:first-child { text-align: left; padding-left: 14px; position: sticky; left: 0; background: #0f1426; z-index: 1; border-right: 1px solid rgba(255,255,255,0.08); color: white; font-weight: 600; }
 
     /* Accordion */
     .list-item { background: var(--card-bg); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; }
-    .accordion-header { display: flex; gap: 10px; padding: 10px; align-items: flex-start; cursor: pointer; }
-    .icon-box { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-    .item-content h4 { margin: 0 0 2px; font-size: 12px; color: var(--text-main); }
-    .item-content p { margin: 0; font-size: 10px; color: var(--text-muted); }
-    .accordion-body { display: none; padding: 0 10px 10px 52px; color: var(--text-muted); font-size: 11px; line-height: 1.5; white-space: pre-wrap; }
+    .accordion-header { display: flex; gap: 12px; padding: 14px; align-items: flex-start; cursor: pointer; }
+    .icon-box { width: 36px; height: 36px; border-radius: 10px; background: rgba(59,130,246,0.15); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .item-content h4 { margin: 0 0 4px; font-size: 14px; color: var(--text-main); font-weight: 600; line-height: 1.3; }
+    .item-content p { margin: 0; font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+    .accordion-body { display: none; padding: 0 14px 14px 62px; color: var(--text-muted); font-size: 13px; line-height: 1.6; white-space: pre-wrap; }
     .accordion-body.open { display: block; }
 
     /* Nav */
@@ -180,12 +177,12 @@
       background: rgba(6, 8, 20, 0.98); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.08);
       display: grid; grid-template-columns: repeat(5, 1fr); z-index: 100;
     }
-    .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #526071; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #526071; cursor: pointer; }
     .nav-item.active { color: rgb(var(--c-in)); }
-    .nav-item svg { width: 20px; height: 20px; fill: currentColor; }
-    .nav-item span { font-size: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+    .nav-item svg { width: 24px; height: 24px; fill: currentColor; }
+    .nav-item span { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
 
-    .toast{ position:fixed; left:50%; bottom:80px; transform:translateX(-50%); padding:8px 12px; border-radius:20px; background:rgba(255,255,255,0.1); backdrop-filter:blur(5px); color:white; font-size:11px; display:none; z-index: 200; }
+    .toast{ position:fixed; left:50%; bottom:80px; transform:translateX(-50%); padding:10px 16px; border-radius:24px; background:rgba(255,255,255,0.1); backdrop-filter:blur(5px); color:white; font-size:12px; display:none; z-index: 200; }
   </style>
 </head>
 <body>
@@ -221,16 +218,16 @@
 
         <div class="level-list">
           <div class="level-item">
-            <span class="lvl-name">MN Kiểm tra (382.2)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_KiemTra">--</span>
+            <span class="lvl-name lvl-kt">MN Kiểm tra (382.2)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_KiemTra">--</span>
           </div>
           <div class="level-item">
-            <span class="lvl-name" style="color:#fff; font-weight:600;">MN Dâng BT (380.0)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_MNDBT">--</span>
+            <span class="lvl-name lvl-dbt" style="font-weight:700;">MN Dâng BT (380.0)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_MNDBT">--</span>
           </div>
           <div class="level-item">
-            <span class="lvl-name">MN Đón lũ (376.0)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_DonLu">--</span>
+            <span class="lvl-name lvl-dl">MN Đón lũ (376.0)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_DonLu">--</span>
           </div>
           <div class="level-item">
-            <span class="lvl-name">MN Chết (340.0)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_Chet">--</span>
+            <span class="lvl-name lvl-ch">MN Chết (340.0)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_Chet">--</span>
           </div>
         </div>
       </section>
@@ -267,12 +264,12 @@
       <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
         <div class="stat-box">
           <span class="stat-label">DT Hữu ích còn lại</span>
-          <span class="stat-val" style="font-size:14px; color:#cbd5e1;" id="txtVolUsefulLeft">--</span>
+          <span class="stat-val" style="font-size:15px; color:#cbd5e1;" id="txtVolUsefulLeft">--</span>
           <span class="stat-sub">(Trên MN Chết)</span>
         </div>
         <div class="stat-box">
           <span class="stat-label">DT hồ còn lại</span>
-          <span class="stat-val" style="font-size:14px; color:#cbd5e1;" id="txtVolRemain">--</span>
+          <span class="stat-val" style="font-size:15px; color:#cbd5e1;" id="txtVolRemain">--</span>
           <span class="stat-sub">(Đến MNDBT)</span>
         </div>
       </div>
@@ -282,7 +279,6 @@
       </div>
 
       <span class="section-title">Dự báo 7 ngày tới</span>
-      
       <div class="forecast-row">
         <div class="fc-info">
           <span class="fc-title">Lưu lượng về (Min-Max)</span>
@@ -290,7 +286,6 @@
         </div>
         <div class="fc-range fc-highlight" id="fcFlowRange">-- - --</div>
       </div>
-
       <div class="forecast-row">
         <div class="fc-info">
           <span class="fc-title">Mưa ngày (Min-Max)</span>
@@ -298,7 +293,6 @@
         </div>
         <div class="fc-range fc-rain" id="fcRainRange">-- - --</div>
       </div>
-
     </div>
 
     <div id="tab-chart" class="tab-pane">
@@ -315,7 +309,7 @@
         <div class="cardHead"><b>Biểu đồ</b> <span class="chip" id="chartRange">...</span></div>
         <div class="cardBody">
           <div class="tabs" id="tabs"></div>
-          <div style="height:280px; position:relative;">
+          <div style="height:320px; position:relative;">
             <canvas id="chart"></canvas>
           </div>
         </div>
@@ -326,7 +320,7 @@
       <div class="card">
         <div class="cardHead">
             <b>Bản tin Dự báo (10 gần nhất)</b> 
-            <button onclick="loadForecasts()" style="width:auto; padding:4px 8px; font-size:10px; margin-left:auto; background:rgba(59,130,246,0.2);">Cập nhật</button>
+            <button onclick="loadForecasts()" style="width:auto; padding:6px 12px; font-size:11px; margin-left:auto; background:rgba(59,130,246,0.2);">Cập nhật</button>
         </div>
         <div id="forecast-list" style="padding:0;">
           <div style="padding:20px; text-align:center; color:var(--text-muted); font-size:12px;">Đang tải bản tin...</div>
@@ -373,7 +367,7 @@
       </div>
       <div class="card">
         <div class="cardBody" style="text-align:center; padding:30px 20px;">
-          <div class="logo-img" style="width:80px; height:80px; margin:0 auto 15px; border-radius:20px;"></div>
+          <div class="logo-img" style="width:100px; height:80px; margin:0 auto 15px; border-radius:20px; background-size:85%;"></div>
           <h3 style="color:var(--text-main); margin:0 0 5px;">Công ty CP Thủy điện A Vương</h3>
           <p style="color:var(--text-muted); font-size:13px; margin-bottom:25px;">Thôn Dung, xã Thạnh Mỹ, TP. Đà Nẵng</p>
           <div style="text-align:left; background:rgba(255,255,255,0.03); border-radius:12px; padding:15px; margin-bottom:10px;">
@@ -410,7 +404,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <script>
-  // --- HELPERS (ORIGINAL) ---
+  // --- HELPERS ---
   const $ = (id) => document.getElementById(id);
   const fmt2 = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 2, minimumFractionDigits: 2 });
   const fmt1 = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1, minimumFractionDigits: 1 });
@@ -432,7 +426,6 @@
   function formatTimeVN(iso){ const p = parseLiteral(iso); return p ? p.time : "-"; }
   function formatDateTimeVN(iso){ const p = parseLiteral(iso); return p ? `${p.time} ${p.day}/${p.month}/${p.year}` : "-"; }
   function formatChartLabel(iso){ const p = parseLiteral(iso); return p ? `${p.time} ${p.day}/${p.month}` : "-"; }
-  function cssRGB(varName){ return getComputedStyle(document.documentElement).getPropertyValue(varName).trim(); }
   function rgba(rgb,a){ return `rgba(${rgb}, ${a})`; }
   function toast(msg){ const t=$("toast"); t.textContent=msg; t.style.display="block"; setTimeout(()=>t.style.display="none", 2500); }
 
@@ -440,10 +433,17 @@
   const SB_URL = "https://ycthhachfxczwkburnfa.supabase.co";
   const SB_KEY = "sb_publishable_Q0KbTLPBE4owO72Mz-GN6A_khF9z_Ss";
   
-  // CONSTANTS A VƯƠNG
+  // CONSTANTS
   const RES_CONST = {
     WL_MAX_CHECK: 382.2, WL_NORMAL: 380.0, WL_FLOOD: 376.0, WL_DEAD: 340.0,
     VOL_DEAD: 77.0, VOL_MAX: 343.5       
+  };
+
+  // --- COLORS ---
+  const C = {
+    WL: '34, 211, 238',   IN: '59, 130, 246',   TB: '245, 158, 11',
+    SP: '239, 68, 68',    RN: '167, 139, 250',  IF: '255, 152, 0',
+    RF: '34, 197, 94',    ACC: '250, 204, 21'
   };
 
   // --- STATE ---
@@ -451,15 +451,15 @@
   let currentTab = "WL_24H";
   
   const tabMeta = {
-    WL_24H: { name:"MNH 24h", hint:"Mực nước 24h qua", color: "34,211,238" },
-    FLOW_24H: { name:"Q 24h", hint:"Dòng chảy 24h qua", color: "59,130,246" },
-    WL_7D: { name:"MNH 7D", hint:"Mực nước 7 ngày", color: "34,211,238" },
-    FLOW_7D: { name:"Q Tổng hợp", hint:"Q về/máy/xả 7 ngày", color: "59,130,246" },
-    IN_OBS_FC_3D: { name:"Q Về vs DB", hint:"Q về Thực tế & Dự báo D±3", color: "255,152,0" },
-    IN_FC_7D: { name:"Q Dự báo", hint:"Dự báo 7 ngày tới (Ensemble)", color: "255,152,0" },
-    RF_DAILY_FC: { name:"Mưa Ngày", hint:"Mưa ngày & Lũy kế", color: "167,139,250" },
-    RF_HOURLY_ACC: { name:"Mưa Giờ", hint:"Mưa giờ & Lũy kế", color: "167,139,250" },
-    RF_COMPARE: { name:"Mưa Thực vs DB", hint:"So sánh mưa Thực & DB", color: "34, 197, 94" }
+    WL_24H: { name:"MNH 24h", hint:"Mực nước 24h qua", color: C.WL },
+    FLOW_24H: { name:"Q 24h", hint:"Dòng chảy 24h qua", color: C.IN },
+    WL_7D: { name:"MNH 7D", hint:"Mực nước 7 ngày", color: C.WL },
+    FLOW_7D: { name:"Q Tổng hợp", hint:"Q về/máy/xả 7 ngày", color: C.IN },
+    IN_OBS_FC_3D: { name:"Q Về vs DB", hint:"Q về Thực tế & Dự báo D±3", color: C.IF },
+    IN_FC_7D: { name:"Q Dự báo", hint:"Dự báo 7 ngày tới (Ensemble)", color: C.IF },
+    RF_DAILY_FC: { name:"Mưa Ngày", hint:"Mưa ngày & Lũy kế", color: C.RN },
+    RF_HOURLY_ACC: { name:"Mưa Giờ", hint:"Mưa giờ & Lũy kế", color: C.RN },
+    RF_COMPARE: { name:"Mưa Thực vs DB", hint:"So sánh mưa Thực & DB", color: C.RF }
   };
   
   const state = { 
@@ -468,27 +468,6 @@
     latest24h: [], fcEnsemble: {}, 
     lastObs: null, rainAtHour: 0, rain24hSum: 0, storage: null 
   };
-
-  function getLatestUniqueData(dataArray, timeKey) {
-    if(!dataArray) return [];
-    const map = new Map();
-    const sorted = [...dataArray].sort((a,b) => {
-        const tA = a.created_at ? new Date(a.created_at).getTime() : 0;
-        const tB = b.created_at ? new Date(b.created_at).getTime() : 0;
-        return tB - tA;
-    });
-    sorted.forEach(item => { const t = item[timeKey]; if(!map.has(t)) map.set(t, item); });
-    return Array.from(map.values()).sort((a,b) => new Date(a[timeKey]) - new Date(b[timeKey]));
-  }
-
-  function aggregateByDay(data, timeKey) {
-    const map = {};
-    data.forEach(r => {
-      const p = parseLiteral(r[timeKey]);
-      if(p) { const dateStr = `${p.day}/${p.month}`; map[dateStr] = (map[dateStr] || 0) + getRain(r); }
-    });
-    return map;
-  }
 
   // --- INIT ---
   window.addEventListener("load", () => {
@@ -517,7 +496,19 @@
   $("btnLoad").onclick = loadData;
   $("day").onchange = loadData;
 
-  // --- MAIN LOAD (ORIGINAL LOGIC + FUTURE) ---
+  function getLatestUniqueData(arr, key) {
+    if(!arr) return [];
+    const map = new Map();
+    [...arr].sort((a,b) => new Date(b.created_at || b.time) - new Date(a.created_at || a.time)).forEach(i => { if(!map.has(i[key])) map.set(i[key], i); });
+    return Array.from(map.values()).sort((a,b) => new Date(a[key]) - new Date(b[key]));
+  }
+  function aggregateByDay(data, timeKey) {
+    const map = {};
+    data.forEach(r => { const p = parseLiteral(r[timeKey]); if(p) { const dateStr = `${p.day}/${p.month}`; map[dateStr] = (map[dateStr] || 0) + getRain(r); } });
+    return map;
+  }
+
+  // --- MAIN LOAD ---
   async function loadData() {
     const btn = $("btnLoad"); btn.disabled=true; btn.innerText="...";
     try {
@@ -530,8 +521,6 @@
       const t7DaysAgo = new Date(dSelected.getTime() - 6*86400000).toISOString();
       const tFcStart = new Date(dSelected.getTime() - 1*86400000).toISOString();
       const tFcEnd = new Date(dSelected.getTime() + 10*86400000).toISOString();
-      
-      // Cho Overview widget
       const now = new Date();
       const future7d = new Date(now.getTime() + 7 * 24 * 3600 * 1000).toISOString();
 
@@ -545,19 +534,15 @@
         sb.from('rainfall_observed').select('*').gte('time', t7DaysAgo).lte('time', tEnd).order('time', {ascending: true}),
         sb.from('reservoir_hourly_data').select('*').order('time', {ascending: false}).limit(24),
         sb.from('rainfall_forecast').select('*').gte('forecast_time', tFcStart).lte('forecast_time', tFcEnd).order('created_at', {ascending: false}),
-        // Fetch Future for Overview Widgets
         sb.from('inflow_forecast').select('*').gte('forecast_time', now.toISOString()).lte('forecast_time', future7d),
         sb.from('rainfall_forecast').select('*').gte('forecast_time', now.toISOString()).lte('forecast_time', future7d)
       ]);
 
       state.hourly24h = getLatestUniqueData(res1.data, 'time');
-      const rawFc = res2.data || [];
-      state.inflowFc = getLatestUniqueData(rawFc, 'forecast_time');
-      const uniqueRain = getLatestUniqueData(resRainFc.data || [], 'forecast_time');
-      state.rainFc = uniqueRain.map(item => ({forecast_time:item.forecast_time, rainfall_mm:Number(item.rainfall_mm)||0}));
+      state.inflowFc = getLatestUniqueData(res2.data, 'forecast_time');
+      state.rainFc = getLatestUniqueData(resRainFc.data, 'forecast_time').map(i=>({forecast_time:i.forecast_time, rainfall_mm:Number(i.rainfall_mm)||0}));
       
-      const mapFc = {};
-      rawFc.forEach(item => { const t = item.forecast_time; if(!mapFc[t]) mapFc[t]=[]; mapFc[t].push(item); });
+      const mapFc = {}; (res2.data||[]).forEach(i => { if(!mapFc[i.forecast_time]) mapFc[i.forecast_time]=[]; mapFc[i.forecast_time].push(i); });
       state.fcEnsemble = mapFc;
 
       state.hourly3D = getLatestUniqueData(res4.data, 'time');
@@ -571,10 +556,8 @@
       let rainCur = 0;
       if (state.lastObs) {
         const tObs = new Date(state.lastObs.time).getTime();
-        if(state.rain24hRaw.length){ 
-            const match = state.rain24hRaw.find(r => Math.abs(new Date(r.time).getTime() - tObs) < 1800000); 
-            if(match) rainCur = getRain(match);
-        }
+        const match = state.rain24hRaw.find(r => Math.abs(new Date(r.time).getTime() - tObs) < 1800000); 
+        if(match) rainCur = getRain(match);
       }
       state.rainAtHour = rainCur;
       state.rain24hSum = state.rain24hRaw.reduce((s,r)=>s+getRain(r), 0);
@@ -587,16 +570,15 @@
       toast("Đã cập nhật dữ liệu");
       $("connText").textContent = "Online"; $("dot").className="dot ok";
 
-    } catch(e){ console.error(e); toast("Lỗi dữ liệu"); $("connText").textContent = "Lỗi"; $("dot").className="dot err"; }
+    } catch(e){ console.error(e); toast("Lỗi kết nối"); $("connText").textContent = "Lỗi"; $("dot").className="dot err"; }
     finally{ btn.disabled=false; btn.innerText="XEM"; }
   }
 
-  // --- RENDER OVERVIEW (COMPACT MAPPING) ---
+  // --- RENDER OVERVIEW ---
   function renderOverview(fcFlowData, fcRainData){
     const l = state.lastObs;
     if (!l) return;
     
-    // 1. Safety
     const wl = l.water_level;
     const t = new Date(l.time);
     
@@ -621,13 +603,11 @@
         else { tag.innerText = "BÌNH THƯỜNG"; tag.style.color="rgb(var(--c-green))"; tag.style.borderColor="rgb(var(--c-green))"; tag.style.background="rgba(16,185,129,0.15)"; }
     }
 
-    // 2. Stats
     if($("txtQin")) $("txtQin").textContent = fmt0.format(l.inflow);
     if($("txtQtb")) $("txtQtb").textContent = fmt0.format(l.turbine_flow);
     if($("txtQsp")) $("txtQsp").textContent = fmt0.format(l.spillway_flow);
     if($("txtRain1h")) $("txtRain1h").textContent = fmt1.format(state.rainAtHour);
 
-    // 3. Volume
     let curVol = 0;
     if (state.storage && (state.storage.volume || state.storage.current_volume)) {
         curVol = Number(state.storage.volume || state.storage.current_volume);
@@ -648,7 +628,6 @@
     const pctTotal = (curVol / RES_CONST.VOL_MAX) * 100;
     if($("txtPctTotal")) $("txtPctTotal").textContent = fmt2.format(pctTotal) + "%";
 
-    // 4. Forecast Widgets
     if(fcFlowData && fcFlowData.length){
         const flows = fcFlowData.map(f => getFlowFc(f));
         if($("fcFlowRange")) $("fcFlowRange").textContent = `${fmt0.format(Math.min(...flows))} - ${fmt0.format(Math.max(...flows))}`;
@@ -661,7 +640,7 @@
     }
   }
 
-  // --- RENDER CHART (ORIGINAL) ---
+  // --- RENDER CHART ---
   function renderChart(){
     if(chart) chart.destroy();
     const ctx = $("chart").getContext("2d");
@@ -669,10 +648,10 @@
 
     const opts = {
       responsive:true, maintainAspectRatio:false, interaction:{mode:"index", intersect:false},
-      plugins:{ legend:{labels:{color:"#9ca3af", font:{size:11}}} },
+      plugins:{ legend:{labels:{color:"#9ca3af", font:{size:11}, boxWidth:12}} },
       scales:{
-        x:{ticks:{color:"#64748b", maxRotation:0, autoSkip:true, maxTicksLimit:6}, grid:{color:"rgba(255,255,255,0.05)"}},
-        y:{ticks:{color:"#64748b"}, grid:{color:"rgba(255,255,255,0.05)"}}
+        x:{ticks:{color:"#64748b", font:{size:10}, maxRotation:0, autoSkip:true, maxTicksLimit:6}, grid:{color:"rgba(255,255,255,0.05)"}},
+        y:{ticks:{color:"#64748b", font:{size:10}}, grid:{color:"rgba(255,255,255,0.05)"}}
       }
     };
 
@@ -680,28 +659,26 @@
     
     if (currentTab === 'WL_24H') {
       const data = state.latest24h; labels = data.map(r => formatChartLabel(r.time));
-      const rgb = cssRGB("--c-wl");
-      datasets = [{ label:'Mực nước (m)', data: data.map(r=>r.water_level), borderColor:rgba(rgb,1), backgroundColor:rgba(rgb,0.1), fill:true, borderWidth:2, pointRadius:0, tension:0.3 }];
+      datasets = [{ label:'Mực nước (m)', data: data.map(r=>r.water_level), borderColor:rgba(C.WL,1), backgroundColor:rgba(C.WL,0.1), fill:true, borderWidth:2, pointRadius:0, tension:0.3 }];
     }
     else if (currentTab === 'FLOW_24H') {
       const data = state.latest24h; labels = data.map(r => formatChartLabel(r.time));
       datasets = [
-        { label:'Q về', data: data.map(r=>r.inflow), borderColor:rgba(cssRGB("--c-in"),1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-        { label:'Q máy', data: data.map(r=>r.turbine_flow), borderColor:rgba(cssRGB("--c-tb"),1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-        { label:'Q xả', data: data.map(r=>r.spillway_flow), borderColor:rgba(cssRGB("--c-sp"),1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }
+        { label:'Q về', data: data.map(r=>r.inflow), borderColor:rgba(C.IN,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
+        { label:'Q máy', data: data.map(r=>r.turbine_flow), borderColor:rgba(C.TB,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
+        { label:'Q xả', data: data.map(r=>r.spillway_flow), borderColor:rgba(C.SP,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }
       ];
     }
     else if (currentTab === 'WL_7D') {
       const data = state.hourly7D_Obs; labels = data.map(r => formatChartLabel(r.time)); 
-      const rgb = cssRGB("--c-wl");
-      datasets = [{ label:'Mực nước (m)', data: data.map(r=>r.water_level), borderColor:rgba(rgb,1), backgroundColor:rgba(rgb,0.1), fill:true, borderWidth:2, pointRadius:0, tension:0.3 }];
+      datasets = [{ label:'Mực nước (m)', data: data.map(r=>r.water_level), borderColor:rgba(C.WL,1), backgroundColor:rgba(C.WL,0.1), fill:true, borderWidth:2, pointRadius:0, tension:0.3 }];
     }
     else if (currentTab === 'FLOW_7D') {
       const data = state.hourly7D_Obs; labels = data.map(r => formatChartLabel(r.time));
       datasets = [
-        { label:'Q về', data: data.map(r=>r.inflow), borderColor:rgba(cssRGB("--c-in"),1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-        { label:'Q máy', data: data.map(r=>r.turbine_flow), borderColor:rgba(cssRGB("--c-tb"),1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-        { label:'Q xả', data: data.map(r=>r.spillway_flow), borderColor:rgba(cssRGB("--c-sp"),1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }
+        { label:'Q về', data: data.map(r=>r.inflow), borderColor:rgba(C.IN,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
+        { label:'Q máy', data: data.map(r=>r.turbine_flow), borderColor:rgba(C.TB,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
+        { label:'Q xả', data: data.map(r=>r.spillway_flow), borderColor:rgba(C.SP,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }
       ];
     }
     else if (currentTab === 'IN_OBS_FC_3D') {
@@ -728,9 +705,10 @@
       });
 
       datasets = [
-        { label: 'Q Thực đo', data: dObs, borderColor:rgba(cssRGB("--c-in"),1), borderWidth:2, pointRadius:0, tension:0.3 },
+        { label: 'Q Thực đo', data: dObs, borderColor:rgba(C.IN,1), borderWidth:2, pointRadius:0, tension:0.3 },
         { label: 'MA 24h', data: dMA, borderColor:'#e879f9', borderWidth:1.5, pointRadius:0, tension:0.4, borderDash:[2,2], fill:false },
-        { label: 'Q Dự báo', data: dFc, borderColor:rgba(cssRGB("--c-if"),1), borderDash:[4,4], borderWidth:2, pointRadius:0, tension:0.3 }
+        // Sử dụng mã màu HEX trực tiếp để sửa lỗi màu đen
+        { label: 'Q Dự báo', data: dFc, borderColor:'#F59E0B', borderDash:[4,4], borderWidth:2, pointRadius:0, tension:0.3 }
       ];
     }
     else if (currentTab === 'IN_FC_7D') {
@@ -750,9 +728,9 @@
           d_high_raw.push(realMax); d_low_raw.push(realMin); d_mean.push(vMean);
       });
       datasets = [
-        { label: 'Biên trên (Upper)', data: d_high_raw, borderColor: 'transparent', backgroundColor: 'rgba(34, 211, 238, 0.15)', pointRadius: 0, fill: '+1', tension: 0.4, order: 3 },
-        { label: 'Biên dưới (Lower)', data: d_low_raw, borderColor: 'transparent', backgroundColor: 'transparent', pointRadius: 0, fill: false, tension: 0.4, order: 2 },
-        { label: 'Dự báo Trung bình (Mean)', data: d_mean, borderColor: 'rgba(255, 152, 0, 1)', borderWidth: 3, pointRadius: 0, tension: 0.4, fill: false, order: 1 }
+        { label: 'Biên trên', data: d_high_raw, borderColor: 'transparent', backgroundColor: rgba(C.WL, 0.15), pointRadius: 0, fill: '+1', tension: 0.4, order: 3 },
+        { label: 'Biên dưới', data: d_low_raw, borderColor: 'transparent', backgroundColor: 'transparent', pointRadius: 0, fill: false, tension: 0.4, order: 2 },
+        { label: 'Dự báo TB', data: d_mean, borderColor: '#F59E0B', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: false, order: 1 }
       ];
     }
     else if (currentTab === 'RF_DAILY_FC') {
@@ -762,12 +740,11 @@
       labels = Object.keys(agg).sort();
       const dailyData = labels.map(k => agg[k]);
       let sum = 0; const accData = dailyData.map(val => { sum += val; return sum; });
-      const rgb = cssRGB("--c-rn"); const yellow = cssRGB("--c-acc");
       datasets = [
-        { type: 'bar', label: 'Mưa ngày (mm)', data: dailyData, backgroundColor: rgba(rgb, 0.7), borderColor: rgba(rgb, 1), borderWidth: 1, order: 2, yAxisID: 'y' },
-        { type: 'line', label: 'Lũy kế (mm)', data: accData, borderColor: rgba(yellow, 1), backgroundColor: rgba(yellow, 0.2), borderWidth: 2, pointRadius: 4, tension: 0.1, fill: false, order: 1, yAxisID: 'y1' }
+        { type: 'bar', label: 'Mưa ngày (mm)', data: dailyData, backgroundColor: rgba(C.RN, 0.7), borderColor: rgba(C.RN, 1), borderWidth: 1, order: 2, yAxisID: 'y' },
+        { type: 'line', label: 'Lũy kế (mm)', data: accData, borderColor: rgba(C.ACC, 1), backgroundColor: rgba(C.ACC, 0.2), borderWidth: 2, pointRadius: 4, tension: 0.1, fill: false, order: 1, yAxisID: 'y1' }
       ];
-      opts.scales.y1 = { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: rgba(yellow, 0.9) } };
+      opts.scales.y1 = { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: rgba(C.ACC, 0.9) } };
     }
     else if (currentTab === 'RF_HOURLY_ACC') {
       const tLimit = new Date($("day").value).setHours(0,0,0,0) + 7*86400000;
@@ -775,12 +752,11 @@
       labels = filtered.map(r => formatChartLabel(r.forecast_time));
       const hourlyData = filtered.map(r => getRain(r));
       let sum = 0; const accData = hourlyData.map(val => { sum += val; return sum; });
-      const rgb = cssRGB("--c-rn"); const yellow = cssRGB("--c-acc");
       datasets = [
-        { type: 'bar', label: 'Mưa giờ (mm)', data: hourlyData, backgroundColor: rgba(rgb, 0.6), borderColor: rgba(rgb, 1), borderWidth: 1, order: 2, yAxisID: 'y' },
-        { type: 'line', label: 'Lũy kế (mm)', data: accData, borderColor: rgba(yellow, 1), backgroundColor: rgba(yellow, 0.2), borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false, order: 1, yAxisID: 'y1' }
+        { type: 'bar', label: 'Mưa giờ (mm)', data: hourlyData, backgroundColor: rgba(C.RN, 0.6), borderColor: rgba(C.RN, 1), borderWidth: 1, order: 2, yAxisID: 'y' },
+        { type: 'line', label: 'Lũy kế (mm)', data: accData, borderColor: rgba(C.ACC, 1), backgroundColor: rgba(C.ACC, 0.2), borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false, order: 1, yAxisID: 'y1' }
       ];
-      opts.scales.y1 = { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: rgba(yellow, 0.9) } };
+      opts.scales.y1 = { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: rgba(C.ACC, 0.9) } };
     }
     else if (currentTab === 'RF_COMPARE') {
       const tEnd = new Date($("day").value).setHours(0,0,0,0) + 86400000 - 1; 
@@ -791,8 +767,8 @@
       const aggFc = aggregateByDay(fc, 'forecast_time');
       const allDays = [...new Set([...Object.keys(aggObs), ...Object.keys(aggFc)])].sort();
       datasets = [
-        { type: 'bar', label: 'Thực tế', data: allDays.map(k => aggObs[k]||0), backgroundColor: rgba(cssRGB("--c-rn-real"), 0.7) },
-        { type: 'bar', label: 'Dự báo', data: allDays.map(k => aggFc[k]||0), backgroundColor: rgba(cssRGB("--c-rn"), 0.7) }
+        { type: 'bar', label: 'Thực tế', data: allDays.map(k => aggObs[k]||0), backgroundColor: rgba(C.RF, 0.7) },
+        { type: 'bar', label: 'Dự báo', data: allDays.map(k => aggFc[k]||0), backgroundColor: rgba(C.RN, 0.7) }
       ];
       labels = allDays;
     }
@@ -819,24 +795,26 @@
     try {
       const data = state.latest24h;
       if(data.length === 0) { tb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px;">Không có dữ liệu</td></tr>`; return; }
-
+      
       const tMax = data[0].time; const tMin = data[data.length-1].time;
-      const resRain = await sb.from('rainfall_observed').select('*').gte('time', tMin).lte('time', tMax);
-      const rainData = resRain.data || [];
+      const { data: rainData } = await sb.from('rainfall_observed').select('*').gte('time', tMin).lte('time', tMax);
+      
+      // REVERSE DATA FOR TABLE (NEWEST FIRST)
+      const tableData = [...data].reverse();
 
       tb.innerHTML = "";
-      data.forEach(row => {
+      tableData.forEach(row => {
         const tRow = new Date(row.time).getTime();
-        const rItem = rainData.find(x => Math.abs(new Date(x.time).getTime() - tRow) < 1800000);
+        const rItem = (rainData||[]).find(x => Math.abs(new Date(x.time).getTime() - tRow) < 1800000);
         const rVal = getRain(rItem);
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${formatDateTimeVN(row.time)}</td>
-          <td style="color:rgb(34,211,238)">${fmt2.format(row.water_level)}</td>
-          <td style="color:rgb(59,130,246)">${fmt0.format(row.inflow)}</td>
-          <td style="color:rgb(250,204,21)">${fmt0.format(row.turbine_flow)}</td>
-          <td style="color:rgb(239,68,68)">${fmt0.format(row.spillway_flow)}</td>
-          <td style="color:${rVal>0?'rgb(52, 211, 153)':'#64748b'}">${rVal>0 ? fmt2.format(rVal) : '-'}</td>
+          <td style="color:rgb(var(--c-wl))">${fmt2.format(row.water_level)}</td>
+          <td style="color:rgb(var(--c-in))">${fmt0.format(row.inflow)}</td>
+          <td style="color:rgb(var(--c-tb))">${fmt0.format(row.turbine_flow)}</td>
+          <td style="color:rgb(var(--c-sp))">${fmt0.format(row.spillway_flow)}</td>
+          <td style="color:${rVal>0?'rgb(var(--c-green))':'#64748b'}">${rVal>0 ? fmt2.format(rVal) : '-'}</td>
         `;
         tb.appendChild(tr);
       });
