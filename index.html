@@ -41,14 +41,60 @@
     ::-webkit-scrollbar { display: none; }
     
     html, body { 
-      height: 100%; margin: 0; overflow: hidden; 
-      background: var(--bg-app); font-family: var(--font-sans); color: var(--text-main);
-      font-size: 15px; 
-      -ms-overflow-style: none; scrollbar-width: none;
+       height: 100%; margin: 0; overflow: hidden; 
+       background: var(--bg-app); font-family: var(--font-sans); color: var(--text-main);
+       font-size: 15px; 
+       -ms-overflow-style: none; scrollbar-width: none;
     }
     
     .app-container { display: flex; flex-direction: column; height: 100%; max-width: 600px; margin: 0 auto; background: var(--bg-app); position: relative; }
     
+    /* LOGIN SCREEN STYLES */
+    #login-view {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, #060818 0%, #1a203c 100%);
+      z-index: 9999; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .login-card {
+      width: 100%; max-width: 360px;
+      background: rgba(16, 21, 43, 0.8);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px; padding: 30px 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      text-align: center;
+    }
+    .login-logo {
+      width: 140px; height: 50px; margin: 0 auto 20px;
+      background-color: rgba(255,255,255,0.95); border-radius: 12px;
+      background-image: url('https://ycthhachfxczwkburnfa.supabase.co/storage/v1/object/public/Image/Logo%20AVC.png');
+      background-size: 90%; background-position: center; background-repeat: no-repeat;
+    }
+    .login-title { font-size: 20px; font-weight: 700; color: white; margin-bottom: 6px; }
+    .login-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 30px; }
+    
+    .inp-group { margin-bottom: 16px; text-align: left; }
+    .inp-label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; margin-left: 4px; }
+    .login-input {
+      width: 100%; padding: 14px; border-radius: 12px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      color: white; font-size: 14px; outline: none; transition: 0.2s;
+    }
+    .login-input:focus { border-color: var(--c-in); background: rgba(59, 130, 246, 0.1); }
+    
+    .btn-login {
+      width: 100%; padding: 14px; border-radius: 12px; margin-top: 10px;
+      background: linear-gradient(90deg, #3b82f6, #2563eb);
+      color: white; font-weight: 700; font-size: 15px; border: none; cursor: pointer;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    }
+    .btn-login:active { transform: scale(0.98); opacity: 0.9; }
+    .login-error { color: #ef4444; font-size: 12px; margin-top: 15px; min-height: 18px; }
+
+    /* APP LAYOUT (HIDDEN BY DEFAULT) */
+    #main-view { display: none; }
+
     /* TOPBAR */
     .topbar {
       flex-shrink: 0; padding: 12px 16px; 
@@ -99,8 +145,9 @@
     .lvl-kt { color: #ef4444; } 
     .lvl-dbt { color: #f59e0b; } 
     .lvl-dl { color: #3b82f6; }  
-    .lvl-ch { color: #a855f7; }  
-
+    .lvl-ch { color: #a855f7; }
+    .lvl-min { color: #22d3ee; } 
+  
     .section-title { font-size: 13px; font-weight: 700; color: var(--text-muted); margin: 24px 0 10px 4px; text-transform: uppercase; display: block; letter-spacing: 0.5px; }
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
     .stat-box {
@@ -155,12 +202,56 @@
     .swatch { width: 8px; height: 8px; border-radius: 50%; }
     canvas { width: 100% !important; height: 320px !important; }
 
-    /* Table */
-    .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
-    th { background: #161e33; color: #94a3b8; padding: 10px; text-align: center; font-weight: 600; font-size: 12px; text-transform: uppercase; }
-    td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.04); text-align: center; font-family: var(--font-mono); }
-    td:first-child { text-align: left; padding-left: 14px; position: sticky; left: 0; background: #0f1426; z-index: 1; border-right: 1px solid rgba(255,255,255,0.08); color: white; font-weight: 600; }
+    /* --- TABLE OPTIMIZED --- */
+    .table-container { 
+      overflow-x: auto; 
+      -webkit-overflow-scrolling: touch; 
+      border-radius: 12px; 
+      border: 1px solid rgba(255,255,255,0.08); 
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      font-size: 13px; 
+      white-space: nowrap; 
+    }
+    
+    th { 
+      background: #161e33; 
+      color: #94a3b8; 
+      padding: 12px 8px; 
+      text-align: center; 
+      font-weight: 700; 
+      font-size: 11px; 
+      text-transform: uppercase; 
+      font-family: var(--font-sans); /* Header dùng Inter */
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    /* Đồng bộ Font Inter cho toàn bộ bảng */
+    td { 
+      padding: 12px 10px; 
+      border-bottom: 1px solid rgba(255,255,255,0.04); 
+      text-align: center; 
+      font-family: var(--font-sans); /* Đổi sang font Inter */
+      font-size: 13px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums; /* Giữ thẳng hàng các con số */
+    }
+    
+    td:first-child { 
+      text-align: left; 
+      padding-left: 16px; 
+      position: sticky; 
+      left: 0; 
+      background: #0f1426; 
+      z-index: 1; 
+      border-right: 1px solid rgba(255,255,255,0.08); 
+      color: var(--text-main); 
+      font-weight: 500; /* Đồng bộ độ đậm */
+      font-family: var(--font-sans);
+    }
 
     /* Accordion */
     .list-item { background: var(--card-bg); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; }
@@ -187,16 +278,41 @@
 </head>
 <body>
 
-<div class="app-container">
+<div id="login-view">
+  <div class="login-card">
+    <div class="login-logo"></div>
+    <div class="login-title">Đăng Nhập Hệ Thống</div>
+    <div class="login-desc">Hệ thống hỗ trợ vận hành hồ chứa thủy điện A Vương</div>
+    
+    <div class="inp-group">
+      <label class="inp-label">Email</label>
+      <input type="email" id="loginEmail" class="login-input" placeholder="nhanvien@avuong.vn">
+    </div>
+    <div class="inp-group">
+      <label class="inp-label">Mật khẩu</label>
+      <input type="password" id="loginPass" class="login-input" placeholder="••••••••">
+    </div>
+
+    <button class="btn-login" onclick="handleLogin()">ĐĂNG NHẬP</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<div class="app-container" id="main-view">
   <div class="topbar">
     <div class="brand">
       <div class="logo-img"></div>
       <div class="brand-text">
-        <h1>A Vương AI</h1>
-        <small id="lastUpdate">--:--</small>
+        <h1 style="display:none">A Vương AI</h1>
+        <small id="lastUpdate" style="margin-left: 5px; font-weight: 500;">--:--</small>
       </div>
     </div>
-    <div class="status-badge">ONLINE</div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <div class="status-badge">ONLINE</div>
+      <button onclick="handleLogout()" style="background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.3); color:#ef4444; padding:4px 8px; font-size:10px; width:auto;">
+        Thoát
+      </button>
+    </div>
   </div>
 
   <div class="main-content">
@@ -218,16 +334,21 @@
 
         <div class="level-list">
           <div class="level-item">
-            <span class="lvl-name lvl-kt">MN Kiểm tra (382.2)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_KiemTra">--</span>
+            <span class="lvl-name lvl-kt">MN Kiểm tra (382.2)</span><span class="lvl-dots"></span><span class="lvl-diff lvl-kt" id="diff_KiemTra">--</span>
           </div>
           <div class="level-item">
-            <span class="lvl-name lvl-dbt" style="font-weight:700;">MN Dâng BT (380.0)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_MNDBT">--</span>
+            <span class="lvl-name lvl-dbt" style="font-weight:700;">MN Dâng bình thường (380.0)</span><span class="lvl-dots"></span><span class="lvl-diff lvl-dbt" id="diff_MNDBT">--</span>
           </div>
           <div class="level-item">
-            <span class="lvl-name lvl-dl">MN Đón lũ (376.0)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_DonLu">--</span>
+            <span class="lvl-name lvl-dl" id="lbl_DonLu">MN Cao nhất trước lũ (376.0)</span><span class="lvl-dots"></span><span class="lvl-diff lvl-dl" id="diff_DonLu">--</span>
           </div>
+          
           <div class="level-item">
-            <span class="lvl-name lvl-ch">MN Chết (340.0)</span><span class="lvl-dots"></span><span class="lvl-diff" id="diff_Chet">--</span>
+            <span class="lvl-name lvl-min">MN đón lũ thấp nhất (370.0)</span><span class="lvl-dots"></span><span class="lvl-diff lvl-min" id="diff_DonLuMin">--</span>
+          </div>
+
+          <div class="level-item">
+            <span class="lvl-name lvl-ch">MN Chết (340.0)</span><span class="lvl-dots"></span><span class="lvl-diff lvl-ch" id="diff_Chet">--</span>
           </div>
         </div>
       </section>
@@ -252,30 +373,28 @@
           <span class="stat-val" style="color:#fff" id="txtVol">--</span>
         </div>
         <div class="stat-box">
-          <span class="stat-label">% Hữu ích</span>
-          <span class="stat-val" style="color:rgb(var(--c-wl))" id="txtPctUseful">--%</span>
+          <span class="stat-label">% Toàn bộ</span>
+          <span class="stat-val" style="color:rgb(var(--c-wl))" id="txtPctTotal">--%</span>
         </div>
         <div class="stat-box">
           <span class="stat-label">Mưa 1h (mm)</span>
           <span class="stat-val" style="color:rgb(var(--c-rn))" id="txtRain1h">--</span>
         </div>
-      </div>
-      
-      <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+
         <div class="stat-box">
-          <span class="stat-label">DT Hữu ích còn lại</span>
-          <span class="stat-val" style="font-size:15px; color:#cbd5e1;" id="txtVolUsefulLeft">--</span>
-          <span class="stat-sub">(Trên MN Chết)</span>
+          <span class="stat-label">DT Hữu ích</span>
+          <span class="stat-val" style="font-size:16px; color:#cbd5e1;" id="txtVolUsefulLeft">--</span>
+          <span class="stat-sub">(Còn lại)</span>
         </div>
         <div class="stat-box">
-          <span class="stat-label">DT hồ còn lại</span>
-          <span class="stat-val" style="font-size:15px; color:#cbd5e1;" id="txtVolRemain">--</span>
+          <span class="stat-label">% Hữu ích</span>
+          <span class="stat-val" style="color:rgb(var(--c-wl))" id="txtPctUseful">--%</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">DT Trống</span>
+          <span class="stat-val" style="font-size:16px; color:#cbd5e1;" id="txtVolRemain">--</span>
           <span class="stat-sub">(Đến MNDBT)</span>
         </div>
-      </div>
-      <div class="stat-box" style="margin-bottom:12px; border-color:rgba(34,211,238,0.15);">
-        <span class="stat-label">% Dung tích toàn bộ</span>
-        <span class="stat-val" style="color:rgb(var(--c-wl))" id="txtPctTotal">--%</span>
       </div>
 
       <span class="section-title">Dự báo 7 ngày tới</span>
@@ -301,7 +420,7 @@
         <div class="cardBody">
           <div class="row">
             <div class="control"><label>Ngày xem</label><input id="day" type="date"></div>
-            <div class="control" style="flex:0"><label>&nbsp;</label><button id="btnLoad">XEM</button></div>
+            <div class="control" style="flex:0"><label>&nbsp;</label><button id="btnLoad">Tải lại</button></div>
           </div>
         </div>
       </section>
@@ -367,7 +486,7 @@
       </div>
       <div class="card">
         <div class="cardBody" style="text-align:center; padding:30px 20px;">
-          <div class="logo-img" style="width:100px; height:80px; margin:0 auto 15px; border-radius:20px; background-size:85%;"></div>
+          <div class="logo-img" style="width:100px; height:34px; margin:0 auto 15px; border-radius:10px; background-size:85%;"></div>
           <h3 style="color:var(--text-main); margin:0 0 5px;">Công ty CP Thủy điện A Vương</h3>
           <p style="color:var(--text-muted); font-size:13px; margin-bottom:25px;">Thôn Dung, xã Thạnh Mỹ, TP. Đà Nẵng</p>
           <div style="text-align:left; background:rgba(255,255,255,0.03); border-radius:12px; padding:15px; margin-bottom:10px;">
@@ -435,8 +554,8 @@
   
   // CONSTANTS
   const RES_CONST = {
-    WL_MAX_CHECK: 382.2, WL_NORMAL: 380.0, WL_FLOOD: 376.0, WL_DEAD: 340.0,
-    VOL_DEAD: 77.0, VOL_MAX: 343.5       
+    WL_MAX_CHECK: 382.2, WL_NORMAL: 380.0, WL_FLOOD: 376.0, WL_FLOOD_MIN: 370.0,
+    WL_DEAD: 340.0, VOL_DEAD: 77.0, VOL_MAX: 343.5       
   };
 
   // --- COLORS ---
@@ -454,8 +573,8 @@
     WL_24H: { name:"MNH 24h", hint:"Mực nước 24h qua", color: C.WL },
     FLOW_24H: { name:"Q 24h", hint:"Dòng chảy 24h qua", color: C.IN },
     WL_7D: { name:"MNH 7D", hint:"Mực nước 7 ngày", color: C.WL },
-    FLOW_7D: { name:"Q Tổng hợp", hint:"Q về/máy/xả 7 ngày", color: C.IN },
-    IN_OBS_FC_3D: { name:"Q Về vs DB", hint:"Q về Thực tế & Dự báo D±3", color: C.IF },
+    FLOW_7D: { name:"Q Tổng hợp 7D", hint:"Q về/máy/xả 7 ngày", color: C.IN },
+    IN_OBS_FC_3D: { name:"Q Về vs DB(D ± 3)", hint:"Q về Thực tế & Dự báo D±3", color: C.IF },
     IN_FC_7D: { name:"Q Dự báo", hint:"Dự báo 7 ngày tới (Ensemble)", color: C.IF },
     RF_DAILY_FC: { name:"Mưa Ngày", hint:"Mưa ngày & Lũy kế", color: C.RN },
     RF_HOURLY_ACC: { name:"Mưa Giờ", hint:"Mưa giờ & Lũy kế", color: C.RN },
@@ -489,26 +608,53 @@
     
     if(window.supabase) {
         sb = window.supabase.createClient(SB_URL, SB_KEY);
-        loadData();
+        sb.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                showApp();
+            } else {
+                showLogin();
+            }
+        });
     }
   });
 
-  $("btnLoad").onclick = loadData;
-  $("day").onchange = loadData;
-
-  function getLatestUniqueData(arr, key) {
-    if(!arr) return [];
-    const map = new Map();
-    [...arr].sort((a,b) => new Date(b.created_at || b.time) - new Date(a.created_at || a.time)).forEach(i => { if(!map.has(i[key])) map.set(i[key], i); });
-    return Array.from(map.values()).sort((a,b) => new Date(a[key]) - new Date(b[key]));
+  async function handleLogin() {
+      const email = $("loginEmail").value;
+      const password = $("loginPass").value;
+      const errBox = $("loginError");
+      
+      if(!email || !password) { errBox.textContent = "Vui lòng nhập Email và Mật khẩu"; return; }
+      
+      errBox.textContent = "Đang kiểm tra...";
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      
+      if (error) {
+          errBox.textContent = "Đăng nhập thất bại: " + error.message;
+      } else {
+          showApp();
+      }
   }
-  function aggregateByDay(data, timeKey) {
-    const map = {};
-    data.forEach(r => { const p = parseLiteral(r[timeKey]); if(p) { const dateStr = `${p.day}/${p.month}`; map[dateStr] = (map[dateStr] || 0) + getRain(r); } });
-    return map;
+
+  async function handleLogout() {
+      await sb.auth.signOut();
+      showLogin();
   }
 
-  // --- MAIN LOAD ---
+  function showApp() {
+      $("login-view").style.display = "none";
+      $("main-view").style.display = "flex";
+      loadData(); 
+  }
+
+  function showLogin() {
+      $("login-view").style.display = "flex";
+      $("main-view").style.display = "none";
+      $("loginEmail").value = "";
+      $("loginPass").value = "";
+      $("loginError").textContent = "";
+  }
+
+  // --- DATA LOADING ---
   async function loadData() {
     const btn = $("btnLoad"); btn.disabled=true; btn.innerText="...";
     try {
@@ -568,13 +714,23 @@
       if(document.getElementById('tab-forecast').classList.contains('active')) loadForecasts();
       
       toast("Đã cập nhật dữ liệu");
-      $("connText").textContent = "Online"; $("dot").className="dot ok";
 
-    } catch(e){ console.error(e); toast("Lỗi kết nối"); $("connText").textContent = "Lỗi"; $("dot").className="dot err"; }
-    finally{ btn.disabled=false; btn.innerText="XEM"; }
+    } catch(e){ console.error(e); toast("Lỗi kết nối"); }
+    finally{ btn.disabled=false; btn.innerText="Tải lại"; }
   }
 
-  // --- RENDER OVERVIEW ---
+  function getLatestUniqueData(arr, key) {
+    if(!arr) return [];
+    const map = new Map();
+    [...arr].sort((a,b) => new Date(b.created_at || b.time) - new Date(a.created_at || a.time)).forEach(i => { if(!map.has(i[key])) map.set(i[key], i); });
+    return Array.from(map.values()).sort((a,b) => new Date(a[key]) - new Date(b[key]));
+  }
+  function aggregateByDay(data, timeKey) {
+    const map = {};
+    data.forEach(r => { const p = parseLiteral(r[timeKey]); if(p) { const dateStr = `${p.day}/${p.month}`; map[dateStr] = (map[dateStr] || 0) + getRain(r); } });
+    return map;
+  }
+
   function renderOverview(fcFlowData, fcRainData){
     const l = state.lastObs;
     if (!l) return;
@@ -583,7 +739,33 @@
     const t = new Date(l.time);
     
     if($("txtWL")) $("txtWL").textContent = fmt2.format(wl);
-    if($("lastUpdate")) $("lastUpdate").textContent = `${t.getHours()}:${String(t.getMinutes()).padStart(2,'0')} ${t.getDate()}/${t.getMonth()+1}`;
+    
+    // --- FIX GIỜ MỚI NHẤT (HIỂN THỊ ĐÚNG CHUỖI NHẬP) ---
+    if($("lastUpdate")) {
+      const p = parseLiteral(l.time); 
+      if(p) {
+         $("lastUpdate").textContent = `${p.time} ${p.day}/${p.month}`;
+      }
+    }
+    
+    // --- LOGIC MỰC NƯỚC TRƯỚC LŨ (16/11 - 15/12) ---
+    const pDate = parseLiteral(l.time);
+    let dlLimit = 376.0;
+    let dlText = "376.0";
+    
+    if (pDate) {
+        const d = parseInt(pDate.day, 10);
+        const m = parseInt(pDate.month, 10);
+        
+        // Kiểm tra khoảng 16/11 đến 15/12
+        if ( (m === 11 && d >= 16) || (m === 12 && d <= 15) ) {
+            dlLimit = 380.0; // Dùng cận trên để tính chênh lệch
+            dlText = "377.0 - 380.0";
+        }
+    }
+
+    const lblDL = $("lbl_DonLu");
+    if(lblDL) lblDL.innerText = `MN Cao nhất trước lũ (${dlText})`;
 
     const setDiff = (id, val) => {
       const diff = wl - val; const el = $(id);
@@ -594,7 +776,8 @@
     };
     setDiff('diff_KiemTra', RES_CONST.WL_MAX_CHECK);
     setDiff('diff_MNDBT', RES_CONST.WL_NORMAL);
-    setDiff('diff_DonLu', RES_CONST.WL_FLOOD);
+    setDiff('diff_DonLu', dlLimit); 
+    setDiff('diff_DonLuMin', RES_CONST.WL_FLOOD_MIN);
     setDiff('diff_Chet', RES_CONST.WL_DEAD);
 
     const tag = $("floodStatus");
@@ -640,7 +823,6 @@
     }
   }
 
-  // --- RENDER CHART ---
   function renderChart(){
     if(chart) chart.destroy();
     const ctx = $("chart").getContext("2d");
@@ -657,30 +839,122 @@
 
     let labels=[], datasets=[]; 
     
+    // --- HÀM TẠO 3 ĐƯỜNG GIỚI HẠN (DÙNG CHUNG CHO 24H VÀ 7D) ---
+    const getLimitLines = (dataPoints) => {
+        let chartLineVal = 376.0; 
+        if(dataPoints.length > 0) {
+            const lastPt = dataPoints[dataPoints.length-1]; 
+            const t = parseLiteral(lastPt.time);
+            if (t) {
+                const d = parseInt(t.day);
+                const m = parseInt(t.month);
+                // Kiểm tra khoảng 16/11 đến 15/12
+                if ((m === 11 && d >= 16) || (m === 12 && d <= 15)) {
+                    chartLineVal = 377.0; 
+                }
+            }
+        }
+        return [
+            {
+                label: 'MNDBT (380.0)',
+                data: new Array(dataPoints.length).fill(380.0),
+                borderColor: 'rgba(239, 68, 68, 0.8)', 
+                borderWidth: 1,
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false
+            },
+            {
+                label: `MN trước lũ (${chartLineVal})`,
+                data: new Array(dataPoints.length).fill(chartLineVal),
+                borderColor: 'rgba(245, 158, 11, 0.8)', 
+                borderWidth: 1,
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false
+            },
+            {
+                label: 'MN đón lũ min (370.0)',
+                data: new Array(dataPoints.length).fill(370.0),
+                borderColor: 'rgba(34, 211, 238, 0.8)', 
+                borderWidth: 1,
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false
+            }
+        ];
+    };
+
+    // --- HÀM TẠO 2 ĐƯỜNG GIỚI HẠN LƯU LƯỢNG (CHO MÙA LŨ 1/9 - 15/12) ---
+    const getFlowLimitLines = (dataPoints) => {
+        if(dataPoints.length === 0) return [];
+        const lastPt = dataPoints[dataPoints.length-1];
+        const t = parseLiteral(lastPt.time);
+        if(t){
+            const d = parseInt(t.day);
+            const m = parseInt(t.month);
+            // Kiểm tra 1/9 -> 15/12
+            // m=9,10,11 full. m=12 từ 1->15.
+            const inSeason = (m===9 || m===10 || m===11) || (m===12 && d<=15);
+            if(inSeason){
+                return [
+                    {
+                        label: 'Q duy trì (450)',
+                        data: new Array(dataPoints.length).fill(450),
+                        borderColor: 'rgba(59, 130, 246, 0.6)', // Blue fade
+                        borderWidth: 1,
+                        borderDash: [4, 4],
+                        pointRadius: 0,
+                        fill: false
+                    },
+                    {
+                        label: 'Q cắt lũ (600)',
+                        data: new Array(dataPoints.length).fill(600),
+                        borderColor: 'rgba(239, 68, 68, 0.6)', // Red fade
+                        borderWidth: 1,
+                        borderDash: [4, 4],
+                        pointRadius: 0,
+                        fill: false
+                    }
+                ];
+            }
+        }
+        return [];
+    };
+
     if (currentTab === 'WL_24H') {
       const data = state.latest24h; labels = data.map(r => formatChartLabel(r.time));
-      datasets = [{ label:'Mực nước (m)', data: data.map(r=>r.water_level), borderColor:rgba(C.WL,1), backgroundColor:rgba(C.WL,0.1), fill:true, borderWidth:2, pointRadius:0, tension:0.3 }];
+      datasets = [
+        { label:'Mực nước (m)', data: data.map(r=>r.water_level), borderColor:rgba(C.WL,1), backgroundColor:rgba(C.WL,0.1), fill:true, borderWidth:2, pointRadius:0, tension:0.3 },
+        ...getLimitLines(data)
+      ];
+    }
+    else if (currentTab === 'WL_7D') {
+      const data = state.hourly7D_Obs; labels = data.map(r => formatChartLabel(r.time)); 
+      datasets = [
+        { label:'Mực nước (m)', data: data.map(r=>r.water_level), borderColor:rgba(C.WL,1), backgroundColor:rgba(C.WL,0.1), fill:true, borderWidth:2, pointRadius:0, tension:0.3 },
+        ...getLimitLines(data)
+      ];
     }
     else if (currentTab === 'FLOW_24H') {
       const data = state.latest24h; labels = data.map(r => formatChartLabel(r.time));
       datasets = [
         { label:'Q về', data: data.map(r=>r.inflow), borderColor:rgba(C.IN,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
         { label:'Q máy', data: data.map(r=>r.turbine_flow), borderColor:rgba(C.TB,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-        { label:'Q xả', data: data.map(r=>r.spillway_flow), borderColor:rgba(C.SP,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }
+        { label:'Q xả', data: data.map(r=>r.spillway_flow), borderColor:rgba(C.SP,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
+        ...getFlowLimitLines(data) // Thêm đường giới hạn Q
       ];
-    }
-    else if (currentTab === 'WL_7D') {
-      const data = state.hourly7D_Obs; labels = data.map(r => formatChartLabel(r.time)); 
-      datasets = [{ label:'Mực nước (m)', data: data.map(r=>r.water_level), borderColor:rgba(C.WL,1), backgroundColor:rgba(C.WL,0.1), fill:true, borderWidth:2, pointRadius:0, tension:0.3 }];
     }
     else if (currentTab === 'FLOW_7D') {
       const data = state.hourly7D_Obs; labels = data.map(r => formatChartLabel(r.time));
       datasets = [
         { label:'Q về', data: data.map(r=>r.inflow), borderColor:rgba(C.IN,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
         { label:'Q máy', data: data.map(r=>r.turbine_flow), borderColor:rgba(C.TB,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-        { label:'Q xả', data: data.map(r=>r.spillway_flow), borderColor:rgba(C.SP,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }
+        { label:'Q xả', data: data.map(r=>r.spillway_flow), borderColor:rgba(C.SP,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
+        ...getFlowLimitLines(data) // Thêm đường giới hạn Q
       ];
     }
+    // ... (Các phần khác giữ nguyên)
     else if (currentTab === 'IN_OBS_FC_3D') {
       const dStart = new Date($("day").value).setHours(0,0,0,0);
       const tMin = dStart - 3*86400000; const tMax = dStart + 4*86400000;
@@ -707,8 +981,7 @@
       datasets = [
         { label: 'Q Thực đo', data: dObs, borderColor:rgba(C.IN,1), borderWidth:2, pointRadius:0, tension:0.3 },
         { label: 'MA 24h', data: dMA, borderColor:'#e879f9', borderWidth:1.5, pointRadius:0, tension:0.4, borderDash:[2,2], fill:false },
-        // Sử dụng mã màu HEX trực tiếp để sửa lỗi màu đen
-        { label: 'Q Dự báo', data: dFc, borderColor:'#F59E0B', borderDash:[4,4], borderWidth:2, pointRadius:0, tension:0.3 }
+        { label: 'Q Dự báo', data: dFc, borderColor:'#FF9800', borderDash:[4,4], borderWidth:2, pointRadius:0, tension:0.3 }
       ];
     }
     else if (currentTab === 'IN_FC_7D') {
@@ -730,7 +1003,7 @@
       datasets = [
         { label: 'Biên trên', data: d_high_raw, borderColor: 'transparent', backgroundColor: rgba(C.WL, 0.15), pointRadius: 0, fill: '+1', tension: 0.4, order: 3 },
         { label: 'Biên dưới', data: d_low_raw, borderColor: 'transparent', backgroundColor: 'transparent', pointRadius: 0, fill: false, tension: 0.4, order: 2 },
-        { label: 'Dự báo TB', data: d_mean, borderColor: '#F59E0B', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: false, order: 1 }
+        { label: 'Dự báo TB', data: d_mean, borderColor: '#FF9800', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: false, order: 1 }
       ];
     }
     else if (currentTab === 'RF_DAILY_FC') {
@@ -795,17 +1068,15 @@
     try {
       const data = state.latest24h;
       if(data.length === 0) { tb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px;">Không có dữ liệu</td></tr>`; return; }
-      
+
       const tMax = data[0].time; const tMin = data[data.length-1].time;
-      const { data: rainData } = await sb.from('rainfall_observed').select('*').gte('time', tMin).lte('time', tMax);
-      
-      // REVERSE DATA FOR TABLE (NEWEST FIRST)
-      const tableData = [...data].reverse();
+      const resRain = await sb.from('rainfall_observed').select('*').gte('time', tMin).lte('time', tMax);
+      const rainData = resRain.data || [];
 
       tb.innerHTML = "";
-      tableData.forEach(row => {
+      data.forEach(row => {
         const tRow = new Date(row.time).getTime();
-        const rItem = (rainData||[]).find(x => Math.abs(new Date(x.time).getTime() - tRow) < 1800000);
+        const rItem = rainData.find(x => Math.abs(new Date(x.time).getTime() - tRow) < 1800000);
         const rVal = getRain(rItem);
         const tr = document.createElement("tr");
         tr.innerHTML = `
@@ -832,28 +1103,47 @@
       }
       container.innerHTML = "";
       data.forEach((item, index) => {
-        let icon = "🌤️"; let bg = "rgba(16,185,129,0.15)"; let color = "#10b981";
-        if (item.type === 'warning') { icon = "⚡"; bg = "rgba(245,158,11,0.15)"; color = "#f59e0b"; } 
-        else if (item.type === 'urgent') { icon = "📢"; bg = "rgba(239,68,68,0.15)"; color = "#ef4444"; }
+        // SAFEGUARD: Ensure title and summary are strings
+        const title = item.title || "";
+        const summary = item.summary || "";
+        const text = (title + " " + summary).toLowerCase();
+        
+        let theme = { color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: '🌤️', label: 'Dự báo' }; // Mặc định: Xanh lá
+
+        if (text.includes('lũ') || text.includes('bão') || text.includes('khẩn cấp') || item.type === 'urgent') {
+            theme = { color: '#ef4444', bg: 'rgba(239,68,68,0.15)', icon: '⛈️', label: 'Khẩn cấp' }; // Đỏ: Bão lũ
+        } else if (text.includes('sạt lở') || text.includes('cảnh báo') || item.type === 'warning') {
+            theme = { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: '⚠️', label: 'Cảnh báo' }; // Cam: Sạt lở
+        } else if (text.includes('vận hành') || text.includes('xả') || text.includes('điều tiết')) {
+            theme = { color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: '💧', label: 'Vận hành' }; // Xanh dương: Vận hành
+        }
+
         const timeStr = formatDateTimeVN(item.created_at);
-        const summary = item.summary || (item.content ? item.content.substring(0, 80) + "..." : "Xem chi tiết");
+        const displaySummary = summary || (item.content ? item.content.substring(0, 80) + "..." : "Xem chi tiết");
         const content = item.content || "Không có nội dung";
+        
         const div = document.createElement("div");
         div.className = "list-item";
         div.innerHTML = `
             <div class="accordion-header" onclick="this.nextElementSibling.classList.toggle('open')">
-               <div class="icon-box" style="background:${bg}; color:${color};">${icon}</div>
+               <div class="icon-box" style="background:${theme.bg}; color:${theme.color};">${theme.icon}</div>
                <div class="item-content">
-                  <h4>${item.title || 'Bản tin dự báo'}</h4>
-                  <p>${summary}</p>
-                  <span class="item-date">${timeStr}</span>
+                  <h4 style="white-space: normal; color:${theme.color === '#10b981' ? 'var(--text-main)' : theme.color}">${title || 'Bản tin dự báo'}</h4>
+                  <p>${displaySummary}</p>
+                  <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+                    <span style="font-size:10px; font-weight:700; color:${theme.color}; border:1px solid ${theme.bg}; padding:2px 6px; border-radius:4px;">${theme.label}</span>
+                    <span class="item-date">${timeStr}</span>
+                  </div>
                </div>
             </div>
             <div class="accordion-body">${content}</div>
         `;
         container.appendChild(div);
       });
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error(e); 
+        container.innerHTML = `<div style="padding:20px; text-align:center; color:#ef4444;">Lỗi tải dữ liệu: ${e.message}</div>`;
+    }
   }
 </script>
 </body>
