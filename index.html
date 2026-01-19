@@ -102,15 +102,22 @@
       border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; z-index: 20;
     }
     .brand { display: flex; align-items: center; gap: 12px; }
-    .logo-img {
-      width: 120px; height: 42px; 
-      border-radius: 24px; 
+    
+    /* LOGO FIX */
+    .logo-container {
+      width: 90px; height: 38px;
       background-color: rgba(255, 255, 255, 0.95);
-      background-image: url('https://ycthhachfxczwkburnfa.supabase.co/storage/v1/object/public/Image/Logo%20AVC.png');
-      background-size: 80%; background-position: center; background-repeat: no-repeat;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      padding: 2px;
     }
+    .logo-container img {
+      width: 100%; height: 100%;
+      object-fit: contain; 
+    }
+
     .brand-text h1 { margin: 0; font-size: 16px; font-weight: 700; color: white; }
     .brand-text small { font-size: 12px; color: rgb(var(--c-wl)); display: block; margin-top: 0px; }
     .status-badge { font-size: 11px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: rgb(var(--c-green)); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); }
@@ -202,7 +209,7 @@
     .swatch { width: 8px; height: 8px; border-radius: 50%; }
     canvas { width: 100% !important; height: 320px !important; }
 
-    /* --- TABLE OPTIMIZED --- */
+    /* --- TABLE OPTIMIZED FOR MOBILE --- */
     .table-container { 
       overflow-x: auto; 
       -webkit-overflow-scrolling: touch; 
@@ -212,45 +219,45 @@
     table { 
       width: 100%; 
       border-collapse: collapse; 
-      font-size: 13px; 
+      font-size: 12px; /* Font nhỏ hơn trên mobile */
       white-space: nowrap; 
     }
     
     th { 
       background: #161e33; 
       color: #94a3b8; 
-      padding: 12px 8px; 
+      padding: 8px 4px; /* Giảm padding header */
       text-align: center; 
       font-weight: 700; 
-      font-size: 11px; 
+      font-size: 10px; /* Header nhỏ gọn */
       text-transform: uppercase; 
-      font-family: var(--font-sans); /* Header dùng Inter */
-      letter-spacing: 0.5px;
+      font-family: var(--font-sans);
+      letter-spacing: 0.3px;
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
     
-    /* Đồng bộ Font Inter cho toàn bộ bảng */
     td { 
-      padding: 12px 10px; 
+      padding: 8px 4px; /* Giảm padding cell */
       border-bottom: 1px solid rgba(255,255,255,0.04); 
       text-align: center; 
-      font-family: var(--font-sans); /* Đổi sang font Inter */
-      font-size: 13px;
+      font-family: var(--font-sans);
       font-weight: 500;
-      font-variant-numeric: tabular-nums; /* Giữ thẳng hàng các con số */
+      font-variant-numeric: tabular-nums;
     }
     
+    /* Cột đầu tiên (Thời gian): Thu gọn tối đa */
     td:first-child { 
       text-align: left; 
-      padding-left: 16px; 
+      padding-left: 10px; 
       position: sticky; 
       left: 0; 
       background: #0f1426; 
       z-index: 1; 
       border-right: 1px solid rgba(255,255,255,0.08); 
       color: var(--text-main); 
-      font-weight: 500; /* Đồng bộ độ đậm */
-      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 11px; /* Font nhỏ cho thời gian */
+      width: 60px; /* Cố định chiều rộng nếu cần */
     }
 
     /* Accordion */
@@ -301,10 +308,12 @@
 <div class="app-container" id="main-view">
   <div class="topbar">
     <div class="brand">
-      <div class="logo-img"></div>
+      <div class="logo-container">
+          <img src="https://ycthhachfxczwkburnfa.supabase.co/storage/v1/object/public/Image/Logo%20AVC.png" alt="Logo AVC">
+      </div>
       <div class="brand-text">
         <h1 style="display:none">A Vương AI</h1>
-        <small id="lastUpdate" style="margin-left: 5px; font-weight: 500;">--:--</small>
+        <small id="lastUpdate" style="margin-left: 8px; font-weight: 500;">--:--</small>
       </div>
     </div>
     <div style="display:flex; align-items:center; gap:8px;">
@@ -486,7 +495,9 @@
       </div>
       <div class="card">
         <div class="cardBody" style="text-align:center; padding:30px 20px;">
-          <div class="logo-img" style="width:100px; height:34px; margin:0 auto 15px; border-radius:10px; background-size:85%;"></div>
+           <div class="logo-container" style="width:120px; height:46px; margin:0 auto 15px;">
+              <img src="https://ycthhachfxczwkburnfa.supabase.co/storage/v1/object/public/Image/Logo%20AVC.png" alt="Logo AVC">
+          </div>
           <h3 style="color:var(--text-main); margin:0 0 5px;">Công ty CP Thủy điện A Vương</h3>
           <p style="color:var(--text-muted); font-size:13px; margin-bottom:25px;">Thôn Dung, xã Thạnh Mỹ, TP. Đà Nẵng</p>
           <div style="text-align:left; background:rgba(255,255,255,0.03); border-radius:12px; padding:15px; margin-bottom:10px;">
@@ -545,8 +556,34 @@
   function formatTimeVN(iso){ const p = parseLiteral(iso); return p ? p.time : "-"; }
   function formatDateTimeVN(iso){ const p = parseLiteral(iso); return p ? `${p.time} ${p.day}/${p.month}/${p.year}` : "-"; }
   function formatChartLabel(iso){ const p = parseLiteral(iso); return p ? `${p.time} ${p.day}/${p.month}` : "-"; }
+  
+  // -- NEW HELPER: GỌN NHẸ CHO TABLE --
+  function formatTableTime(iso) {
+      const p = parseLiteral(iso);
+      if(!p) return "-";
+      // Chuyển 07:00 thành 7h
+      const h = parseInt(p.time.split(':')[0]); 
+      return `${h}h ${p.day}/${p.month}`;
+  }
+
   function rgba(rgb,a){ return `rgba(${rgb}, ${a})`; }
   function toast(msg){ const t=$("toast"); t.textContent=msg; t.style.display="block"; setTimeout(()=>t.style.display="none", 2500); }
+  
+  // --- NEW HELPER: CONVERT UTC STRING TO VIETNAM TIME STRING ---
+  function formatToVNTime(isoString) {
+      const date = new Date(isoString);
+      if (isNaN(date.getTime())) return isoString; 
+
+      // Use Intl for precise timezone conversion
+      const vnDate = new Date(date.toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"}));
+      const hh = String(vnDate.getHours()).padStart(2, '0');
+      const mm = String(vnDate.getMinutes()).padStart(2, '0');
+      const dd = String(vnDate.getDate()).padStart(2, '0');
+      const mo = String(vnDate.getMonth() + 1).padStart(2, '0');
+      const yyyy = vnDate.getFullYear();
+
+      return `${hh}:${mm} ${dd}/${mo}/${yyyy}`;
+  }
 
   // --- CONFIG ---
   const SB_URL = "https://ycthhachfxczwkburnfa.supabase.co";
@@ -573,8 +610,8 @@
     WL_24H: { name:"MNH 24h", hint:"Mực nước 24h qua", color: C.WL },
     FLOW_24H: { name:"Q 24h", hint:"Dòng chảy 24h qua", color: C.IN },
     WL_7D: { name:"MNH 7D", hint:"Mực nước 7 ngày", color: C.WL },
-    FLOW_7D: { name:"Q Tổng hợp 7D", hint:"Q về/máy/xả 7 ngày", color: C.IN },
-    IN_OBS_FC_3D: { name:"Q Về vs DB(D ± 3)", hint:"Q về Thực tế & Dự báo D±3", color: C.IF },
+    FLOW_7D: { name:"Q Tổng hợp", hint:"Q về/máy/xả 7 ngày", color: C.IN },
+    IN_OBS_FC_3D: { name:"Q Về vs DB", hint:"Q về Thực tế & Dự báo D±3", color: C.IF },
     IN_FC_7D: { name:"Q Dự báo", hint:"Dự báo 7 ngày tới (Ensemble)", color: C.IF },
     RF_DAILY_FC: { name:"Mưa Ngày", hint:"Mưa ngày & Lũy kế", color: C.RN },
     RF_HOURLY_ACC: { name:"Mưa Giờ", hint:"Mưa giờ & Lũy kế", color: C.RN },
@@ -695,8 +732,19 @@
       state.hourly7D_Obs = getLatestUniqueData(res7.data, 'time');
       state.rainObs7D = getLatestUniqueData(res8.data, 'time');
       state.rain24hRaw = getLatestUniqueData(res5.data, 'time');
-      state.latest24h = (resLatest.data || []).reverse(); 
+      
+      // Update logic: Don't reverse the data here, keep it "oldest to newest" for charts.
+      // We will handle "newest first" for the table in loadTableData.
+      state.latest24h = (resLatest.data || []); 
+      
       state.storage = res6.data ? res6.data[0] : null;
+      // Because resLatest is DESC by time (from API), state.latest24h is [Newest, ..., Oldest]
+      
+      // IMPORTANT: Charts usually want Ascending (Oldest first).
+      // Let's reverse it HERE so state.latest24h is Ascending (Oldest -> Newest).
+      state.latest24h.reverse();
+      
+      // Now state.latest24h is [Oldest, ..., Newest].
       state.lastObs = state.latest24h.length ? state.latest24h[state.latest24h.length-1] : null;
 
       let rainCur = 0;
@@ -740,7 +788,6 @@
     
     if($("txtWL")) $("txtWL").textContent = fmt2.format(wl);
     
-    // --- FIX GIỜ MỚI NHẤT (HIỂN THỊ ĐÚNG CHUỖI NHẬP) ---
     if($("lastUpdate")) {
       const p = parseLiteral(l.time); 
       if(p) {
@@ -748,7 +795,6 @@
       }
     }
     
-    // --- LOGIC MỰC NƯỚC TRƯỚC LŨ (16/11 - 15/12) ---
     const pDate = parseLiteral(l.time);
     let dlLimit = 376.0;
     let dlText = "376.0";
@@ -757,9 +803,8 @@
         const d = parseInt(pDate.day, 10);
         const m = parseInt(pDate.month, 10);
         
-        // Kiểm tra khoảng 16/11 đến 15/12
         if ( (m === 11 && d >= 16) || (m === 12 && d <= 15) ) {
-            dlLimit = 380.0; // Dùng cận trên để tính chênh lệch
+            dlLimit = 380.0; 
             dlText = "377.0 - 380.0";
         }
     }
@@ -771,7 +816,7 @@
       const diff = wl - val; const el = $(id);
       if(el){
         el.innerText = `${diff > 0 ? "+" : ""}${fmt2.format(diff)}`;
-        el.className = `lvl-diff ${diff > 0 ? 'diff-pos' : 'diff-neg'} ${id==='diff_KiemTra'&&diff>-0.5?'diff-danger':''}`;
+        // Removed className manipulation to fix color issue
       }
     };
     setDiff('diff_KiemTra', RES_CONST.WL_MAX_CHECK);
@@ -1069,18 +1114,22 @@
       const data = state.latest24h;
       if(data.length === 0) { tb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px;">Không có dữ liệu</td></tr>`; return; }
 
-      const tMax = data[0].time; const tMin = data[data.length-1].time;
+      const tMax = data[data.length-1].time; const tMin = data[0].time; // Note: data is sorted ascending
       const resRain = await sb.from('rainfall_observed').select('*').gte('time', tMin).lte('time', tMax);
       const rainData = resRain.data || [];
 
       tb.innerHTML = "";
-      data.forEach(row => {
+      
+      // REVERSE the data for the table to show newest first
+      const tableData = [...data].reverse();
+
+      tableData.forEach(row => {
         const tRow = new Date(row.time).getTime();
         const rItem = rainData.find(x => Math.abs(new Date(x.time).getTime() - tRow) < 1800000);
         const rVal = getRain(rItem);
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${formatDateTimeVN(row.time)}</td>
+          <td>${formatTableTime(row.time)}</td>
           <td style="color:rgb(var(--c-wl))">${fmt2.format(row.water_level)}</td>
           <td style="color:rgb(var(--c-in))">${fmt0.format(row.inflow)}</td>
           <td style="color:rgb(var(--c-tb))">${fmt0.format(row.turbine_flow)}</td>
@@ -1118,7 +1167,7 @@
             theme = { color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: '💧', label: 'Vận hành' }; // Xanh dương: Vận hành
         }
 
-        const timeStr = formatDateTimeVN(item.created_at);
+        const timeStr = formatToVNTime(item.created_at);
         const displaySummary = summary || (item.content ? item.content.substring(0, 80) + "..." : "Xem chi tiết");
         const content = item.content || "Không có nội dung";
         
