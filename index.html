@@ -621,12 +621,22 @@
   let sb = null, chart = null;
   let currentTab = "WL_24H";
   
+  // --- UPDATED TAB META FOR MULTIPLE MODELS ---
   const tabMeta = {
     WL_24H: { name:"MNH 24h", hint:"Mực nước 24h qua", color: C.WL },
     FLOW_24H: { name:"Q 24h", hint:"Dòng chảy 24h qua", color: C.IN },
     WL_7D: { name:"MNH 7D", hint:"Mực nước 7 ngày", color: C.WL },
     FLOW_7D: { name:"Q Tổng hợp", hint:"Q về/máy/xả 7 ngày", color: C.IN },
-    IN_OBS_FC_3D: { name:"Q Về vs DB", hint:"Q về Thực tế & Dự báo D±3", color: C.IF },
+    
+    // NÚT SO SÁNH 1 (MẶC ĐỊNH V8)
+    IN_OBS_FC_V8: { name:"Q Về vs DB (V8)", hint:"Thực tế vs Mô hình V8 (Tiêu chuẩn)", color: C.IF },
+    
+    // NÚT SO SÁNH 2 (MIXED REAL+FC)
+    IN_OBS_FC_MIX: { name:"Q Về vs DB (Mixed)", hint:"Thực tế vs Mô hình Mixed (Mưa thực + DB)", color: '233, 30, 99' }, // Màu hồng
+
+    // NÚT SO SÁNH 3 (AI)
+    IN_OBS_FC_AI: { name:"Q Về vs DB (AI)", hint:"Thực tế vs Mô hình AI V1 (Tự học)", color: '156, 39, 176' }, // Màu tím
+
     IN_FC_7D: { name:"Q Dự báo", hint:"Dự báo 7 ngày tới (Ensemble)", color: C.IF },
     RF_DAILY_FC: { name:"Mưa Ngày", hint:"Mưa ngày & Lũy kế", color: C.RN },
     RF_HOURLY_ACC: { name:"Mưa Giờ", hint:"Mưa giờ & Lũy kế", color: C.RN },
@@ -635,7 +645,13 @@
   
   const state = { 
     hourly24h: [], hourly3D: [], hourly7D_Obs: [],
-    inflowFc: [], rainFc: [], rainObs7D: [], rain24hRaw: [], 
+    
+    // Lưu riêng từng nguồn dự báo
+    inflowFc_V8: [], 
+    inflowFc_Mix: [], 
+    inflowFc_AI: [], 
+    
+    rainFc: [], rainObs7D: [], rain24hRaw: [], 
     latest24h: [], fcEnsemble: {}, 
     lastObs: null, rainAtHour: 0, rain24hSum: 0, storage: null 
   };
@@ -674,37 +690,16 @@
       const email = $("loginEmail").value;
       const password = $("loginPass").value;
       const errBox = $("loginError");
-      
       if(!email || !password) { errBox.textContent = "Vui lòng nhập Email và Mật khẩu"; return; }
-      
       errBox.textContent = "Đang kiểm tra...";
       const { data, error } = await sb.auth.signInWithPassword({ email, password });
-      
-      if (error) {
-          errBox.textContent = "Đăng nhập thất bại: " + error.message;
-      } else {
-          showApp();
-      }
+      if (error) { errBox.textContent = "Đăng nhập thất bại: " + error.message; } else { showApp(); }
   }
 
-  async function handleLogout() {
-      await sb.auth.signOut();
-      showLogin();
-  }
+  async function handleLogout() { await sb.auth.signOut(); showLogin(); }
 
-  function showApp() {
-      $("login-view").style.display = "none";
-      $("main-view").style.display = "flex";
-      loadData(); 
-  }
-
-  function showLogin() {
-      $("login-view").style.display = "flex";
-      $("main-view").style.display = "none";
-      $("loginEmail").value = "";
-      $("loginPass").value = "";
-      $("loginError").textContent = "";
-  }
+  function showApp() { $("login-view").style.display = "none"; $("main-view").style.display = "flex"; loadData(); }
+  function showLogin() { $("login-view").style.display = "flex"; $("main-view").style.display = "none"; $("loginEmail").value = ""; $("loginPass").value = ""; $("loginError").textContent = ""; }
 
   // --- DATA LOADING ---
   async function loadData() {
@@ -724,7 +719,10 @@
 
       const [res1, res2, res4, res5, res6, res7, res8, resLatest, resRainFc, resFcFuture, resRainFcFuture] = await Promise.all([
         sb.from('reservoir_hourly_data').select('*').gte('time', tStart).lte('time', tEnd).order('time', {ascending: true}),
+        
+        // LẤY TẤT CẢ DỰ BÁO TRONG KHOẢNG THỜI GIAN
         sb.from('inflow_forecast').select('*').gte('forecast_time', tFcStart).lte('forecast_time', tFcEnd).order('created_at', {ascending: false}), 
+        
         sb.from('reservoir_hourly_data').select('time, inflow').gte('time', tFcStart).lte('time', tEnd).order('time', {ascending: true}), 
         sb.from('rainfall_observed').select('*').gte('time', tStart).lte('time', tEnd).order('time', {ascending: true}), 
         sb.from('v_current_storage').select('*').order('time', {ascending: false}).limit(1), 
@@ -737,34 +735,30 @@
       ]);
 
       state.hourly24h = getLatestUniqueData(res1.data, 'time');
-      state.inflowFc = getLatestUniqueData(res2.data, 'forecast_time');
+      
+      // --- PHÂN LOẠI DỮ LIỆU DỰ BÁO ---
+      const allForecasts = res2.data || [];
+      // 1. V8 (Mặc định hoặc source='rf2q_v8')
+      state.inflowFc_V8 = getLatestUniqueData(allForecasts.filter(i => i.source === 'rf2q_v8' || i.source === null), 'forecast_time');
+      // 2. Mixed Real+Fc
+      state.inflowFc_Mix = getLatestUniqueData(allForecasts.filter(i => i.source === 'rf2q_mixed_real_fc'), 'forecast_time');
+      // 3. AI V1
+      state.inflowFc_AI = getLatestUniqueData(allForecasts.filter(i => i.source === 'rf2q_ai_v1'), 'forecast_time');
+
       state.rainFc = getLatestUniqueData(resRainFc.data, 'forecast_time').map(i=>({forecast_time:i.forecast_time, rainfall_mm:Number(i.rainfall_mm)||0}));
       
+      // Ensemble (dùng chung cho tab IN_FC_7D)
       const mapFc = {}; (res2.data||[]).forEach(i => { if(!mapFc[i.forecast_time]) mapFc[i.forecast_time]=[]; mapFc[i.forecast_time].push(i); });
       state.fcEnsemble = mapFc;
 
       state.hourly3D = getLatestUniqueData(res4.data, 'time');
-      
-      // CHANGE: Map correctly to RESERVOIR data (Index 5 -> res7)
       state.hourly7D_Obs = getLatestUniqueData(res7.data, 'time'); 
-      
-      // CHANGE: Map correctly to RAINFALL data (Index 6 -> res8)
       state.rainObs7D = getLatestUniqueData(res8.data, 'time'); 
-      
       state.rain24hRaw = getLatestUniqueData(res5.data, 'time');
       
-      // Update logic: Don't reverse the data here, keep it "oldest to newest" for charts.
-      // We will handle "newest first" for the table in loadTableData.
       state.latest24h = (resLatest.data || []); 
-      
       state.storage = res6.data ? res6.data[0] : null;
-      // Because resLatest is DESC by time (from API), state.latest24h is [Newest, ..., Oldest]
-      
-      // IMPORTANT: Charts usually want Ascending (Oldest first).
-      // Let's reverse it HERE so state.latest24h is Ascending (Oldest -> Newest).
       state.latest24h.reverse();
-      
-      // Now state.latest24h is [Oldest, ..., Newest].
       state.lastObs = state.latest24h.length ? state.latest24h[state.latest24h.length-1] : null;
 
       let rainCur = 0;
@@ -794,11 +788,9 @@
     return Array.from(map.values()).sort((a,b) => new Date(a[key]) - new Date(b[key]));
   }
   
-  // Hàm tổng hợp mưa theo ngày từ mảng dữ liệu bất kỳ, chỉ định tên cột giá trị
   function aggregateRainByDay(data, timeKey, valueKey) {
     const map = {};
     data.forEach(r => { 
-        // Dùng hàm extractDateVN thay vì parseLiteral để đảm bảo đúng ngày theo giờ VN
         const dateStr = extractDateVN(r[timeKey]);
         if(dateStr) { 
             const val = getValSafe(r[valueKey]);
@@ -808,64 +800,43 @@
     return map;
   }
   
-  function aggregateByDay(data, timeKey) { return aggregateRainByDay(data, timeKey, 'rainfall_mm'); } // Helper cũ
+  function aggregateByDay(data, timeKey) { return aggregateRainByDay(data, timeKey, 'rainfall_mm'); }
 
   function renderOverview(fcFlowData, fcRainData){
     const l = state.lastObs;
     if (!l) return;
-    
     const wl = l.water_level;
-    const t = new Date(l.time);
-    
     if($("txtWL")) $("txtWL").textContent = fmt2.format(wl);
-    
     if($("lastUpdate")) {
       const p = parseLiteral(l.time); 
-      if(p) {
-         $("lastUpdate").textContent = `${p.time} ${p.day}/${p.month}`;
-      }
+      if(p) { $("lastUpdate").textContent = `${p.time} ${p.day}/${p.month}`; }
     }
-    
     const pDate = parseLiteral(l.time);
-    let dlLimit = 376.0;
-    let dlText = "376.0";
-    
+    let dlLimit = 376.0; let dlText = "376.0";
     if (pDate) {
-        const d = parseInt(pDate.day, 10);
-        const m = parseInt(pDate.month, 10);
-        
-        if ( (m === 11 && d >= 16) || (m === 12 && d <= 15) ) {
-            dlLimit = 380.0; 
-            dlText = "377.0 - 380.0";
-        }
+        const d = parseInt(pDate.day, 10); const m = parseInt(pDate.month, 10);
+        if ( (m === 11 && d >= 16) || (m === 12 && d <= 15) ) { dlLimit = 380.0; dlText = "377.0 - 380.0"; }
     }
-
     const lblDL = $("lbl_DonLu");
     if(lblDL) lblDL.innerText = `MN Cao nhất trước lũ (${dlText})`;
-
     const setDiff = (id, val) => {
       const diff = wl - val; const el = $(id);
-      if(el){
-        el.innerText = `${diff > 0 ? "+" : ""}${fmt2.format(diff)}`;
-      }
+      if(el){ el.innerText = `${diff > 0 ? "+" : ""}${fmt2.format(diff)}`; }
     };
     setDiff('diff_KiemTra', RES_CONST.WL_MAX_CHECK);
     setDiff('diff_MNDBT', RES_CONST.WL_NORMAL);
     setDiff('diff_DonLu', dlLimit); 
     setDiff('diff_DonLuMin', RES_CONST.WL_FLOOD_MIN);
     setDiff('diff_Chet', RES_CONST.WL_DEAD);
-
     const tag = $("floodStatus");
     if(tag) {
         if(wl >= RES_CONST.WL_FLOOD) { tag.innerText = "CẢNH BÁO LŨ"; tag.style.color="rgb(var(--c-tb))"; tag.style.borderColor="rgb(var(--c-tb))"; tag.style.background="rgba(239,68,68,0.15)"; }
         else { tag.innerText = "BÌNH THƯỜNG"; tag.style.color="rgb(var(--c-green))"; tag.style.borderColor="rgb(var(--c-green))"; tag.style.background="rgba(16,185,129,0.15)"; }
     }
-
     if($("txtQin")) $("txtQin").textContent = fmt0.format(l.inflow);
     if($("txtQtb")) $("txtQtb").textContent = fmt0.format(l.turbine_flow);
     if($("txtQsp")) $("txtQsp").textContent = fmt0.format(l.spillway_flow);
     if($("txtRain1h")) $("txtRain1h").textContent = fmt1.format(state.rainAtHour);
-
     let curVol = 0;
     if (state.storage && (state.storage.volume || state.storage.current_volume)) {
         curVol = Number(state.storage.volume || state.storage.current_volume);
@@ -873,19 +844,14 @@
         if(wl > 340) curVol = RES_CONST.VOL_DEAD + ((wl - 340)/40)*(RES_CONST.VOL_MAX - RES_CONST.VOL_DEAD);
     }
     if($("txtVol")) $("txtVol").textContent = fmt2.format(curVol);
-
     const volUsefulCurrent = Math.max(0, curVol - RES_CONST.VOL_DEAD);
     if($("txtVolUsefulLeft")) $("txtVolUsefulLeft").textContent = fmt2.format(volUsefulCurrent);
-
     const pctUseful = (volUsefulCurrent / (RES_CONST.VOL_MAX - RES_CONST.VOL_DEAD)) * 100;
     if($("txtPctUseful")) $("txtPctUseful").textContent = fmt2.format(pctUseful) + "%";
-
     const volRemain = Math.max(0, RES_CONST.VOL_MAX - curVol);
     if($("txtVolRemain")) $("txtVolRemain").textContent = fmt2.format(volRemain);
-
     const pctTotal = (curVol / RES_CONST.VOL_MAX) * 100;
     if($("txtPctTotal")) $("txtPctTotal").textContent = fmt2.format(pctTotal) + "%";
-
     if(fcFlowData && fcFlowData.length){
         const flows = fcFlowData.map(f => getFlowFc(f));
         if($("fcFlowRange")) $("fcFlowRange").textContent = `${fmt0.format(Math.min(...flows))} - ${fmt0.format(Math.max(...flows))}`;
@@ -914,7 +880,6 @@
 
     let labels=[], datasets=[]; 
     
-    // --- HÀM TẠO 3 ĐƯỜNG GIỚI HẠN (DÙNG CHUNG CHO 24H VÀ 7D) ---
     const getLimitLines = (dataPoints) => {
         let chartLineVal = 376.0; 
         if(dataPoints.length > 0) {
@@ -923,74 +888,27 @@
             if (t) {
                 const d = parseInt(t.day);
                 const m = parseInt(t.month);
-                // Kiểm tra khoảng 16/11 đến 15/12
-                if ((m === 11 && d >= 16) || (m === 12 && d <= 15)) {
-                    chartLineVal = 377.0; 
-                }
+                if ((m === 11 && d >= 16) || (m === 12 && d <= 15)) { chartLineVal = 377.0; }
             }
         }
         return [
-            {
-                label: 'MNDBT (380.0)',
-                data: new Array(dataPoints.length).fill(380.0),
-                borderColor: 'rgba(239, 68, 68, 0.8)', 
-                borderWidth: 1,
-                borderDash: [5, 5],
-                pointRadius: 0,
-                fill: false
-            },
-            {
-                label: `MN trước lũ (${chartLineVal})`,
-                data: new Array(dataPoints.length).fill(chartLineVal),
-                borderColor: 'rgba(245, 158, 11, 0.8)', 
-                borderWidth: 1,
-                borderDash: [5, 5],
-                pointRadius: 0,
-                fill: false
-            },
-            {
-                label: 'MN đón lũ min (370.0)',
-                data: new Array(dataPoints.length).fill(370.0),
-                borderColor: 'rgba(34, 211, 238, 0.8)', 
-                borderWidth: 1,
-                borderDash: [5, 5],
-                pointRadius: 0,
-                fill: false
-            }
+            { label: 'MNDBT (380.0)', data: new Array(dataPoints.length).fill(380.0), borderColor: 'rgba(239, 68, 68, 0.8)', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, fill: false },
+            { label: `MN trước lũ (${chartLineVal})`, data: new Array(dataPoints.length).fill(chartLineVal), borderColor: 'rgba(245, 158, 11, 0.8)', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, fill: false },
+            { label: 'MN đón lũ min (370.0)', data: new Array(dataPoints.length).fill(370.0), borderColor: 'rgba(34, 211, 238, 0.8)', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, fill: false }
         ];
     };
 
-    // --- HÀM TẠO 2 ĐƯỜNG GIỚI HẠN LƯU LƯỢNG (CHO MÙA LŨ 1/9 - 15/12) ---
     const getFlowLimitLines = (dataPoints) => {
         if(dataPoints.length === 0) return [];
         const lastPt = dataPoints[dataPoints.length-1];
         const t = parseLiteral(lastPt.time);
         if(t){
-            const d = parseInt(t.day);
-            const m = parseInt(t.month);
-            // Kiểm tra 1/9 -> 15/12
-            // m=9,10,11 full. m=12 từ 1->15.
+            const d = parseInt(t.day); const m = parseInt(t.month);
             const inSeason = (m===9 || m===10 || m===11) || (m===12 && d<=15);
             if(inSeason){
                 return [
-                    {
-                        label: 'Q duy trì (450)',
-                        data: new Array(dataPoints.length).fill(450),
-                        borderColor: 'rgba(59, 130, 246, 0.6)', // Blue fade
-                        borderWidth: 1,
-                        borderDash: [4, 4],
-                        pointRadius: 0,
-                        fill: false
-                    },
-                    {
-                        label: 'Q cắt lũ (600)',
-                        data: new Array(dataPoints.length).fill(600),
-                        borderColor: 'rgba(239, 68, 68, 0.6)', // Red fade
-                        borderWidth: 1,
-                        borderDash: [4, 4],
-                        pointRadius: 0,
-                        fill: false
-                    }
+                    { label: 'Q duy trì (450)', data: new Array(dataPoints.length).fill(450), borderColor: 'rgba(59, 130, 246, 0.6)', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
+                    { label: 'Q cắt lũ (600)', data: new Array(dataPoints.length).fill(600), borderColor: 'rgba(239, 68, 68, 0.6)', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false }
                 ];
             }
         }
@@ -999,42 +917,36 @@
 
     if (currentTab === 'WL_24H') {
       const data = state.latest24h; labels = data.map(r => formatChartLabel(r.time));
-      datasets = [
-        { label:'Mực nước (m)', data: data.map(r=>r.water_level), borderColor:rgba(C.WL,1), backgroundColor:rgba(C.WL,0.1), fill:true, borderWidth:2, pointRadius:0, tension:0.3 },
-        ...getLimitLines(data)
-      ];
+      datasets = [ { label:'Mực nước (m)', data: data.map(r=>r.water_level), borderColor:rgba(C.WL,1), backgroundColor:rgba(C.WL,0.1), fill:true, borderWidth:2, pointRadius:0, tension:0.3 }, ...getLimitLines(data) ];
     }
     else if (currentTab === 'WL_7D') {
       const data = state.hourly7D_Obs; labels = data.map(r => formatChartLabel(r.time)); 
-      datasets = [
-        { label:'Mực nước (m)', data: data.map(r=>r.water_level), borderColor:rgba(C.WL,1), backgroundColor:rgba(C.WL,0.1), fill:true, borderWidth:2, pointRadius:0, tension:0.3 },
-        ...getLimitLines(data)
-      ];
+      datasets = [ { label:'Mực nước (m)', data: data.map(r=>r.water_level), borderColor:rgba(C.WL,1), backgroundColor:rgba(C.WL,0.1), fill:true, borderWidth:2, pointRadius:0, tension:0.3 }, ...getLimitLines(data) ];
     }
     else if (currentTab === 'FLOW_24H') {
       const data = state.latest24h; labels = data.map(r => formatChartLabel(r.time));
-      datasets = [
-        { label:'Q về', data: data.map(r=>r.inflow), borderColor:rgba(C.IN,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-        { label:'Q máy', data: data.map(r=>r.turbine_flow), borderColor:rgba(C.TB,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-        { label:'Q xả', data: data.map(r=>r.spillway_flow), borderColor:rgba(C.SP,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-        ...getFlowLimitLines(data) // Thêm đường giới hạn Q
-      ];
+      datasets = [ { label:'Q về', data: data.map(r=>r.inflow), borderColor:rgba(C.IN,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }, { label:'Q máy', data: data.map(r=>r.turbine_flow), borderColor:rgba(C.TB,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }, { label:'Q xả', data: data.map(r=>r.spillway_flow), borderColor:rgba(C.SP,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }, ...getFlowLimitLines(data) ];
     }
     else if (currentTab === 'FLOW_7D') {
       const data = state.hourly7D_Obs; labels = data.map(r => formatChartLabel(r.time));
-      datasets = [
-        { label:'Q về', data: data.map(r=>r.inflow), borderColor:rgba(C.IN,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-        { label:'Q máy', data: data.map(r=>r.turbine_flow), borderColor:rgba(C.TB,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-        { label:'Q xả', data: data.map(r=>r.spillway_flow), borderColor:rgba(C.SP,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-        ...getFlowLimitLines(data) // Thêm đường giới hạn Q
-      ];
+      datasets = [ { label:'Q về', data: data.map(r=>r.inflow), borderColor:rgba(C.IN,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }, { label:'Q máy', data: data.map(r=>r.turbine_flow), borderColor:rgba(C.TB,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }, { label:'Q xả', data: data.map(r=>r.spillway_flow), borderColor:rgba(C.SP,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }, ...getFlowLimitLines(data) ];
     }
-    // ... (Các phần khác giữ nguyên)
-    else if (currentTab === 'IN_OBS_FC_3D') {
+    
+    // --- XỬ LÝ 3 NÚT SO SÁNH ĐA NGUỒN ---
+    else if (currentTab.startsWith('IN_OBS_FC_')) {
       const dStart = new Date($("day").value).setHours(0,0,0,0);
       const tMin = dStart - 3*86400000; const tMax = dStart + 4*86400000;
+      
       const obsData = state.hourly3D.filter(r => { const t = new Date(r.time).getTime(); return t >= tMin && t < tMax; });
-      const fcData = state.inflowFc.filter(r => { const t = new Date(r.forecast_time).getTime(); return t >= tMin && t < tMax; });
+      
+      // Chọn nguồn dữ liệu dự báo dựa trên Tab
+      let fcData = [];
+      if (currentTab === 'IN_OBS_FC_V8') fcData = state.inflowFc_V8;
+      else if (currentTab === 'IN_OBS_FC_MIX') fcData = state.inflowFc_Mix;
+      else if (currentTab === 'IN_OBS_FC_AI') fcData = state.inflowFc_AI;
+      
+      fcData = fcData.filter(r => { const t = new Date(r.forecast_time).getTime(); return t >= tMin && t < tMax; });
+      
       const allT = [...new Set([...obsData.map(r=>r.time), ...fcData.map(r=>r.forecast_time)])].sort();
       labels = allT.map(t => formatChartLabel(t));
       const dObs = allT.map(t => obsData.find(x => x.time === t)?.inflow ?? null);
@@ -1056,9 +968,17 @@
       datasets = [
         { label: 'Q Thực đo', data: dObs, borderColor:rgba(C.IN,1), borderWidth:2, pointRadius:0, tension:0.3 },
         { label: 'MA 24h', data: dMA, borderColor:'#e879f9', borderWidth:1.5, pointRadius:0, tension:0.4, borderDash:[2,2], fill:false },
-        { label: 'Q Dự báo', data: dFc, borderColor:'#FF9800', borderDash:[4,4], borderWidth:2, pointRadius:0, tension:0.3 }
+        // Màu đường dự báo thay đổi theo Tab để dễ nhận diện
+        { 
+            label: 'Q Dự báo', 
+            data: dFc, 
+            borderColor: tabMeta[currentTab].color === C.IF ? '#FF9800' : `rgb(${tabMeta[currentTab].color})`, 
+            borderDash:[4,4], borderWidth:2, pointRadius:0, tension:0.3 
+        }
       ];
     }
+    
+    // ... (Giữ nguyên các tab Mưa)
     else if (currentTab === 'IN_FC_7D') {
       const tLimit = new Date($("day").value).setHours(0,0,0,0) + 7*86400000; 
       const times = Object.keys(state.fcEnsemble || {}).filter(t => { 
@@ -1110,18 +1030,11 @@
       const tEnd = new Date($("day").value).setHours(0,0,0,0) + 86400000 - 1; 
       const tStartCompare = tEnd - 7*86400000;
       
-      // LOGIC MỚI CHO RF_COMPARE
-      // 1. Thực tế (Màu Xanh): Lấy từ bảng reservoir_hourly_data (state.hourly7D_Obs) -> cột rainfallreal
       const obs = state.hourly7D_Obs.filter(r => { const t=new Date(r.time).getTime(); return t>=tStartCompare && t<=tEnd; });
+      const fc = state.rainFc.filter(r => { const t=new Date(r.forecast_time).getTime(); return t>=tStartCompare && t<=tEnd; });
       
-      // 2. Dự báo/Trạm (Màu Tím): Lấy từ bảng rainfall_observed (state.rainObs7D) -> cột rainfall_mm
-      const fc = state.rainObs7D.filter(r => { const t=new Date(r.time).getTime(); return t>=tStartCompare && t<=tEnd; });
-      
-      // Tổng hợp Thực tế (rainfallreal)
       const aggObs = aggregateRainByDay(obs, 'time', 'rainfallreal');
-
-      // Tổng hợp Dự báo/Trạm (rainfall_mm)
-      const aggFc = aggregateRainByDay(fc, 'time', 'rainfall_mm');
+      const aggFc = aggregateRainByDay(fc, 'forecast_time', 'rainfall_mm');
       
       const allDays = [...new Set([...Object.keys(aggObs), ...Object.keys(aggFc)])].sort();
       datasets = [
@@ -1192,19 +1105,18 @@
       }
       container.innerHTML = "";
       data.forEach((item, index) => {
-        // SAFEGUARD: Ensure title and summary are strings
         const title = item.title || "";
         const summary = item.summary || "";
         const text = (title + " " + summary).toLowerCase();
         
-        let theme = { color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: '🌤️', label: 'Dự báo' }; // Mặc định: Xanh lá
+        let theme = { color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: '🌤️', label: 'Dự báo' };
 
         if (text.includes('lũ') || text.includes('bão') || text.includes('khẩn cấp') || item.type === 'urgent') {
-            theme = { color: '#ef4444', bg: 'rgba(239,68,68,0.15)', icon: '⛈️', label: 'Khẩn cấp' }; // Đỏ: Bão lũ
+            theme = { color: '#ef4444', bg: 'rgba(239,68,68,0.15)', icon: '⛈️', label: 'Khẩn cấp' };
         } else if (text.includes('sạt lở') || text.includes('cảnh báo') || item.type === 'warning') {
-            theme = { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: '⚠️', label: 'Cảnh báo' }; // Cam: Sạt lở
+            theme = { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: '⚠️', label: 'Cảnh báo' };
         } else if (text.includes('vận hành') || text.includes('xả') || text.includes('điều tiết')) {
-            theme = { color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: '💧', label: 'Vận hành' }; // Xanh dương: Vận hành
+            theme = { color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: '💧', label: 'Vận hành' };
         }
 
         const timeStr = formatToVNTime(item.created_at);
