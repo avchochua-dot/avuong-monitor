@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="vi">
 <head>
@@ -545,6 +546,12 @@
   const fmt0 = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 });
   
   function getRain(r){ return r && r.rainfall_mm !== undefined ? Number(r.rainfall_mm) : 0; }
+  
+  function getValSafe(val) {
+      if (val === null || val === undefined) return 0;
+      return Number(val);
+  }
+
   function getFlowFc(r){
     if(!r) return 0;
     if(r.inflow_m3s !== undefined && r.inflow_m3s !== null) return Number(r.inflow_m3s);
@@ -557,15 +564,23 @@
     const [y,m,d] = datePart.split('-');
     return { day: d, month: m, year: y, time: timePart };
   }
+  function extractDateVN(iso) {
+      const d = new Date(iso);
+      if(isNaN(d.getTime())) return null;
+      // Chuyển sang giờ VN (UTC+7)
+      const vnTime = new Date(d.getTime() + 7 * 60 * 60 * 1000);
+      const day = String(vnTime.getUTCDate()).padStart(2, '0');
+      const month = String(vnTime.getUTCMonth() + 1).padStart(2, '0');
+      return `${day}/${month}`;
+  }
+
   function formatTimeVN(iso){ const p = parseLiteral(iso); return p ? p.time : "-"; }
   function formatDateTimeVN(iso){ const p = parseLiteral(iso); return p ? `${p.time} ${p.day}/${p.month}/${p.year}` : "-"; }
   function formatChartLabel(iso){ const p = parseLiteral(iso); return p ? `${p.time} ${p.day}/${p.month}` : "-"; }
   
-  // -- NEW HELPER: GỌN NHẸ CHO TABLE --
   function formatTableTime(iso) {
       const p = parseLiteral(iso);
       if(!p) return "-";
-      // Chuyển 07:00 thành 7h
       const h = parseInt(p.time.split(':')[0]); 
       return `${h}h ${p.day}/${p.month}`;
   }
@@ -573,19 +588,15 @@
   function rgba(rgb,a){ return `rgba(${rgb}, ${a})`; }
   function toast(msg){ const t=$("toast"); t.textContent=msg; t.style.display="block"; setTimeout(()=>t.style.display="none", 2500); }
   
-  // --- NEW HELPER: CONVERT UTC STRING TO VIETNAM TIME STRING ---
   function formatToVNTime(isoString) {
       const date = new Date(isoString);
       if (isNaN(date.getTime())) return isoString; 
-
-      // Use Intl for precise timezone conversion
       const vnDate = new Date(date.toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"}));
       const hh = String(vnDate.getHours()).padStart(2, '0');
       const mm = String(vnDate.getMinutes()).padStart(2, '0');
       const dd = String(vnDate.getDate()).padStart(2, '0');
       const mo = String(vnDate.getMonth() + 1).padStart(2, '0');
       const yyyy = vnDate.getFullYear();
-
       return `${hh}:${mm} ${dd}/${mo}/${yyyy}`;
   }
 
@@ -733,8 +744,13 @@
       state.fcEnsemble = mapFc;
 
       state.hourly3D = getLatestUniqueData(res4.data, 'time');
-      state.hourly7D_Obs = getLatestUniqueData(res7.data, 'time');
-      state.rainObs7D = getLatestUniqueData(res8.data, 'time');
+      
+      // CHANGE: Map correctly to RESERVOIR data (Index 5 -> res7)
+      state.hourly7D_Obs = getLatestUniqueData(res7.data, 'time'); 
+      
+      // CHANGE: Map correctly to RAINFALL data (Index 6 -> res8)
+      state.rainObs7D = getLatestUniqueData(res8.data, 'time'); 
+      
       state.rain24hRaw = getLatestUniqueData(res5.data, 'time');
       
       // Update logic: Don't reverse the data here, keep it "oldest to newest" for charts.
@@ -777,11 +793,22 @@
     [...arr].sort((a,b) => new Date(b.created_at || b.time) - new Date(a.created_at || a.time)).forEach(i => { if(!map.has(i[key])) map.set(i[key], i); });
     return Array.from(map.values()).sort((a,b) => new Date(a[key]) - new Date(b[key]));
   }
-  function aggregateByDay(data, timeKey) {
+  
+  // Hàm tổng hợp mưa theo ngày từ mảng dữ liệu bất kỳ, chỉ định tên cột giá trị
+  function aggregateRainByDay(data, timeKey, valueKey) {
     const map = {};
-    data.forEach(r => { const p = parseLiteral(r[timeKey]); if(p) { const dateStr = `${p.day}/${p.month}`; map[dateStr] = (map[dateStr] || 0) + getRain(r); } });
+    data.forEach(r => { 
+        // Dùng hàm extractDateVN thay vì parseLiteral để đảm bảo đúng ngày theo giờ VN
+        const dateStr = extractDateVN(r[timeKey]);
+        if(dateStr) { 
+            const val = getValSafe(r[valueKey]);
+            map[dateStr] = (map[dateStr] || 0) + val; 
+        } 
+    });
     return map;
   }
+  
+  function aggregateByDay(data, timeKey) { return aggregateRainByDay(data, timeKey, 'rainfall_mm'); } // Helper cũ
 
   function renderOverview(fcFlowData, fcRainData){
     const l = state.lastObs;
@@ -820,7 +847,6 @@
       const diff = wl - val; const el = $(id);
       if(el){
         el.innerText = `${diff > 0 ? "+" : ""}${fmt2.format(diff)}`;
-        // Removed className manipulation to fix color issue
       }
     };
     setDiff('diff_KiemTra', RES_CONST.WL_MAX_CHECK);
@@ -1083,10 +1109,20 @@
     else if (currentTab === 'RF_COMPARE') {
       const tEnd = new Date($("day").value).setHours(0,0,0,0) + 86400000 - 1; 
       const tStartCompare = tEnd - 7*86400000;
-      const obs = state.rainObs7D.filter(r => { const t=new Date(r.time).getTime(); return t>=tStartCompare && t<=tEnd; });
-      const fc = state.rainFc.filter(r => { const t=new Date(r.forecast_time).getTime(); return t>=tStartCompare && t<=tEnd; });
-      const aggObs = aggregateByDay(obs, 'time');
-      const aggFc = aggregateByDay(fc, 'forecast_time');
+      
+      // LOGIC MỚI CHO RF_COMPARE
+      // 1. Thực tế (Màu Xanh): Lấy từ bảng reservoir_hourly_data (state.hourly7D_Obs) -> cột rainfallreal
+      const obs = state.hourly7D_Obs.filter(r => { const t=new Date(r.time).getTime(); return t>=tStartCompare && t<=tEnd; });
+      
+      // 2. Dự báo/Trạm (Màu Tím): Lấy từ bảng rainfall_observed (state.rainObs7D) -> cột rainfall_mm
+      const fc = state.rainObs7D.filter(r => { const t=new Date(r.time).getTime(); return t>=tStartCompare && t<=tEnd; });
+      
+      // Tổng hợp Thực tế (rainfallreal)
+      const aggObs = aggregateRainByDay(obs, 'time', 'rainfallreal');
+
+      // Tổng hợp Dự báo/Trạm (rainfall_mm)
+      const aggFc = aggregateRainByDay(fc, 'time', 'rainfall_mm');
+      
       const allDays = [...new Set([...Object.keys(aggObs), ...Object.keys(aggFc)])].sort();
       datasets = [
         { type: 'bar', label: 'Thực tế', data: allDays.map(k => aggObs[k]||0), backgroundColor: rgba(C.RF, 0.7) },
