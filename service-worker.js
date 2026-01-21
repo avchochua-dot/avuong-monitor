@@ -1,14 +1,15 @@
-const CACHE_NAME = "avuong-dashboard-v1";
+const CACHE_NAME = "avuong-dashboard-v2"; // Đổi tên v2 để ép điện thoại tải lại cache mới
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./icons/icon-192.jpg",
-  "./icons/icon-512.jpg"
+  "./icons/icon-192.png",
+  "./icons/icon-512.png"
 ];
 
-// 1. Cài đặt Service Worker và lưu Cache
+// 1. Install
 self.addEventListener("install", (event) => {
+  self.skipWaiting(); // Ép service worker mới chạy ngay lập tức
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log("[Service Worker] Caching assets");
@@ -17,7 +18,7 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// 2. Kích hoạt và xóa Cache cũ nếu có update
+// 2. Activate & Clean old cache
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keyList) => {
@@ -30,9 +31,10 @@ self.addEventListener("activate", (event) => {
       );
     })
   );
+  self.clients.claim();
 });
 
-// 3. Xử lý Request (Ưu tiên mạng, nếu mất mạng thì lấy Cache)
+// 3. Fetch
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
