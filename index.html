@@ -37,135 +37,48 @@
   </script>
   
   <style>
-    /* --- CORE VARIABLES --- */
     :root{
-      --bg-app: #080b1a; 
-      --card-bg: #10152b; 
-      --card-border: rgba(66, 153, 225, 0.15);
-      
-      --text-main: #e2e8f0;
-      --text-muted: #94a3b8;
-      
-      /* COLORS (RGB) */
-      --c-wl: 34, 211, 238;   /* Cyan */
-      --c-in: 59, 130, 246;   /* Blue */
-      --c-tb: 245, 158, 11;   /* Orange */
-      --c-sp: 239, 68, 68;    /* Red */
-      --c-rn: 167, 139, 250;  /* Purple */
-      --c-green: 16, 185, 129;
-      --c-rn-real: 34, 197, 94;
-      --c-acc: 250, 204, 21;  /* Yellow */
-
-      --font-sans: 'Inter', system-ui, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
-      
+      --bg-app: #080b1a; --card-bg: #10152b; --card-border: rgba(66, 153, 225, 0.15);
+      --text-main: #e2e8f0; --text-muted: #94a3b8;
+      --c-wl: 34, 211, 238; --c-in: 59, 130, 246; --c-tb: 245, 158, 11;
+      --c-sp: 239, 68, 68; --c-rn: 167, 139, 250; --c-green: 16, 185, 129;
+      --c-rn-real: 34, 197, 94; --c-acc: 250, 204, 21;
+      --font-sans: 'Inter', sans-serif; --font-mono: 'JetBrains Mono', monospace;
       --nav-height: 65px;
     }
     
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     ::-webkit-scrollbar { display: none; }
-    
-    html, body { 
-       height: 100%; margin: 0; overflow: hidden; 
-       background: var(--bg-app); font-family: var(--font-sans); color: var(--text-main);
-       font-size: 15px; 
-       -ms-overflow-style: none; scrollbar-width: none;
-    }
-    
+    html, body { height: 100%; margin: 0; overflow: hidden; background: var(--bg-app); font-family: var(--font-sans); color: var(--text-main); font-size: 15px; }
     .app-container { display: flex; flex-direction: column; height: 100%; max-width: 600px; margin: 0 auto; background: var(--bg-app); position: relative; }
     
-    /* LOGIN SCREEN STYLES */
-    #login-view {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(135deg, #060818 0%, #1a203c 100%);
-      z-index: 9999; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; padding: 20px;
-    }
-    .login-card {
-      width: 100%; max-width: 360px;
-      background: rgba(16, 21, 43, 0.8);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 24px; padding: 30px 24px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-      text-align: center;
-    }
-    .login-logo {
-      width: 140px; height: 50px; margin: 0 auto 20px;
-      background-color: rgba(255,255,255,0.95); border-radius: 12px;
-      background-image: url('https://ycthhachfxczwkburnfa.supabase.co/storage/v1/object/public/Image/Logo%20AVC.png');
-      background-size: 90%; background-position: center; background-repeat: no-repeat;
-    }
+    #login-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #060818 0%, #1a203c 100%); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+    .login-card { width: 100%; max-width: 360px; background: rgba(16, 21, 43, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 30px 24px; text-align: center; }
+    .login-logo { width: 140px; height: 50px; margin: 0 auto 20px; background-color: rgba(255,255,255,0.95); border-radius: 12px; background-image: url('https://ycthhachfxczwkburnfa.supabase.co/storage/v1/object/public/Image/Logo%20AVC.png'); background-size: 90%; background-position: center; background-repeat: no-repeat; }
     .login-title { font-size: 20px; font-weight: 700; color: white; margin-bottom: 6px; }
     .login-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 30px; }
-    
-    .inp-group { margin-bottom: 16px; text-align: left; }
-    .inp-label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; margin-left: 4px; }
-    .login-input {
-      width: 100%; padding: 14px; border-radius: 12px;
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-      color: white; font-size: 14px; outline: none; transition: 0.2s;
-    }
-    .login-input:focus { border-color: var(--c-in); background: rgba(59, 130, 246, 0.1); }
-    
-    .btn-login {
-      width: 100%; padding: 14px; border-radius: 12px; margin-top: 10px;
-      background: linear-gradient(90deg, #3b82f6, #2563eb);
-      color: white; font-weight: 700; font-size: 15px; border: none; cursor: pointer;
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-    }
-    .btn-login:active { transform: scale(0.98); opacity: 0.9; }
+    .login-input { width: 100%; padding: 14px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; margin-bottom: 16px; outline: none; transition: 0.2s; }
+    .btn-login { width: 100%; padding: 14px; border-radius: 12px; background: linear-gradient(90deg, #3b82f6, #2563eb); color: white; font-weight: 700; border: none; cursor: pointer; }
     .login-error { color: #ef4444; font-size: 12px; margin-top: 15px; min-height: 18px; }
 
-    /* APP LAYOUT (HIDDEN BY DEFAULT) */
     #main-view { display: none; }
-
-    /* TOPBAR - FIXED SAFE AREA */
-    .topbar {
-      flex-shrink: 0; 
-      padding: 12px 16px; 
-      padding-top: max(12px, env(safe-area-inset-top) + 12px);
-      
-      background: rgba(16, 21, 43, 0.95); backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; z-index: 20;
-    }
+    .topbar { flex-shrink: 0; padding: 12px 16px; padding-top: max(12px, env(safe-area-inset-top) + 12px); background: rgba(16, 21, 43, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; z-index: 20; }
     .brand { display: flex; align-items: center; gap: 12px; }
-    
-    /* LOGO FIX */
-    .logo-container {
-      width: 90px; height: 38px;
-      background-color: rgba(255, 255, 255, 0.95);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      border: 1px solid rgba(255,255,255,0.2);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      padding: 2px;
-    }
-    .logo-container img {
-      width: 100%; height: 100%;
-      object-fit: contain; 
-    }
-
+    .logo-container { width: 90px; height: 38px; background-color: rgba(255, 255, 255, 0.95); border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 2px 8px rgba(0,0,0,0.2); padding: 2px; }
+    .logo-container img { width: 100%; height: 100%; object-fit: contain; }
     .brand-text h1 { margin: 0; font-size: 16px; font-weight: 700; color: white; }
     .brand-text small { font-size: 12px; color: rgb(var(--c-wl)); display: block; margin-top: 0px; }
     .status-badge { font-size: 11px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: rgb(var(--c-green)); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); }
 
-    /* CONTENT */
     .main-content { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 80px; }
     .tab-pane { display: none; animation: fadeUp 0.3s ease; }
     .tab-pane.active { display: block; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* --- DASHBOARD STYLES --- */
-    .safety-card {
-      background: linear-gradient(145deg, rgba(16, 21, 43, 1), rgba(6, 50, 90, 0.3));
-      border-radius: 18px; border: 1px solid var(--card-border);
-      padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 25px rgba(0,0,0,0.4);
-    }
+    .safety-card { background: linear-gradient(145deg, rgba(16, 21, 43, 1), rgba(6, 50, 90, 0.3)); border-radius: 18px; border: 1px solid var(--card-border); padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 25px rgba(0,0,0,0.4); }
     .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
     .card-title { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
     .warning-tag { background: rgba(245, 158, 11, 0.2); color: rgb(var(--c-tb)); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid rgba(245, 158, 11, 0.3); }
-    
     .big-number-box { text-align: center; margin-bottom: 20px; }
     .big-label { font-size: 14px; color: var(--text-muted); margin-bottom: 4px; }
     .big-value { font-size: 56px; font-weight: 800; color: rgb(var(--c-wl)); line-height: 1; text-shadow: 0 0 30px rgba(34, 211, 238, 0.25); font-family: var(--font-sans); letter-spacing: -2px; }
@@ -176,132 +89,47 @@
     .lvl-name { white-space: nowrap; }
     .lvl-dots { flex: 1; border-bottom: 1px dashed rgba(255,255,255,0.1); margin: 0 10px; position: relative; top: -3px; }
     .lvl-diff { font-family: var(--font-mono); font-weight: 700; font-size: 13px; }
-    
-    .lvl-kt { color: #ef4444; } 
-    .lvl-dbt { color: #f59e0b; } 
-    .lvl-dl { color: #3b82f6; }  
-    .lvl-ch { color: #a855f7; }
-    .lvl-min { color: #22d3ee; } 
-  
+    .lvl-kt { color: #ef4444; } .lvl-dbt { color: #f59e0b; } .lvl-dl { color: #3b82f6; } .lvl-ch { color: #a855f7; } .lvl-min { color: #22d3ee; } 
     .section-title { font-size: 13px; font-weight: 700; color: var(--text-muted); margin: 24px 0 10px 4px; text-transform: uppercase; display: block; letter-spacing: 0.5px; }
     
-    /* NEW GRID STYLES */
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-    
-    .stat-box {
-      background: rgba(16, 21, 43, 0.6); 
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px; padding: 14px 6px; text-align: center;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      position: relative; overflow: hidden;
-    }
-    /* Flow Group */
+    .stat-box { background: rgba(16, 21, 43, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 6px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
     .stat-box.flow { background: linear-gradient(180deg, rgba(59, 130, 246, 0.05) 0%, rgba(16, 21, 43, 0.8) 100%); border-color: rgba(59, 130, 246, 0.15); }
-    /* Vol Group */
     .stat-box.vol { background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(16, 21, 43, 0.8) 100%); border-color: rgba(245, 158, 11, 0.15); }
-    /* Rain Group */
     .stat-box.rain { background: linear-gradient(180deg, rgba(167, 139, 250, 0.08) 0%, rgba(16, 21, 43, 0.8) 100%); border-color: rgba(167, 139, 250, 0.2); }
-
     .stat-label { font-size: 10px; color: #94a3b8; margin-bottom: 4px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
     .stat-val { font-size: 18px; font-weight: 800; color: white; font-family: var(--font-mono); line-height: 1.2; }
-    .stat-sub { font-size: 10px; color: #64748b; margin-top: 3px; font-weight: 500; }
     
-    .forecast-row {
-      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px;
-      padding: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
-    }
+    .forecast-row { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
     .fc-info { display: flex; flex-direction: column; gap: 3px; }
     .fc-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
     .fc-desc { font-size: 11px; color: #64748b; }
     .fc-range { font-family: var(--font-mono); font-size: 16px; color: var(--text-main); font-weight: 700; }
-    .fc-highlight { color: rgb(var(--c-wl)); }
-    .fc-rain { color: rgb(var(--c-green)); }
+    .fc-highlight { color: rgb(var(--c-wl)); } .fc-rain { color: rgb(var(--c-green)); }
 
-    /* CARD GENERAL */
-    .card {
-      background: var(--card-bg); border-radius: 16px; border: 1px solid var(--card-border);
-      padding: 14px; margin-bottom: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-      position: relative; overflow: hidden;
-    }
+    .card { background: var(--card-bg); border-radius: 16px; border: 1px solid var(--card-border); padding: 14px; margin-bottom: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); position: relative; overflow: hidden; }
     .cardHead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
     .cardHead b { font-size: 14px; color: var(--text-muted); text-transform: uppercase; }
 
-    /* Controls */
     .row { display: flex; gap: 10px; margin-bottom: 14px; align-items: flex-end; }
     .control { flex: 1; display: flex; flex-direction: column; gap: 5px; }
     label { font-size: 12px; color: var(--text-muted); }
-    input[type=date], .btn-action, button {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: white;
-      padding: 10px; border-radius: 10px; font-family: var(--font-sans); width: 100%; font-size: 14px; outline:none;
-    }
+    input[type=date], .btn-action, button { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px; border-radius: 10px; font-family: var(--font-sans); width: 100%; font-size: 14px; outline:none; }
     .btn-action, button { background: rgba(59, 130, 246, 0.2); color: #60a5fa; font-weight: 700; width: auto; white-space: nowrap; padding: 10px 18px; cursor: pointer; }
-    
     .chip { padding:4px 10px; border-radius:99px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); color:var(--text-muted); font-size:11px; }
 
-    /* Tabs & Chart */
     .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-    .tab {
-      padding: 6px 12px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.03); color: var(--text-muted); font-size: 12px; font-weight: 600;
-      cursor: pointer; display: flex; align-items: center; gap: 5px;
-    }
+    .tab { padding: 6px 12px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: var(--text-muted); font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; }
     .tab.active { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white; }
     .swatch { width: 8px; height: 8px; border-radius: 50%; }
     canvas { width: 100% !important; height: 320px !important; }
 
-    /* --- TABLE OPTIMIZED FOR MOBILE --- */
-    .table-container { 
-      overflow-x: auto; 
-      -webkit-overflow-scrolling: touch; 
-      border-radius: 12px; 
-      border: 1px solid rgba(255,255,255,0.08); 
-    }
-    table { 
-      width: 100%; 
-      border-collapse: collapse; 
-      font-size: 12px; /* Font nhỏ hơn trên mobile */
-      white-space: nowrap; 
-    }
-    
-    th { 
-      background: #161e33; 
-      color: #94a3b8; 
-      padding: 8px 4px; /* Giảm padding header */
-      text-align: center; 
-      font-weight: 700; 
-      font-size: 10px; /* Header nhỏ gọn */
-      text-transform: uppercase; 
-      font-family: var(--font-sans);
-      letter-spacing: 0.3px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    
-    td { 
-      padding: 8px 4px; /* Giảm padding cell */
-      border-bottom: 1px solid rgba(255,255,255,0.04); 
-      text-align: center; 
-      font-family: var(--font-sans);
-      font-weight: 500;
-      font-variant-numeric: tabular-nums;
-    }
-    
-    /* Cột đầu tiên (Thời gian): Thu gọn tối đa */
-    td:first-child { 
-      text-align: left; 
-      padding-left: 10px; 
-      position: sticky; 
-      left: 0; 
-      background: #0f1426; 
-      z-index: 1; 
-      border-right: 1px solid rgba(255,255,255,0.08); 
-      color: var(--text-main); 
-      font-weight: 600;
-      font-size: 11px; /* Font nhỏ cho thời gian */
-      width: 60px; /* Cố định chiều rộng nếu cần */
-    }
+    .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+    th { background: #161e33; color: #94a3b8; padding: 8px 4px; text-align: center; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    td { padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.04); text-align: center; font-family: var(--font-sans); font-weight: 500; font-variant-numeric: tabular-nums; }
+    td:first-child { text-align: left; padding-left: 10px; position: sticky; left: 0; background: #0f1426; z-index: 1; border-right: 1px solid rgba(255,255,255,0.08); color: var(--text-main); font-weight: 600; font-size: 11px; width: 60px; }
 
-    /* Accordion */
     .list-item { background: var(--card-bg); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; }
     .accordion-header { display: flex; gap: 12px; padding: 14px; align-items: flex-start; cursor: pointer; }
     .icon-box { width: 36px; height: 36px; border-radius: 10px; background: rgba(59,130,246,0.15); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
@@ -310,12 +138,7 @@
     .accordion-body { display: none; padding: 0 14px 14px 62px; color: var(--text-muted); font-size: 13px; line-height: 1.6; white-space: pre-wrap; }
     .accordion-body.open { display: block; }
 
-    /* Nav */
-    .bottom-nav {
-      position: absolute; bottom: 0; left: 0; right: 0; height: var(--nav-height);
-      background: rgba(6, 8, 20, 0.98); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.08);
-      display: grid; grid-template-columns: repeat(5, 1fr); z-index: 100;
-    }
+    .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: var(--nav-height); background: rgba(6, 8, 20, 0.98); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.08); display: grid; grid-template-columns: repeat(5, 1fr); z-index: 100; }
     .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #526071; cursor: pointer; }
     .nav-item.active { color: rgb(var(--c-in)); }
     .nav-item svg { width: 24px; height: 24px; fill: currentColor; }
@@ -331,16 +154,8 @@
     <div class="login-logo"></div>
     <div class="login-title">Đăng Nhập Hệ Thống</div>
     <div class="login-desc">Hệ thống hỗ trợ vận hành hồ chứa thủy điện A Vương</div>
-    
-    <div class="inp-group">
-      <label class="inp-label">Email</label>
-      <input type="email" id="loginEmail" class="login-input" placeholder="nhanvien@avuong.vn">
-    </div>
-    <div class="inp-group">
-      <label class="inp-label">Mật khẩu</label>
-      <input type="password" id="loginPass" class="login-input" placeholder="••••••••">
-    </div>
-
+    <div class="inp-group"><label class="inp-label">Email</label><input type="email" id="loginEmail" class="login-input" placeholder="nhanvien@avuong.vn"></div>
+    <div class="inp-group"><label class="inp-label">Mật khẩu</label><input type="password" id="loginPass" class="login-input" placeholder="••••••••"></div>
     <button class="btn-login" onclick="handleLogin()">ĐĂNG NHẬP</button>
     <div class="login-error" id="loginError"></div>
   </div>
@@ -349,104 +164,47 @@
 <div class="app-container" id="main-view">
   <div class="topbar">
     <div class="brand">
-      <div class="logo-container">
-          <img src="https://ycthhachfxczwkburnfa.supabase.co/storage/v1/object/public/Image/Logo%20AVC.png" alt="Logo AVC">
-      </div>
-      <div class="brand-text">
-        <h1>A Vương • Dashboard • AI</h1>
-        <small id="lastUpdate" style="margin-left: 8px; font-weight: 500;">--:--</small>
-      </div>
+      <div class="logo-container"><img src="https://ycthhachfxczwkburnfa.supabase.co/storage/v1/object/public/Image/Logo%20AVC.png" alt="Logo AVC"></div>
+      <div class="brand-text"><h1>A Vương • Dashboard • AI</h1><small id="lastUpdate" style="margin-left: 8px; font-weight: 500;">--:--</small></div>
     </div>
     <div style="display:flex; align-items:center; gap:8px;">
       <button onclick="window.location.reload()" style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:#60a5fa; padding:0; width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-right:4px;">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
       </button>
-      
       <div class="status-badge">ONLINE</div>
-      <button onclick="handleLogout()" style="background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.3); color:#ef4444; padding:4px 8px; font-size:10px; width:auto;">
-        Thoát
-      </button>
+      <button onclick="handleLogout()" style="background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.3); color:#ef4444; padding:4px 8px; font-size:10px; width:auto;">Thoát</button>
     </div>
   </div>
 
   <div class="main-content">
     
     <div id="tab-overview" class="tab-pane active">
-      
       <section class="safety-card">
-        <div class="card-header">
-          <span class="card-title">An Toàn Công Trình</span>
-          <span class="warning-tag" id="floodStatus">Bình thường</span>
-        </div>
-        
+        <div class="card-header"><span class="card-title">An Toàn Công Trình</span><span class="warning-tag" id="floodStatus">Bình thường</span></div>
         <div class="big-number-box">
           <div class="big-label">Mực nước hồ hiện tại</div>
-          <div class="big-value">
-            <span id="txtWL">---</span><span class="unit-sub">m</span>
-          </div>
+          <div class="big-value"><span id="txtWL">---</span><span class="unit-sub">m</span></div>
         </div>
-
         <div class="level-list">
-          <div class="level-item">
-            <span class="lvl-name lvl-kt">MN Kiểm tra (382.2)</span><span class="lvl-dots"></span><span class="lvl-diff lvl-kt" id="diff_KiemTra">--</span>
-          </div>
-          <div class="level-item">
-            <span class="lvl-name lvl-dbt" style="font-weight:700;">MN Dâng bình thường (380.0)</span><span class="lvl-dots"></span><span class="lvl-diff lvl-dbt" id="diff_MNDBT">--</span>
-          </div>
-          <div class="level-item">
-            <span class="lvl-name lvl-dl" id="lbl_DonLu">MN Cao nhất trước lũ (376.0)</span><span class="lvl-dots"></span><span class="lvl-diff lvl-dl" id="diff_DonLu">--</span>
-          </div>
-          
-          <div class="level-item">
-            <span class="lvl-name lvl-min">MN đón lũ thấp nhất (370.0)</span><span class="lvl-dots"></span><span class="lvl-diff lvl-min" id="diff_DonLuMin">--</span>
-          </div>
-
-          <div class="level-item">
-            <span class="lvl-name lvl-ch">MN Chết (340.0)</span><span class="lvl-dots"></span><span class="lvl-diff lvl-ch" id="diff_Chet">--</span>
-          </div>
+          <div class="level-item"><span class="lvl-name lvl-kt">MN Kiểm tra (382.2)</span><span class="lvl-dots"></span><span class="lvl-diff lvl-kt" id="diff_KiemTra">--</span></div>
+          <div class="level-item"><span class="lvl-name lvl-dbt" style="font-weight:700;">MN Dâng bình thường (380.0)</span><span class="lvl-dots"></span><span class="lvl-diff lvl-dbt" id="diff_MNDBT">--</span></div>
+          <div class="level-item"><span class="lvl-name lvl-dl" id="lbl_DonLu">MN Cao nhất trước lũ (376.0)</span><span class="lvl-dots"></span><span class="lvl-diff lvl-dl" id="diff_DonLu">--</span></div>
+          <div class="level-item"><span class="lvl-name lvl-min">MN đón lũ thấp nhất (370.0)</span><span class="lvl-dots"></span><span class="lvl-diff lvl-min" id="diff_DonLuMin">--</span></div>
+          <div class="level-item"><span class="lvl-name lvl-ch">MN Chết (340.0)</span><span class="lvl-dots"></span><span class="lvl-diff lvl-ch" id="diff_Chet">--</span></div>
         </div>
       </section>
 
       <span class="section-title">Số liệu vận hành</span>
       <div class="stats-grid">
-        <div class="stat-box flow">
-          <span class="stat-label">Q về (m³/s)</span>
-          <span class="stat-val" style="color:rgb(var(--c-in))" id="txtQin">--</span>
-        </div>
-        <div class="stat-box flow">
-          <span class="stat-label">Q máy (m³/s)</span>
-          <span class="stat-val" style="color:rgb(var(--c-tb))" id="txtQtb">--</span>
-        </div>
-        <div class="stat-box flow">
-          <span class="stat-label">Q xả (m³/s)</span>
-          <span class="stat-val" style="color:rgb(var(--c-sp))" id="txtQsp">0</span>
-        </div>
-        
-        <div class="stat-box vol">
-          <span class="stat-label">Dung tích (Tr.m³)</span>
-          <span class="stat-val" style="color:#fff" id="txtVol">--</span>
-        </div>
-        <div class="stat-box vol">
-          <span class="stat-label">% Toàn bộ</span>
-          <span class="stat-val" style="color:rgb(var(--c-wl))" id="txtPctTotal">--%</span>
-        </div>
-        <div class="stat-box vol">
-          <span class="stat-label">% Hữu ích</span>
-          <span class="stat-val" style="color:rgb(var(--c-wl))" id="txtPctUseful">--%</span>
-        </div>
-        
-        <div class="stat-box rain">
-          <span class="stat-label">Mưa 1h (mm)</span>
-          <span class="stat-val" style="color:rgb(var(--c-rn))" id="txtRain1h">--</span>
-        </div>
-        <div class="stat-box rain">
-          <span class="stat-label">Mưa ngày D</span>
-          <span class="stat-val" style="color:rgb(var(--c-rn))" id="txtRainDay">--</span>
-        </div>
-        <div class="stat-box rain">
-          <span class="stat-label">Mưa D-1</span>
-          <span class="stat-val" style="color:#cbd5e1" id="txtRainD1">--</span>
-        </div>
+        <div class="stat-box flow"><span class="stat-label">Q về (m³/s)</span><span class="stat-val" style="color:rgb(var(--c-in))" id="txtQin">--</span></div>
+        <div class="stat-box flow"><span class="stat-label">Q máy (m³/s)</span><span class="stat-val" style="color:rgb(var(--c-tb))" id="txtQtb">--</span></div>
+        <div class="stat-box flow"><span class="stat-label">Q xả (m³/s)</span><span class="stat-val" style="color:rgb(var(--c-sp))" id="txtQsp">0</span></div>
+        <div class="stat-box vol"><span class="stat-label">Dung tích (Tr.m³)</span><span class="stat-val" style="color:#fff" id="txtVol">--</span></div>
+        <div class="stat-box vol"><span class="stat-label">% Toàn bộ</span><span class="stat-val" style="color:rgb(var(--c-wl))" id="txtPctTotal">--%</span></div>
+        <div class="stat-box vol"><span class="stat-label">% Hữu ích</span><span class="stat-val" style="color:rgb(var(--c-wl))" id="txtPctUseful">--%</span></div>
+        <div class="stat-box rain"><span class="stat-label">Mưa 1h (mm)</span><span class="stat-val" style="color:rgb(var(--c-rn))" id="txtRain1h">--</span></div>
+        <div class="stat-box rain"><span class="stat-label">Mưa ngày D</span><span class="stat-val" style="color:rgb(var(--c-rn))" id="txtRainDay">--</span></div>
+        <div class="stat-box rain"><span class="stat-label">Mưa D-1</span><span class="stat-val" style="color:#cbd5e1" id="txtRainD1">--</span></div>
       </div>
       
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;">
@@ -462,17 +220,11 @@
 
       <span class="section-title">Dự báo 7 ngày tới</span>
       <div class="forecast-row">
-        <div class="fc-info">
-          <span class="fc-title">Lưu lượng về (Min-Max)</span>
-          <span class="fc-desc">Dự báo tổ hợp Ensemble</span>
-        </div>
+        <div class="fc-info"><span class="fc-title">Lưu lượng về (Min-Max)</span><span class="fc-desc">Dự báo tổ hợp Ensemble</span></div>
         <div class="fc-range fc-highlight" id="fcFlowRange">-- - --</div>
       </div>
       <div class="forecast-row">
-        <div class="fc-info">
-          <span class="fc-title">Mưa ngày (Min-Max)</span>
-          <span class="fc-desc">Lượng mưa tích lũy 24h</span>
-        </div>
+        <div class="fc-info"><span class="fc-title">Mưa ngày (Min-Max)</span><span class="fc-desc">Lượng mưa tích lũy 24h</span></div>
         <div class="fc-range fc-rain" id="fcRainRange">-- - --</div>
       </div>
     </div>
@@ -539,7 +291,7 @@
       
       <div class="card" style="border: 1px solid rgba(139,92,246,0.3);">
         <div class="cardHead">
-            <b style="color:#c084fc;">🤖 AI Nhận định</b> 
+            <b style="color:#c084fc;">🤖 Nhận định AI</b> 
             <button onclick="generateAI()" style="width:auto; padding:6px 12px; font-size:11px; margin-left:auto; background:rgba(139,92,246,0.2); border:1px solid rgba(139,92,246,0.4); color:#c084fc; cursor:pointer;">✨ Tạo nhận định</button>
         </div>
         <div id="ai-list" style="padding:0;">
@@ -621,7 +373,7 @@
   // --- CONFIG ---
   const SB_URL = "https://ycthhachfxczwkburnfa.supabase.co";
   const SB_KEY = "sb_publishable_Q0KbTLPBE4owO72Mz-GN6A_khF9z_Ss";
-  const RES_CONST = { WL_MAX_CHECK:382.2, WL_NORMAL:380.0, WL_FLOOD:376.0, WL_FLOOD_MIN:370.0, WL_DEAD:340.0, VOL_DEAD:77.0, VOL_MAX:343.5 };
+  const RES_CONST = { WL_MAX_CHECK:382.2, WL_NORMAL:380.0, WL_FLOOD:376.0, WL_FLOOD_MIN:370.0, WL_DEAD:340.0, VOL_DEAD:77.07, VOL_MAX:343.55 };
   const C = { WL:'34, 211, 238', IN:'59, 130, 246', TB:'245, 158, 11', SP:'239, 68, 68', RN:'167, 139, 250', IF:'255, 152, 0', RF:'34, 197, 94', ACC:'250, 204, 21' };
 
   let sb=null, chart=null, currentTab="WL_24H";
@@ -685,10 +437,10 @@
       renderOverview(resFcFuture.data, resRainFcFuture.data);
       renderChart();
       
+      // LOAD DỮ LIỆU CÁC TAB
       if($('tab-data').classList.contains('active')) loadTableData();
       if($('tab-forecast').classList.contains('active')) loadForecasts();
-      // THÊM: Nếu đang ở tab thông báo thì load AI
-      if($('tab-notif').classList.contains('active')) loadAIBulletins(); 
+      if($('tab-notif').classList.contains('active')) loadAIBulletins(); // LOAD AI NẾU ĐANG Ở TAB NOTIF
       
       toast("Đã cập nhật dữ liệu");
     } catch(e){ console.error(e); toast("Lỗi kết nối"); }
@@ -740,7 +492,7 @@
       fc=fc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=tm&&t<tx;});
       const all=[...new Set([...obs.map(r=>r.time),...fc.map(r=>r.forecast_time)])].sort();
       labels=all.map(t=>formatChartLabel(t));
-      datasets=[{label:'Q Thực đo',data:all.map(t=>obs.find(x=>x.time===t)?.inflow??null),borderColor:rgba(C.IN,1),borderWidth:2,pointRadius:0,tension:0.3},{label:'Q Dự báo',data:all.map(t=>{const i=fc.find(x=>x.forecast_time===t);return i?getFlowFc(i):null;}),borderColor:tabMeta[currentTab].color.includes(',')?`rgb(${tabMeta[currentTab].color})`:tabMeta[currentTab].color,borderDash:[4,4],borderWidth:2,pointRadius:0,tension:0.3}];
+      datasets=[{label:'Q Thực đo',data:all.map(t=>obs.find(x=>x.time===t)?.inflow??null),borderColor:rgba(C.IN,1),borderWidth:2,pointRadius:0,tension:0.3},{label:'MA 24h',data:all.map(t=>{const c=new Date(t).getTime();let s=0,n=0;for(let i=0;i<24;i++){const p=state.hourly7D_Obs.find(x=>new Date(x.time).getTime()===c-i*3600000);if(p){s+=p.inflow;n++;}}return n?s/n:null;}),borderColor:'#e879f9',borderWidth:1.5,borderDash:[2,2],fill:false},{label:'Q Dự báo',data:all.map(t=>{const i=fc.find(x=>x.forecast_time===t);return i?getFlowFc(i):null;}),borderColor:tabMeta[currentTab].color.includes(',')?`rgb(${tabMeta[currentTab].color})`:tabMeta[currentTab].color,borderDash:[4,4],borderWidth:2,pointRadius:0,tension:0.3}];
     }
     else if(currentTab==='IN_FC_7D'){
       const tl=new Date($("day").value).setHours(0,0,0,0)+7*86400000; const ts=Object.keys(state.fcEnsemble||{}).filter(t=>{const tm=new Date(t).getTime();return tm>=new Date($("day").value).setHours(0,0,0,0)&&tm<=tl;}).sort();
@@ -779,14 +531,15 @@
     document.getElementById('tab-'+name).classList.add('active');
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
     el.classList.add('active');
+    
     if(name==='data') loadTableData();
-    if(name==='forecast') loadBulletins();
+    if(name==='forecast') loadForecasts();
     if(name==='notif') loadAIBulletins(); 
     if(name==='chart'&&chart) chart.resize();
   }
 
   async function loadTableData(){
-    const tb=$("tableBody"); tb.innerHTML=`<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Đang tải...</td></tr>`;
+    const tb=$("tableBody"); tb.innerHTML=`<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Đang lấy 24h số liệu gần nhất...</td></tr>`;
     try{
       const d=state.latest24h; if(!d.length){tb.innerHTML=`<tr><td colspan="6" style="text-align:center; padding:20px;">Không có dữ liệu</td></tr>`;return;}
       tb.innerHTML="";
@@ -798,12 +551,65 @@
     }catch(e){console.error(e);}
   }
 
-  // --- HÀM TẠO AI INSIGHT (MỚI - CALL V4) ---
+  async function loadForecasts() {
+    const container = $("forecast-list");
+    try {
+      const { data, error } = await sb.from('bulletins').select('*').order('created_at', { ascending: false }).limit(10);
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted);">Chưa có bản tin nào.</div>`;
+        return;
+      }
+      container.innerHTML = "";
+      data.forEach((item, index) => {
+        const title = item.title || "";
+        const summary = item.summary || "";
+        const text = (title + " " + summary).toLowerCase();
+        
+        let theme = { color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: '🌤️', label: 'Dự báo' };
+
+        if (text.includes('lũ') || text.includes('bão') || text.includes('khẩn cấp') || item.type === 'urgent') {
+            theme = { color: '#ef4444', bg: 'rgba(239,68,68,0.15)', icon: '⛈️', label: 'Khẩn cấp' };
+        } else if (text.includes('sạt lở') || text.includes('cảnh báo') || item.type === 'warning') {
+            theme = { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: '⚠️', label: 'Cảnh báo' };
+        } else if (text.includes('vận hành') || text.includes('xả') || text.includes('điều tiết')) {
+            theme = { color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: '💧', label: 'Vận hành' };
+        }
+
+        const timeStr = formatToVNTime(item.created_at);
+        const displaySummary = summary || (item.content ? item.content.substring(0, 80) + "..." : "Xem chi tiết");
+        const content = item.content || "Không có nội dung";
+        
+        const div = document.createElement("div");
+        div.className = "list-item";
+        div.innerHTML = `
+            <div class="accordion-header" onclick="this.nextElementSibling.classList.toggle('open')">
+               <div class="icon-box" style="background:${theme.bg}; color:${theme.color};">${theme.icon}</div>
+               <div class="item-content">
+                  <h4 style="white-space: normal; color:${theme.color === '#10b981' ? 'var(--text-main)' : theme.color}">${title || 'Bản tin dự báo'}</h4>
+                  <p>${displaySummary}</p>
+                  <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+                    <span style="font-size:10px; font-weight:700; color:${theme.color}; border:1px solid ${theme.bg}; padding:2px 6px; border-radius:4px;">${theme.label}</span>
+                    <span class="item-date">${timeStr}</span>
+                  </div>
+               </div>
+            </div>
+            <div class="accordion-body">${content}</div>
+        `;
+        container.appendChild(div);
+      });
+    } catch (e) { 
+        console.error(e); 
+        container.innerHTML = `<div style="padding:20px; text-align:center; color:#ef4444;">Lỗi tải dữ liệu: ${e.message}</div>`;
+    }
+  }
+
+  // --- HÀM MỚI CHO AI ---
   async function generateAI() {
       const btn = document.querySelector('#tab-notif button');
       btn.innerText = "Đang suy nghĩ..."; btn.disabled = true;
       try {
-          const { data, error } = await sb.rpc('generate_ai_operational_insight_v4');
+          const { data, error } = await sb.rpc('generate_ai_operational_insight_v3');
           if (error) throw error;
           toast("AI đã tạo bản tin mới!");
           loadAIBulletins(); 
@@ -811,66 +617,39 @@
       finally { btn.innerText = "✨ Tạo nhận định"; btn.disabled = false; }
   }
 
-  // --- HÀM TẢI BẢN TIN THƯỜNG (TAB DỰ BÁO) ---
-  async function loadBulletins() {
-    const container = $("forecast-list");
-    try {
-      const { data, error } = await sb.from('bulletins').select('*').order('created_at', { ascending: false }).limit(20);
-      if (error) throw error;
-      container.innerHTML = "";
-      if (!data || data.length === 0) { container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted);">Chưa có bản tin nào.</div>`; return; }
-
-      data.forEach(item => {
-        const title = item.title || ""; const summary = item.summary || ""; const text = (title + " " + summary).toLowerCase();
-        let theme = { color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: '🌤️', label: 'Dự báo' };
-        
-        if (text.includes('lũ') || text.includes('bão') || item.type === 'urgent') { theme = { color: '#ef4444', bg: 'rgba(239,68,68,0.15)', icon: '⛈️', label: 'Khẩn cấp' }; } 
-        else if (text.includes('cảnh báo') || item.type === 'warning') { theme = { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: '⚠️', label: 'Cảnh báo' }; } 
-        else if (text.includes('vận hành') || text.includes('xả')) { theme = { color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: '💧', label: 'Vận hành' }; }
-
-        renderItem(container, item, theme);
-      });
-    } catch (e) { console.error(e); }
-  }
-
-  // --- HÀM TẢI AI INSIGHT (MỚI - TAB THÔNG BÁO) ---
   async function loadAIBulletins() {
     const container = $("ai-list");
     try {
       const { data, error } = await sb.from('ai_bulletins').select('*').order('created_at', { ascending: false }).limit(5);
       if (error) throw error;
       container.innerHTML = "";
-      if (!data || data.length === 0) { container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted); font-size:12px;">Chưa có nhận định nào. Nhấn nút để tạo mới.</div>`; return; }
+      if (!data || data.length === 0) { 
+          container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted); font-size:12px;">Chưa có nhận định nào.</div>`; 
+          return; 
+      }
 
       data.forEach(item => {
+        const timeStr = formatToVNTime(item.created_at);
+        const div = document.createElement("div"); div.className = "list-item";
         let theme = { color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.15)', icon: '🤖', label: 'AI Nhận định' };
-        if (item.severity === 'critical') theme = { color: '#ef4444', bg: 'rgba(239,68,68,0.15)', icon: '🚨', label: 'AI Cảnh báo' };
-        else if (item.severity === 'warning') theme = { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: '⚠️', label: 'AI Lưu ý' };
-
-        renderItem(container, item, theme);
+        
+        div.innerHTML = `
+            <div class="accordion-header" onclick="this.nextElementSibling.classList.toggle('open')">
+               <div class="icon-box" style="background:${theme.bg}; color:${theme.color};">${theme.icon}</div>
+               <div class="item-content">
+                  <h4 style="white-space: normal; color:${theme.color}">${item.title}</h4>
+                  <p>${item.summary || "..."}</p>
+                  <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+                    <span style="font-size:10px; font-weight:700; color:${theme.color}; border:1px solid ${theme.bg}; padding:2px 6px; border-radius:4px;">${theme.label}</span>
+                    <span class="item-date">${timeStr}</span>
+                  </div>
+               </div>
+            </div>
+            <div class="accordion-body">${item.content}</div>
+        `;
+        container.appendChild(div);
       });
     } catch (e) { console.error(e); }
-  }
-
-  function renderItem(container, item, theme) {
-      const timeStr = formatToVNTime(item.created_at);
-      const displaySummary = item.summary || (item.content ? item.content.substring(0, 80) + "..." : "Xem chi tiết");
-      const div = document.createElement("div"); div.className = "list-item";
-      div.innerHTML = `
-        <div class="accordion-header" onclick="this.nextElementSibling.classList.toggle('open')">
-           <div class="icon-box" style="background:${theme.bg}; color:${theme.color};">${theme.icon}</div>
-           <div class="item-content">
-              <h4 style="white-space: normal; color:${theme.color==='#10b981'?'var(--text-main)':theme.color}">${item.title||'Bản tin'}</h4>
-              <p>${displaySummary}</p>
-              <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
-                <span style="font-size:10px; font-weight:700; color:${theme.color}; border:1px solid ${theme.bg}; padding:2px 6px; border-radius:4px;">${theme.label}</span>
-                <span class="item-date" style="font-size:10px; color:#64748b;">${timeStr}</span>
-              </div>
-           </div>
-        </div>
-        <div class="accordion-body">${item.content || "Không có nội dung"}</div>
-      `;
-      container.appendChild(div);
   }
 </script>
 </body>
