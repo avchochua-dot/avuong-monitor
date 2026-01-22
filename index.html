@@ -123,9 +123,12 @@
     /* APP LAYOUT (HIDDEN BY DEFAULT) */
     #main-view { display: none; }
 
-    /* TOPBAR */
+    /* TOPBAR - FIXED SAFE AREA */
     .topbar {
-      flex-shrink: 0; padding: 12px 16px; 
+      flex-shrink: 0; 
+      padding: 12px 16px; 
+      padding-top: max(12px, env(safe-area-inset-top) + 12px);
+      
       background: rgba(16, 21, 43, 0.95); backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; z-index: 20;
     }
@@ -594,7 +597,11 @@
   const fmt1 = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1, minimumFractionDigits: 1 });
   const fmt0 = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 });
   
-  function getRain(r){ return r && r.rainfall_mm !== undefined ? Number(r.rainfall_mm) : 0; }
+  // UPDATED: Get rain from 'rainfallreal' column
+  function getRain(r){ 
+    if (!r) return 0;
+    return Number(r.rainfallreal || 0); 
+  }
   
   function getValSafe(val) {
       if (val === null || val === undefined) return 0;
@@ -686,7 +693,6 @@
     WL_7D: { name:"MNH 7D", hint:"Mực nước 7 ngày", color: C.WL },
     FLOW_7D: { name:"Q Tổng hợp", hint:"Q về/máy/xả 7 ngày", color: C.IN },
     
-    // NÚT SO SÁNH V7 (THAY THẾ V8)
     IN_OBS_FC_V7: { name:"Q Về vs DB (V7)", hint:"Thực tế vs Mô hình V7", color: '34, 197, 94' }, 
     IN_OBS_FC_MIX: { name:"Q Về vs DB (Mixed)", hint:"Thực tế vs Mô hình Mixed (Mưa thực + DB)", color: '233, 30, 99' }, 
     IN_OBS_FC_AI: { name:"Q Về vs DB (AI)", hint:"Thực tế vs Mô hình AI V1 (Tự học)", color: '156, 39, 176' }, 
@@ -766,14 +772,15 @@
       const now = new Date();
       const future7d = new Date(now.getTime() + 7 * 24 * 3600 * 1000).toISOString();
 
-      const [res1, res2, res4, res5, res6, res7, res8, resLatest, resRainFc, resFcFuture, resRainFcFuture] = await Promise.all([
+      // REMOVED 'rainfall_observed' queries
+      // UPDATED to fetch directly from 'reservoir_hourly_data'
+      const [res1, res2, res4, res6, res7, res8, resLatest, resRainFc, resFcFuture, resRainFcFuture] = await Promise.all([
         sb.from('reservoir_hourly_data').select('*').gte('time', tStart).lte('time', tEnd).order('time', {ascending: true}),
         sb.from('inflow_forecast').select('*').gte('forecast_time', tFcStart).lte('forecast_time', tFcEnd).order('created_at', {ascending: false}), 
-        sb.from('reservoir_hourly_data').select('time, inflow').gte('time', tFcStart).lte('time', tEnd).order('time', {ascending: true}), 
-        sb.from('rainfall_observed').select('*').gte('time', tStart).lte('time', tEnd).order('time', {ascending: true}), 
+        sb.from('reservoir_hourly_data').select('*').gte('time', tFcStart).lte('time', tEnd).order('time', {ascending: true}), 
         sb.from('v_current_storage').select('*').order('time', {ascending: false}).limit(1), 
         sb.from('reservoir_hourly_data').select('*').gte('time', t7DaysAgo).lte('time', tEnd).order('time', {ascending: true}), 
-        sb.from('rainfall_observed').select('*').gte('time', t7DaysAgo).lte('time', tEnd).order('time', {ascending: true}),
+        sb.from('reservoir_hourly_data').select('*').gte('time', t7DaysAgo).lte('time', tEnd).order('time', {ascending: true}),
         sb.from('reservoir_hourly_data').select('*').order('time', {ascending: false}).limit(24),
         sb.from('rainfall_forecast').select('*').gte('forecast_time', tFcStart).lte('forecast_time', tFcEnd).order('created_at', {ascending: false}),
         sb.from('inflow_forecast').select('*').gte('forecast_time', now.toISOString()).lte('forecast_time', future7d),
@@ -794,8 +801,10 @@
 
       state.hourly3D = getLatestUniqueData(res4.data, 'time');
       state.hourly7D_Obs = getLatestUniqueData(res7.data, 'time'); 
-      state.rainObs7D = getLatestUniqueData(res8.data, 'time'); // Data mưa 7 ngày qua
-      state.rain24hRaw = getLatestUniqueData(res4.data, 'time'); // Data mưa ngày hiện tại (đã lọc theo tStart-tEnd ở trên)
+      
+      // Rain data now comes from reservoir_hourly_data too
+      state.rainObs7D = getLatestUniqueData(res8.data, 'time'); 
+      state.rain24hRaw = getLatestUniqueData(res1.data, 'time'); // Same as hourly24h
       
       state.latest24h = (resLatest.data || []); 
       state.storage = res6.data ? res6.data[0] : null;
@@ -804,9 +813,8 @@
 
       let rainCur = 0;
       if (state.lastObs) {
-        const tObs = new Date(state.lastObs.time).getTime();
-        const match = state.rain24hRaw.find(r => Math.abs(new Date(r.time).getTime() - tObs) < 1800000); 
-        if(match) rainCur = getRain(match);
+        // Direct read from last observation
+        rainCur = getRain(state.lastObs);
       }
       state.rainAtHour = rainCur;
       state.rain24hSum = state.rain24hRaw.reduce((s,r)=>s+getRain(r), 0);
@@ -834,14 +842,15 @@
     data.forEach(r => { 
         const dateStr = extractDateVN(r[timeKey]);
         if(dateStr) { 
-            const val = getValSafe(r[valueKey]);
+            // If valueKey is not provided, use getRain helper which defaults to rainfallreal
+            const val = valueKey ? getValSafe(r[valueKey]) : getRain(r);
             map[dateStr] = (map[dateStr] || 0) + val; 
         } 
     });
     return map;
   }
   
-  function aggregateByDay(data, timeKey) { return aggregateRainByDay(data, timeKey, 'rainfall_mm'); }
+  function aggregateByDay(data, timeKey) { return aggregateRainByDay(data, timeKey); }
 
   function renderOverview(fcFlowData, fcRainData){
     const l = state.lastObs;
@@ -1083,7 +1092,8 @@
       const obs = state.hourly7D_Obs.filter(r => { const t=new Date(r.time).getTime(); return t>=tStartCompare && t<=tEnd; });
       const fc = state.rainFc.filter(r => { const t=new Date(r.forecast_time).getTime(); return t>=tStartCompare && t<=tEnd; });
       
-      const aggObs = aggregateRainByDay(obs, 'time', 'rainfallreal');
+      // Use helper to sum rainfallreal
+      const aggObs = aggregateRainByDay(obs, 'time'); // defaults to rainfallreal
       const aggFc = aggregateRainByDay(fc, 'forecast_time', 'rainfall_mm');
       
       const allDays = [...new Set([...Object.keys(aggObs), ...Object.keys(aggFc)])].sort();
@@ -1117,19 +1127,15 @@
       const data = state.latest24h;
       if(data.length === 0) { tb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px;">Không có dữ liệu</td></tr>`; return; }
 
-      const tMax = data[data.length-1].time; const tMin = data[0].time; // Note: data is sorted ascending
-      const resRain = await sb.from('rainfall_observed').select('*').gte('time', tMin).lte('time', tMax);
-      const rainData = resRain.data || [];
-
+      // We no longer need separate rain query, it's in 'data'
       tb.innerHTML = "";
       
       // REVERSE the data for the table to show newest first
       const tableData = [...data].reverse();
 
       tableData.forEach(row => {
-        const tRow = new Date(row.time).getTime();
-        const rItem = rainData.find(x => Math.abs(new Date(x.time).getTime() - tRow) < 1800000);
-        const rVal = getRain(rItem);
+        // Direct read from row
+        const rVal = getRain(row);
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${formatTableTime(row.time)}</td>
