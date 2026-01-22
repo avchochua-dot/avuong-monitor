@@ -1167,7 +1167,12 @@
         
         let theme = { color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: '🌤️', label: 'Dự báo' };
 
-        if (text.includes('lũ') || text.includes('bão') || text.includes('khẩn cấp') || item.type === 'urgent') {
+        // --- CẬP NHẬT LOGIC AI ---
+        if (item.type === 'ai_analysis') {
+            theme = { color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.15)', icon: '🤖', label: 'AI Nhận định' };
+        } 
+        // -------------------------
+        else if (text.includes('lũ') || text.includes('bão') || text.includes('khẩn cấp') || item.type === 'urgent') {
             theme = { color: '#ef4444', bg: 'rgba(239,68,68,0.15)', icon: '⛈️', label: 'Khẩn cấp' };
         } else if (text.includes('sạt lở') || text.includes('cảnh báo') || item.type === 'warning') {
             theme = { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: '⚠️', label: 'Cảnh báo' };
