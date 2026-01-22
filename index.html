@@ -22,15 +22,11 @@
         navigator.serviceWorker.register('./service-worker.js')
           .then(reg => {
              console.log('SW Registered!', reg.scope);
-             // Kiểm tra update
              reg.onupdatefound = () => {
                const installingWorker = reg.installing;
                installingWorker.onstatechange = () => {
-                 if (installingWorker.state === 'installed') {
-                   if (navigator.serviceWorker.controller) {
-                     console.log('New content is available; please refresh.');
-                     window.location.reload(); // Tự động reload khi có code mới
-                   }
+                 if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                     window.location.reload();
                  }
                };
              };
@@ -39,6 +35,7 @@
       });
     }
   </script>
+  
   <style>
     /* --- CORE VARIABLES --- */
     :root{
@@ -539,6 +536,16 @@
     </div>
 
     <div id="tab-notif" class="tab-pane">
+      
+      <div class="card" style="border: 1px solid rgba(139,92,246,0.3);">
+        <div class="cardHead">
+            <b style="color:#c084fc;">🤖 AI Nhận định</b> 
+            <button onclick="generateAI()" style="width:auto; padding:6px 12px; font-size:11px; margin-left:auto; background:rgba(139,92,246,0.2); border:1px solid rgba(139,92,246,0.4); color:#c084fc; cursor:pointer;">✨ Tạo nhận định</button>
+        </div>
+        <div id="ai-list" style="padding:0;">
+          <div style="padding:20px; text-align:center; color:var(--text-muted); font-size:12px;">Chưa có nhận định nào.</div>
+        </div>
+      </div>
       <div class="card" style="background:transparent; border:none; box-shadow:none;">
         <div class="list-item" style="background:var(--card-bg); border-radius:16px; margin-bottom:10px; border:1px solid var(--card-border);">
           <div class="accordion-header">
@@ -597,615 +604,273 @@
   const fmt1 = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1, minimumFractionDigits: 1 });
   const fmt0 = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 });
   
-  // UPDATED: Get rain from 'rainfallreal' column
-  function getRain(r){ 
-    if (!r) return 0;
-    return Number(r.rainfallreal || 0); 
-  }
-  
-  function getValSafe(val) {
-      if (val === null || val === undefined) return 0;
-      return Number(val);
-  }
-
-  function getFlowFc(r){
-    if(!r) return 0;
-    if(r.inflow_m3s !== undefined && r.inflow_m3s !== null) return Number(r.inflow_m3s);
-    return r.inflow !== undefined ? Number(r.inflow) : 0;
-  }
-  function parseLiteral(iso) {
-    if(!iso) return null;
-    const datePart = iso.substring(0, 10); 
-    const timePart = iso.substring(11, 16); 
-    const [y,m,d] = datePart.split('-');
-    return { day: d, month: m, year: y, time: timePart };
-  }
-  function extractDateVN(iso) {
-      const d = new Date(iso);
-      if(isNaN(d.getTime())) return null;
-      const vnTime = new Date(d.getTime() + 7 * 60 * 60 * 1000);
-      const day = String(vnTime.getUTCDate()).padStart(2, '0');
-      const month = String(vnTime.getUTCMonth() + 1).padStart(2, '0');
-      return `${day}/${month}`;
-  }
-  function getYearMD(iso) {
-      const d = new Date(iso);
-      if(isNaN(d.getTime())) return null;
-      const vnTime = new Date(d.getTime() + 7 * 60 * 60 * 1000);
-      return vnTime.toISOString().split('T')[0];
-  }
-
-  function formatTimeVN(iso){ const p = parseLiteral(iso); return p ? p.time : "-"; }
-  function formatDateTimeVN(iso){ const p = parseLiteral(iso); return p ? `${p.time} ${p.day}/${p.month}/${p.year}` : "-"; }
-  function formatChartLabel(iso){ const p = parseLiteral(iso); return p ? `${p.time} ${p.day}/${p.month}` : "-"; }
-  
-  function formatTableTime(iso) {
-      const p = parseLiteral(iso);
-      if(!p) return "-";
-      const h = parseInt(p.time.split(':')[0]); 
-      return `${h}h ${p.day}/${p.month}`;
-  }
-
+  function getRain(r){ if(!r) return 0; return Number(r.rainfallreal || 0); }
+  function getValSafe(val) { return (val===null||val===undefined)?0:Number(val); }
+  function getFlowFc(r){ if(!r) return 0; if(r.inflow_m3s!==undefined && r.inflow_m3s!==null) return Number(r.inflow_m3s); return r.inflow!==undefined?Number(r.inflow):0; }
+  function parseLiteral(iso) { if(!iso) return null; const datePart=iso.substring(0,10); const timePart=iso.substring(11,16); const [y,m,d]=datePart.split('-'); return {day:d,month:m,year:y,time:timePart}; }
+  function extractDateVN(iso) { const d=new Date(iso); if(isNaN(d.getTime())) return null; const vnTime=new Date(d.getTime()+7*60*60*1000); const day=String(vnTime.getUTCDate()).padStart(2,'0'); const month=String(vnTime.getUTCMonth()+1).padStart(2,'0'); return `${day}/${month}`; }
+  function getYearMD(iso) { const d=new Date(iso); if(isNaN(d.getTime())) return null; const vnTime=new Date(d.getTime()+7*60*60*1000); return vnTime.toISOString().split('T')[0]; }
+  function formatTimeVN(iso){ const p=parseLiteral(iso); return p?p.time:"-"; }
+  function formatDateTimeVN(iso){ const p=parseLiteral(iso); return p?`${p.time} ${p.day}/${p.month}/${p.year}`:"-"; }
+  function formatChartLabel(iso){ const p=parseLiteral(iso); return p?`${p.time} ${p.day}/${p.month}`:"-"; }
+  function formatTableTime(iso) { const p=parseLiteral(iso); if(!p) return "-"; const h=parseInt(p.time.split(':')[0]); return `${h}h ${p.day}/${p.month}`; }
   function rgba(rgb,a){ return `rgba(${rgb}, ${a})`; }
   function toast(msg){ const t=$("toast"); t.textContent=msg; t.style.display="block"; setTimeout(()=>t.style.display="none", 2500); }
-  
-  function formatToVNTime(isoString) {
-      const date = new Date(isoString);
-      if (isNaN(date.getTime())) return isoString; 
-      const vnDate = new Date(date.toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"}));
-      const hh = String(vnDate.getHours()).padStart(2, '0');
-      const mm = String(vnDate.getMinutes()).padStart(2, '0');
-      const dd = String(vnDate.getDate()).padStart(2, '0');
-      const mo = String(vnDate.getMonth() + 1).padStart(2, '0');
-      const yyyy = vnDate.getFullYear();
-      return `${hh}:${mm} ${dd}/${mo}/${yyyy}`;
-  }
+  function formatToVNTime(isoString) { const date=new Date(isoString); if(isNaN(date.getTime())) return isoString; const vnDate=new Date(date.toLocaleString("en-US",{timeZone:"Asia/Ho_Chi_Minh"})); const hh=String(vnDate.getHours()).padStart(2,'0'); const mm=String(vnDate.getMinutes()).padStart(2,'0'); const dd=String(vnDate.getDate()).padStart(2,'0'); const mo=String(vnDate.getMonth()+1).padStart(2,'0'); const yyyy=vnDate.getFullYear(); return `${hh}:${mm} ${dd}/${mo}/${yyyy}`; }
 
   // --- CONFIG ---
   const SB_URL = "https://ycthhachfxczwkburnfa.supabase.co";
   const SB_KEY = "sb_publishable_Q0KbTLPBE4owO72Mz-GN6A_khF9z_Ss";
-  
-  // CONSTANTS
-  const RES_CONST = {
-    WL_MAX_CHECK: 382.2, WL_NORMAL: 380.0, WL_FLOOD: 376.0, WL_FLOOD_MIN: 370.0,
-    WL_DEAD: 340.0, VOL_DEAD: 77.0, VOL_MAX: 343.5       
-  };
+  const RES_CONST = { WL_MAX_CHECK:382.2, WL_NORMAL:380.0, WL_FLOOD:376.0, WL_FLOOD_MIN:370.0, WL_DEAD:340.0, VOL_DEAD:77.0, VOL_MAX:343.5 };
+  const C = { WL:'34, 211, 238', IN:'59, 130, 246', TB:'245, 158, 11', SP:'239, 68, 68', RN:'167, 139, 250', IF:'255, 152, 0', RF:'34, 197, 94', ACC:'250, 204, 21' };
 
-  // --- COLORS ---
-  const C = {
-    WL: '34, 211, 238',   /* Cyan */
-    IN: '59, 130, 246',   /* Blue */
-    TB: '245, 158, 11',   /* Orange */
-    SP: '239, 68, 68',    /* Red */
-    RN: '167, 139, 250',  /* Purple */
-    IF: '255, 152, 0',    /* Forecast */
-    RF: '34, 197, 94',    /* Rain Real */
-    ACC: '250, 204, 21'   /* Accumulate */
-  };
-
-  // --- STATE ---
-  let sb = null, chart = null;
-  let currentTab = "WL_24H";
-  
+  let sb=null, chart=null, currentTab="WL_24H";
   const tabMeta = {
-    WL_24H: { name:"MNH 24h", hint:"Mực nước 24h qua", color: C.WL },
-    FLOW_24H: { name:"Q 24h", hint:"Dòng chảy 24h qua", color: C.IN },
-    WL_7D: { name:"MNH 7D", hint:"Mực nước 7 ngày", color: C.WL },
-    FLOW_7D: { name:"Q Tổng hợp", hint:"Q về/máy/xả 7 ngày", color: C.IN },
-    
-    IN_OBS_FC_V7: { name:"Q Về vs DB (V7)", hint:"Thực tế vs Mô hình V7", color: '34, 197, 94' }, 
-    IN_OBS_FC_MIX: { name:"Q Về vs DB (Mixed)", hint:"Thực tế vs Mô hình Mixed (Mưa thực + DB)", color: '233, 30, 99' }, 
-    IN_OBS_FC_AI: { name:"Q Về vs DB (AI)", hint:"Thực tế vs Mô hình AI V1 (Tự học)", color: '156, 39, 176' }, 
-
-    IN_FC_7D: { name:"Q Dự báo", hint:"Dự báo 7 ngày tới (Ensemble)", color: C.IF },
-    RF_DAILY_FC: { name:"Mưa Ngày", hint:"Mưa ngày & Lũy kế", color: C.RN },
-    RF_HOURLY_ACC: { name:"Mưa Giờ", hint:"Mưa giờ & Lũy kế", color: C.RN },
-    RF_COMPARE: { name:"Mưa Thực vs DB", hint:"So sánh mưa Thực & DB", color: C.RF }
+    WL_24H:{name:"MNH 24h",hint:"Mực nước 24h qua",color:C.WL}, FLOW_24H:{name:"Q 24h",hint:"Dòng chảy 24h qua",color:C.IN},
+    WL_7D:{name:"MNH 7D",hint:"Mực nước 7 ngày",color:C.WL}, FLOW_7D:{name:"Q Tổng hợp",hint:"Q về/máy/xả 7 ngày",color:C.IN},
+    IN_OBS_FC_V7:{name:"Q Về vs DB (V7)",hint:"Thực tế vs Mô hình V7",color:'34, 197, 94'}, 
+    IN_OBS_FC_MIX:{name:"Q Về vs DB (Mixed)",hint:"Thực tế vs Mô hình Mixed (Mưa thực + DB)",color:'233, 30, 99'}, 
+    IN_OBS_FC_AI:{name:"Q Về vs DB (AI)",hint:"Thực tế vs Mô hình AI V1 (Tự học)",color:'156, 39, 176'}, 
+    IN_FC_7D:{name:"Q Dự báo",hint:"Dự báo 7 ngày tới (Ensemble)",color:C.IF},
+    RF_DAILY_FC:{name:"Mưa Ngày",hint:"Mưa ngày & Lũy kế",color:C.RN}, RF_HOURLY_ACC:{name:"Mưa Giờ",hint:"Mưa giờ & Lũy kế",color:C.RN}, RF_COMPARE:{name:"Mưa Thực vs DB",hint:"So sánh mưa Thực & DB",color:C.RF}
   };
-  
-  const state = { 
-    hourly24h: [], hourly3D: [], hourly7D_Obs: [],
-    inflowFc_V7: [], inflowFc_Mix: [], inflowFc_AI: [], 
-    rainFc: [], rainObs7D: [], rain24hRaw: [], 
-    latest24h: [], fcEnsemble: {}, 
-    lastObs: null, rainAtHour: 0, rain24hSum: 0, storage: null 
-  };
+  const state = { hourly24h:[], hourly3D:[], hourly7D_Obs:[], inflowFc_V7:[], inflowFc_Mix:[], inflowFc_AI:[], rainFc:[], rainObs7D:[], rain24hRaw:[], latest24h:[], fcEnsemble:{}, lastObs:null, rainAtHour:0, rain24hSum:0, storage:null };
 
-  // --- INIT ---
-  window.addEventListener("load", () => {
-    const tc = $("tabs");
-    Object.keys(tabMeta).forEach(k => {
-      const t = document.createElement("span"); 
-      t.className = `tab ${k===currentTab?'active':''}`;
-      t.innerHTML = `<span class="swatch" style="background:rgb(${tabMeta[k].color})"></span>${tabMeta[k].name}`;
-      t.onclick = () => {
-        document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-        t.classList.add("active"); currentTab=k; renderChart();
-      };
-      tc.appendChild(t);
-    });
-
-    const d = new Date();
-    const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0');
-    $("day").value = `${y}-${m}-${day}`;
-    
-    if(window.supabase) {
-        sb = window.supabase.createClient(SB_URL, SB_KEY);
-        sb.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-                showApp();
-            } else {
-                showLogin();
-            }
-        });
-    }
+  window.addEventListener("load",()=>{
+    const tc=$("tabs"); Object.keys(tabMeta).forEach(k=>{ const t=document.createElement("span"); t.className=`tab ${k===currentTab?'active':''}`; t.innerHTML=`<span class="swatch" style="background:rgb(${tabMeta[k].color})"></span>${tabMeta[k].name}`; t.onclick=()=>{ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active")); t.classList.add("active"); currentTab=k; renderChart(); }; tc.appendChild(t); });
+    const d=new Date(); const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); $("day").value=`${y}-${m}-${day}`;
+    if(window.supabase){ sb=window.supabase.createClient(SB_URL,SB_KEY); sb.auth.getSession().then(({data:{session}})=>{ if(session) showApp(); else showLogin(); }); }
   });
 
-  async function handleLogin() {
-      const email = $("loginEmail").value;
-      const password = $("loginPass").value;
-      const errBox = $("loginError");
-      if(!email || !password) { errBox.textContent = "Vui lòng nhập Email và Mật khẩu"; return; }
-      errBox.textContent = "Đang kiểm tra...";
-      const { data, error } = await sb.auth.signInWithPassword({ email, password });
-      if (error) { errBox.textContent = "Đăng nhập thất bại: " + error.message; } else { showApp(); }
-  }
+  async function handleLogin(){ const e=$("loginEmail").value, p=$("loginPass").value; if(!e||!p){$("loginError").textContent="Vui lòng nhập Email và Mật khẩu";return;} $("loginError").textContent="Đang kiểm tra..."; const{data,error}=await sb.auth.signInWithPassword({email:e,password:p}); if(error)$("loginError").textContent="Đăng nhập thất bại: "+error.message; else showApp(); }
+  async function handleLogout(){ await sb.auth.signOut(); showLogin(); }
+  function showApp(){ $("login-view").style.display="none"; $("main-view").style.display="flex"; loadData(); }
+  function showLogin(){ $("login-view").style.display="flex"; $("main-view").style.display="none"; $("loginEmail").value=""; $("loginPass").value=""; $("loginError").textContent=""; }
 
-  async function handleLogout() { await sb.auth.signOut(); showLogin(); }
+  async function loadData(){
+    const btn=$("btnLoad"); btn.disabled=true; btn.innerText="...";
+    try{
+      const dateVal=$("day").value; const [y,m,d]=dateVal.split('-'); const dSelected=new Date(Number(y),Number(m)-1,Number(d));
+      const tStart=dateVal+"T00:00:00Z"; const tEnd=dateVal+"T23:59:59Z";
+      const t7DaysAgo=new Date(dSelected.getTime()-6*86400000).toISOString(); const tFcStart=new Date(dSelected.getTime()-1*86400000).toISOString(); const tFcEnd=new Date(dSelected.getTime()+10*86400000).toISOString();
+      const now=new Date(); const future7d=new Date(now.getTime()+7*24*3600*1000).toISOString();
 
-  function showApp() { $("login-view").style.display = "none"; $("main-view").style.display = "flex"; loadData(); }
-  function showLogin() { $("login-view").style.display = "flex"; $("main-view").style.display = "none"; $("loginEmail").value = ""; $("loginPass").value = ""; $("loginError").textContent = ""; }
-
-  // --- DATA LOADING ---
-  async function loadData() {
-    const btn = $("btnLoad"); btn.disabled=true; btn.innerText="...";
-    try {
-      const dateVal = $("day").value;
-      const [y,m,d] = dateVal.split('-');
-      const dSelected = new Date(Number(y), Number(m)-1, Number(d));
-      
-      const tStart = dateVal + "T00:00:00Z";
-      const tEnd = dateVal + "T23:59:59Z";
-      const t7DaysAgo = new Date(dSelected.getTime() - 6*86400000).toISOString();
-      const tFcStart = new Date(dSelected.getTime() - 1*86400000).toISOString();
-      const tFcEnd = new Date(dSelected.getTime() + 10*86400000).toISOString();
-      const now = new Date();
-      const future7d = new Date(now.getTime() + 7 * 24 * 3600 * 1000).toISOString();
-
-      // REMOVED 'rainfall_observed' queries
-      // UPDATED to fetch directly from 'reservoir_hourly_data'
-      const [res1, res2, res4, res6, res7, res8, resLatest, resRainFc, resFcFuture, resRainFcFuture] = await Promise.all([
-        sb.from('reservoir_hourly_data').select('*').gte('time', tStart).lte('time', tEnd).order('time', {ascending: true}),
-        sb.from('inflow_forecast').select('*').gte('forecast_time', tFcStart).lte('forecast_time', tFcEnd).order('created_at', {ascending: false}), 
-        sb.from('reservoir_hourly_data').select('*').gte('time', tFcStart).lte('time', tEnd).order('time', {ascending: true}), 
-        sb.from('v_current_storage').select('*').order('time', {ascending: false}).limit(1), 
-        sb.from('reservoir_hourly_data').select('*').gte('time', t7DaysAgo).lte('time', tEnd).order('time', {ascending: true}), 
-        sb.from('reservoir_hourly_data').select('*').gte('time', t7DaysAgo).lte('time', tEnd).order('time', {ascending: true}),
-        sb.from('reservoir_hourly_data').select('*').order('time', {ascending: false}).limit(24),
-        sb.from('rainfall_forecast').select('*').gte('forecast_time', tFcStart).lte('forecast_time', tFcEnd).order('created_at', {ascending: false}),
-        sb.from('inflow_forecast').select('*').gte('forecast_time', now.toISOString()).lte('forecast_time', future7d),
-        sb.from('rainfall_forecast').select('*').gte('forecast_time', now.toISOString()).lte('forecast_time', future7d)
+      const [res1,res2,res4,res6,res7,res8,resLatest,resRainFc,resFcFuture,resRainFcFuture] = await Promise.all([
+        sb.from('reservoir_hourly_data').select('*').gte('time',tStart).lte('time',tEnd).order('time',{ascending:true}),
+        sb.from('inflow_forecast').select('*').gte('forecast_time',tFcStart).lte('forecast_time',tFcEnd).order('created_at',{ascending:false}), 
+        sb.from('reservoir_hourly_data').select('*').gte('time',tFcStart).lte('time',tEnd).order('time',{ascending:true}), 
+        sb.from('v_current_storage').select('*').order('time',{ascending:false}).limit(1), 
+        sb.from('reservoir_hourly_data').select('*').gte('time',t7DaysAgo).lte('time',tEnd).order('time',{ascending:true}), 
+        sb.from('reservoir_hourly_data').select('*').gte('time',t7DaysAgo).lte('time',tEnd).order('time',{ascending:true}),
+        sb.from('reservoir_hourly_data').select('*').order('time',{ascending:false}).limit(24),
+        sb.from('rainfall_forecast').select('*').gte('forecast_time',tFcStart).lte('forecast_time',tFcEnd).order('created_at',{ascending:false}),
+        sb.from('inflow_forecast').select('*').gte('forecast_time',now.toISOString()).lte('forecast_time',future7d),
+        sb.from('rainfall_forecast').select('*').gte('forecast_time',now.toISOString()).lte('forecast_time',future7d)
       ]);
 
-      state.hourly24h = getLatestUniqueData(res1.data, 'time');
-      
-      const allForecasts = res2.data || [];
-      state.inflowFc_V7 = getLatestUniqueData(allForecasts.filter(i => i.source === 'rf2q_v7'), 'forecast_time');
-      state.inflowFc_Mix = getLatestUniqueData(allForecasts.filter(i => i.source === 'rf2q_mixed_real_fc'), 'forecast_time');
-      state.inflowFc_AI = getLatestUniqueData(allForecasts.filter(i => i.source === 'rf2q_ai_v1'), 'forecast_time');
-
-      state.rainFc = getLatestUniqueData(resRainFc.data, 'forecast_time').map(i=>({forecast_time:i.forecast_time, rainfall_mm:Number(i.rainfall_mm)||0}));
-      
-      const mapFc = {}; (res2.data||[]).forEach(i => { if(!mapFc[i.forecast_time]) mapFc[i.forecast_time]=[]; mapFc[i.forecast_time].push(i); });
-      state.fcEnsemble = mapFc;
-
-      state.hourly3D = getLatestUniqueData(res4.data, 'time');
-      state.hourly7D_Obs = getLatestUniqueData(res7.data, 'time'); 
-      
-      // Rain data now comes from reservoir_hourly_data too
-      state.rainObs7D = getLatestUniqueData(res8.data, 'time'); 
-      state.rain24hRaw = getLatestUniqueData(res1.data, 'time'); // Same as hourly24h
-      
-      state.latest24h = (resLatest.data || []); 
-      state.storage = res6.data ? res6.data[0] : null;
-      state.latest24h.reverse();
-      state.lastObs = state.latest24h.length ? state.latest24h[state.latest24h.length-1] : null;
-
-      let rainCur = 0;
-      if (state.lastObs) {
-        // Direct read from last observation
-        rainCur = getRain(state.lastObs);
-      }
-      state.rainAtHour = rainCur;
-      state.rain24hSum = state.rain24hRaw.reduce((s,r)=>s+getRain(r), 0);
+      state.hourly24h = getLatestUniqueData(res1.data,'time');
+      const allForecasts = res2.data||[];
+      state.inflowFc_V7=getLatestUniqueData(allForecasts.filter(i=>i.source==='rf2q_v7'),'forecast_time');
+      state.inflowFc_Mix=getLatestUniqueData(allForecasts.filter(i=>i.source==='rf2q_mixed_real_fc'),'forecast_time');
+      state.inflowFc_AI=getLatestUniqueData(allForecasts.filter(i=>i.source==='rf2q_ai_v1'),'forecast_time');
+      state.rainFc = getLatestUniqueData(resRainFc.data,'forecast_time').map(i=>({forecast_time:i.forecast_time, rainfall_mm:Number(i.rainfall_mm)||0}));
+      const mapFc={}; (res2.data||[]).forEach(i=>{ if(!mapFc[i.forecast_time]) mapFc[i.forecast_time]=[]; mapFc[i.forecast_time].push(i); }); state.fcEnsemble=mapFc;
+      state.hourly3D = getLatestUniqueData(res4.data,'time'); state.hourly7D_Obs = getLatestUniqueData(res7.data,'time'); 
+      state.rainObs7D = getLatestUniqueData(res8.data,'time'); state.rain24hRaw = getLatestUniqueData(res1.data,'time');
+      state.latest24h = (resLatest.data||[]).reverse(); state.storage = res6.data?res6.data[0]:null;
+      state.lastObs = state.latest24h.length?state.latest24h[state.latest24h.length-1]:null;
+      let rainCur = 0; if(state.lastObs){ rainCur = getRain(state.lastObs); }
+      state.rainAtHour = rainCur; state.rain24hSum = state.rain24hRaw.reduce((s,r)=>s+getRain(r),0);
 
       renderOverview(resFcFuture.data, resRainFcFuture.data);
       renderChart();
-      if(document.getElementById('tab-data').classList.contains('active')) loadTableData();
-      if(document.getElementById('tab-forecast').classList.contains('active')) loadForecasts();
+      
+      if($('tab-data').classList.contains('active')) loadTableData();
+      if($('tab-forecast').classList.contains('active')) loadForecasts();
+      // THÊM: Nếu đang ở tab thông báo thì load AI
+      if($('tab-notif').classList.contains('active')) loadAIBulletins(); 
       
       toast("Đã cập nhật dữ liệu");
-
     } catch(e){ console.error(e); toast("Lỗi kết nối"); }
     finally{ btn.disabled=false; btn.innerText="Tải lại"; }
   }
 
-  function getLatestUniqueData(arr, key) {
-    if(!arr) return [];
-    const map = new Map();
-    [...arr].sort((a,b) => new Date(b.created_at || b.time) - new Date(a.created_at || a.time)).forEach(i => { if(!map.has(i[key])) map.set(i[key], i); });
-    return Array.from(map.values()).sort((a,b) => new Date(a[key]) - new Date(b[key]));
-  }
-  
-  function aggregateRainByDay(data, timeKey, valueKey) {
-    const map = {};
-    data.forEach(r => { 
-        const dateStr = extractDateVN(r[timeKey]);
-        if(dateStr) { 
-            // If valueKey is not provided, use getRain helper which defaults to rainfallreal
-            const val = valueKey ? getValSafe(r[valueKey]) : getRain(r);
-            map[dateStr] = (map[dateStr] || 0) + val; 
-        } 
-    });
-    return map;
-  }
-  
-  function aggregateByDay(data, timeKey) { return aggregateRainByDay(data, timeKey); }
+  function getLatestUniqueData(arr,k){ if(!arr)return[]; const m=new Map(); [...arr].sort((a,b)=>new Date(b.created_at||b.time)-new Date(a.created_at||a.time)).forEach(i=>{if(!m.has(i[k]))m.set(i[k],i)}); return Array.from(m.values()).sort((a,b)=>new Date(a[k])-new Date(b[k])); }
+  function aggregateRainByDay(data,k,v){ const m={}; data.forEach(r=>{ const d=extractDateVN(r[k]); if(d){ const val=v?getValSafe(r[v]):getRain(r); m[d]=(m[d]||0)+val; } }); return m; }
+  function aggregateByDay(d,k){ return aggregateRainByDay(d,k); }
 
-  function renderOverview(fcFlowData, fcRainData){
-    const l = state.lastObs;
-    if (!l) return;
-    const wl = l.water_level;
-    if($("txtWL")) $("txtWL").textContent = fmt2.format(wl);
-    if($("lastUpdate")) {
-      const p = parseLiteral(l.time); 
-      if(p) { $("lastUpdate").textContent = `${p.time} ${p.day}/${p.month}`; }
-    }
-    const pDate = parseLiteral(l.time);
-    let dlLimit = 376.0; let dlText = "376.0";
-    if (pDate) {
-        const d = parseInt(pDate.day, 10); const m = parseInt(pDate.month, 10);
-        if ( (m === 11 && d >= 16) || (m === 12 && d <= 15) ) { dlLimit = 380.0; dlText = "377.0 - 380.0"; }
-    }
-    const lblDL = $("lbl_DonLu");
-    if(lblDL) lblDL.innerText = `MN Cao nhất trước lũ (${dlText})`;
-    const setDiff = (id, val) => {
-      const diff = wl - val; const el = $(id);
-      if(el){ el.innerText = `${diff > 0 ? "+" : ""}${fmt2.format(diff)}`; }
-    };
-    setDiff('diff_KiemTra', RES_CONST.WL_MAX_CHECK);
-    setDiff('diff_MNDBT', RES_CONST.WL_NORMAL);
-    setDiff('diff_DonLu', dlLimit); 
-    setDiff('diff_DonLuMin', RES_CONST.WL_FLOOD_MIN);
-    setDiff('diff_Chet', RES_CONST.WL_DEAD);
-    const tag = $("floodStatus");
-    if(tag) {
-        if(wl >= RES_CONST.WL_FLOOD) { tag.innerText = "CẢNH BÁO LŨ"; tag.style.color="rgb(var(--c-tb))"; tag.style.borderColor="rgb(var(--c-tb))"; tag.style.background="rgba(239,68,68,0.15)"; }
-        else { tag.innerText = "BÌNH THƯỜNG"; tag.style.color="rgb(var(--c-green))"; tag.style.borderColor="rgb(var(--c-green))"; tag.style.background="rgba(16,185,129,0.15)"; }
-    }
-    if($("txtQin")) $("txtQin").textContent = fmt2.format(l.inflow);
-    if($("txtQtb")) $("txtQtb").textContent = fmt2.format(l.turbine_flow);
-    if($("txtQsp")) $("txtQsp").textContent = fmt2.format(l.spillway_flow);
-    
-    // RAIN CALCULATION
-    if($("txtRain1h")) $("txtRain1h").textContent = fmt1.format(state.rainAtHour);
-    if($("txtRainDay")) $("txtRainDay").textContent = fmt1.format(state.rain24hSum); // Rain Day D
-    
-    // Calc Rain D-1
-    const dMinus1 = new Date($("day").value);
-    dMinus1.setDate(dMinus1.getDate() - 1);
-    const dMinus1Str = getYearMD(dMinus1.toISOString()); // YYYY-MM-DD in VN
-    const rainD1Sum = state.rainObs7D.reduce((s, r) => {
-        if (getYearMD(r.time) === dMinus1Str) return s + getRain(r);
-        return s;
-    }, 0);
-    if($("txtRainD1")) $("txtRainD1").textContent = fmt1.format(rainD1Sum);
-
-
-    let curVol = 0;
-    if (state.storage && (state.storage.volume || state.storage.current_volume)) {
-        curVol = Number(state.storage.volume || state.storage.current_volume);
-    } else {
-        if(wl > 340) curVol = RES_CONST.VOL_DEAD + ((wl - 340)/40)*(RES_CONST.VOL_MAX - RES_CONST.VOL_DEAD);
-    }
-    if($("txtVol")) $("txtVol").textContent = fmt2.format(curVol);
-    const volUsefulCurrent = Math.max(0, curVol - RES_CONST.VOL_DEAD);
-    if($("txtVolUsefulLeft")) $("txtVolUsefulLeft").textContent = fmt2.format(volUsefulCurrent);
-    const pctUseful = (volUsefulCurrent / (RES_CONST.VOL_MAX - RES_CONST.VOL_DEAD)) * 100;
-    if($("txtPctUseful")) $("txtPctUseful").textContent = fmt2.format(pctUseful) + "%";
-    const volRemain = Math.max(0, RES_CONST.VOL_MAX - curVol);
-    if($("txtVolRemain")) $("txtVolRemain").textContent = fmt2.format(volRemain);
-    const pctTotal = (curVol / RES_CONST.VOL_MAX) * 100;
-    if($("txtPctTotal")) $("txtPctTotal").textContent = fmt2.format(pctTotal) + "%";
-    if(fcFlowData && fcFlowData.length){
-        const flows = fcFlowData.map(f => getFlowFc(f));
-        if($("fcFlowRange")) $("fcFlowRange").textContent = `${fmt2.format(Math.min(...flows))} - ${fmt2.format(Math.max(...flows))}`;
-    }
-    if(fcRainData && fcRainData.length){
-        const dayMap = {};
-        fcRainData.forEach(r => { const d = r.forecast_time.substring(0,10); dayMap[d] = (dayMap[d]||0) + Number(r.rainfall_mm); });
-        const rains = Object.values(dayMap);
-        if(rains.length && $("fcRainRange")) $("fcRainRange").textContent = `${fmt1.format(Math.min(...rains))} - ${fmt1.format(Math.max(...rains))}`;
-    }
+  function renderOverview(fcFlow,fcRain){
+    const l=state.lastObs; if(!l)return;
+    const wl=l.water_level; $("txtWL").textContent=fmt2.format(wl);
+    if($("lastUpdate")){ const p=parseLiteral(l.time); if(p)$("lastUpdate").textContent=`${p.time} ${p.day}/${p.month}`; }
+    let dlLimit=376.0; let dlText="376.0"; const pD=parseLiteral(l.time); if(pD){ const d=parseInt(pD.day), m=parseInt(pD.month); if((m===11&&d>=16)||(m===12&&d<=15)){ dlLimit=380.0; dlText="377.0 - 380.0"; } }
+    $("lbl_DonLu").innerText = `MN Cao nhất trước lũ (${dlText})`;
+    const setD=(id,v)=>{ const d=wl-v; const el=$(id); if(el) el.innerText=`${d>0?"+":""}${fmt2.format(d)}`; };
+    setD('diff_KiemTra',RES_CONST.WL_MAX_CHECK); setD('diff_MNDBT',RES_CONST.WL_NORMAL); setD('diff_DonLu',dlLimit); setD('diff_DonLuMin',RES_CONST.WL_FLOOD_MIN); setD('diff_Chet',RES_CONST.WL_DEAD);
+    const tag=$("floodStatus"); if(tag){ if(wl>=RES_CONST.WL_FLOOD){ tag.innerText="CẢNH BÁO LŨ"; tag.style.color="rgb(var(--c-tb))"; tag.style.background="rgba(239,68,68,0.15)"; } else { tag.innerText="BÌNH THƯỜNG"; tag.style.color="rgb(var(--c-green))"; tag.style.background="rgba(16,185,129,0.15)"; } }
+    $("txtQin").textContent=fmt2.format(l.inflow); $("txtQtb").textContent=fmt2.format(l.turbine_flow); $("txtQsp").textContent=fmt2.format(l.spillway_flow);
+    $("txtRain1h").textContent=fmt1.format(state.rainAtHour); $("txtRainDay").textContent=fmt1.format(state.rain24hSum);
+    const dM1=new Date($("day").value); dM1.setDate(dM1.getDate()-1); const sM1=getYearMD(dM1.toISOString());
+    const rD1=state.rainObs7D.reduce((s,r)=>{ return (getYearMD(r.time)===sM1)?s+getRain(r):s; },0);
+    $("txtRainD1").textContent=fmt1.format(rD1);
+    let vCur=0; if(state.storage&&(state.storage.volume||state.storage.current_volume)) vCur=Number(state.storage.volume||state.storage.current_volume); else if(wl>340) vCur=RES_CONST.VOL_DEAD+((wl-340)/40)*(RES_CONST.VOL_MAX-RES_CONST.VOL_DEAD);
+    $("txtVol").textContent=fmt2.format(vCur);
+    const vUse=Math.max(0,vCur-RES_CONST.VOL_DEAD); $("txtVolUsefulLeft").textContent=fmt2.format(vUse); $("txtPctUseful").textContent=fmt2.format((vUse/(RES_CONST.VOL_MAX-RES_CONST.VOL_DEAD))*100)+"%";
+    const vRem=Math.max(0,RES_CONST.VOL_MAX-vCur); $("txtVolRemain").textContent=fmt2.format(vRem); $("txtPctTotal").textContent=fmt2.format((vCur/RES_CONST.VOL_MAX)*100)+"%";
+    if(fcFlow&&fcFlow.length){ const f=fcFlow.map(x=>getFlowFc(x)); $("fcFlowRange").textContent=`${fmt2.format(Math.min(...f))} - ${fmt2.format(Math.max(...f))}`; }
+    if(fcRain&&fcRain.length){ const m={}; fcRain.forEach(r=>{ const d=r.forecast_time.substring(0,10); m[d]=(m[d]||0)+Number(r.rainfall_mm); }); const v=Object.values(m); if(v.length) $("fcRainRange").textContent=`${fmt1.format(Math.min(...v))} - ${fmt1.format(Math.max(...v))}`; }
   }
 
   function renderChart(){
-    if(chart) chart.destroy();
-    const ctx = $("chart").getContext("2d");
-    $("chartRange").textContent = tabMeta[currentTab].hint;
-
-    const opts = {
-      responsive:true, maintainAspectRatio:false, interaction:{mode:"index", intersect:false},
-      plugins:{ legend:{labels:{color:"#9ca3af", font:{size:11}, boxWidth:12}} },
-      scales:{
-        x:{ticks:{color:"#64748b", font:{size:10}, maxRotation:0, autoSkip:true, maxTicksLimit:6}, grid:{color:"rgba(255,255,255,0.05)"}},
-        y:{ticks:{color:"#64748b", font:{size:10}}, grid:{color:"rgba(255,255,255,0.05)"}}
-      }
+    if(chart) chart.destroy(); const ctx=$("chart").getContext("2d"); $("chartRange").textContent=tabMeta[currentTab].hint;
+    const opts={ responsive:true, maintainAspectRatio:false, interaction:{mode:"index",intersect:false}, plugins:{legend:{labels:{color:"#9ca3af",font:{size:11},boxWidth:12}}}, scales:{x:{ticks:{color:"#64748b",font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:6},grid:{color:"rgba(255,255,255,0.05)"}},y:{ticks:{color:"#64748b",font:{size:10}},grid:{color:"rgba(255,255,255,0.05)"}}} };
+    let labels=[], datasets=[];
+    const getLim=(pts)=>{ 
+        let v=376.0; if(pts.length>0){ const last=pts[pts.length-1]; const t=parseLiteral(last.time); if(t){ const d=parseInt(t.day), m=parseInt(t.month); if((m===11&&d>=16)||(m===12&&d<=15)) v=377.0; } }
+        return [{label:'MNDBT (380.0)',data:Array(pts.length).fill(380),borderColor:'rgba(239,68,68,0.8)',borderDash:[5,5],pointRadius:0,fill:false},{label:`MN trước lũ (${v})`,data:Array(pts.length).fill(v),borderColor:'rgba(245,158,11,0.8)',borderDash:[5,5],pointRadius:0,fill:false},{label:'MN đón lũ min (370.0)',data:Array(pts.length).fill(370),borderColor:'rgba(34,211,238,0.8)',borderDash:[5,5],pointRadius:0,fill:false}];
     };
-
-    let labels=[], datasets=[]; 
-    
-    const getLimitLines = (dataPoints) => {
-        let chartLineVal = 376.0; 
-        if(dataPoints.length > 0) {
-            const lastPt = dataPoints[dataPoints.length-1]; 
-            const t = parseLiteral(lastPt.time);
-            if (t) {
-                const d = parseInt(t.day);
-                const m = parseInt(t.month);
-                if ((m === 11 && d >= 16) || (m === 12 && d <= 15)) { chartLineVal = 377.0; }
-            }
-        }
-        return [
-            { label: 'MNDBT (380.0)', data: new Array(dataPoints.length).fill(380.0), borderColor: 'rgba(239, 68, 68, 0.8)', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, fill: false },
-            { label: `MN trước lũ (${chartLineVal})`, data: new Array(dataPoints.length).fill(chartLineVal), borderColor: 'rgba(245, 158, 11, 0.8)', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, fill: false },
-            { label: 'MN đón lũ min (370.0)', data: new Array(dataPoints.length).fill(370.0), borderColor: 'rgba(34, 211, 238, 0.8)', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, fill: false }
-        ];
-    };
-
-    const getFlowLimitLines = (dataPoints) => {
-        if(dataPoints.length === 0) return [];
-        const lastPt = dataPoints[dataPoints.length-1];
-        const t = parseLiteral(lastPt.time);
-        if(t){
-            const d = parseInt(t.day); const m = parseInt(t.month);
-            const inSeason = (m===9 || m===10 || m===11) || (m===12 && d<=15);
-            if(inSeason){
-                return [
-                    { label: 'Q duy trì (450)', data: new Array(dataPoints.length).fill(450), borderColor: 'rgba(59, 130, 246, 0.6)', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
-                    { label: 'Q cắt lũ (600)', data: new Array(dataPoints.length).fill(600), borderColor: 'rgba(239, 68, 68, 0.6)', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false }
-                ];
-            }
-        }
-        return [];
-    };
-
-    if (currentTab === 'WL_24H') {
-      const data = state.latest24h; labels = data.map(r => formatChartLabel(r.time));
-      datasets = [ { label:'Mực nước (m)', data: data.map(r=>r.water_level), borderColor:rgba(C.WL,1), backgroundColor:rgba(C.WL,0.1), fill:true, borderWidth:2, pointRadius:0, tension:0.3 }, ...getLimitLines(data) ];
+    const getFLim=(pts)=>{ if(!pts.length)return[]; return [{label:'Q duy trì (450)',data:Array(pts.length).fill(450),borderColor:'rgba(59,130,246,0.6)',borderDash:[4,4],pointRadius:0,fill:false},{label:'Q cắt lũ (600)',data:Array(pts.length).fill(600),borderColor:'rgba(239,68,68,0.6)',borderDash:[4,4],pointRadius:0,fill:false}]; };
+    if(currentTab==='WL_24H'){ const d=state.latest24h; labels=d.map(r=>formatChartLabel(r.time)); datasets=[{label:'Mực nước (m)',data:d.map(r=>r.water_level),borderColor:rgba(C.WL,1),backgroundColor:rgba(C.WL,0.1),fill:true,borderWidth:2,pointRadius:0,tension:0.3},...getLim(d)]; }
+    else if(currentTab==='WL_7D'){ const d=state.hourly7D_Obs; labels=d.map(r=>formatChartLabel(r.time)); datasets=[{label:'Mực nước (m)',data:d.map(r=>r.water_level),borderColor:rgba(C.WL,1),backgroundColor:rgba(C.WL,0.1),fill:true,borderWidth:2,pointRadius:0,tension:0.3},...getLim(d)]; }
+    else if(currentTab==='FLOW_24H'||currentTab==='FLOW_7D'){ const d=currentTab==='FLOW_24H'?state.latest24h:state.hourly7D_Obs; labels=d.map(r=>formatChartLabel(r.time)); datasets=[{label:'Q về',data:d.map(r=>r.inflow),borderColor:rgba(C.IN,1),borderWidth:1.5,pointRadius:0,tension:0.3,fill:false},{label:'Q máy',data:d.map(r=>r.turbine_flow),borderColor:rgba(C.TB,1),borderWidth:1.5,pointRadius:0,tension:0.3,fill:false},{label:'Q xả',data:d.map(r=>r.spillway_flow),borderColor:rgba(C.SP,1),borderWidth:1.5,pointRadius:0,tension:0.3,fill:false},...getFLim(d)]; }
+    else if(currentTab.startsWith('IN_OBS_FC_')){
+      const ds=new Date($("day").value).setHours(0,0,0,0); const tm=ds-3*86400000; const tx=ds+4*86400000;
+      const obs=state.hourly3D.filter(r=>{const t=new Date(r.time).getTime();return t>=tm&&t<tx;});
+      let fc=[]; if(currentTab.includes('V7')) fc=state.inflowFc_V7; else if(currentTab.includes('MIX')) fc=state.inflowFc_Mix; else fc=state.inflowFc_AI;
+      fc=fc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=tm&&t<tx;});
+      const all=[...new Set([...obs.map(r=>r.time),...fc.map(r=>r.forecast_time)])].sort();
+      labels=all.map(t=>formatChartLabel(t));
+      datasets=[{label:'Q Thực đo',data:all.map(t=>obs.find(x=>x.time===t)?.inflow??null),borderColor:rgba(C.IN,1),borderWidth:2,pointRadius:0,tension:0.3},{label:'Q Dự báo',data:all.map(t=>{const i=fc.find(x=>x.forecast_time===t);return i?getFlowFc(i):null;}),borderColor:tabMeta[currentTab].color.includes(',')?`rgb(${tabMeta[currentTab].color})`:tabMeta[currentTab].color,borderDash:[4,4],borderWidth:2,pointRadius:0,tension:0.3}];
     }
-    else if (currentTab === 'WL_7D') {
-      const data = state.hourly7D_Obs; labels = data.map(r => formatChartLabel(r.time)); 
-      datasets = [ { label:'Mực nước (m)', data: data.map(r=>r.water_level), borderColor:rgba(C.WL,1), backgroundColor:rgba(C.WL,0.1), fill:true, borderWidth:2, pointRadius:0, tension:0.3 }, ...getLimitLines(data) ];
+    else if(currentTab==='IN_FC_7D'){
+      const tl=new Date($("day").value).setHours(0,0,0,0)+7*86400000; const ts=Object.keys(state.fcEnsemble||{}).filter(t=>{const tm=new Date(t).getTime();return tm>=new Date($("day").value).setHours(0,0,0,0)&&tm<=tl;}).sort();
+      labels=ts.map(t=>formatChartLabel(t));
+      const getV=(t,s)=>{ const g=state.fcEnsemble[t]||[]; const f=g.find(i=>i.source===s); return f?getFlowFc(f):null; };
+      const dH=[],dL=[],dM=[]; ts.forEach(t=>{ let v=getV(t,'rf2q_ai_v1'); if(v===null) v=0; dH.push(v*1.15); dL.push(v*0.7); dM.push(v); });
+      datasets=[{label:'Biên trên',data:dH,borderColor:'transparent',backgroundColor:rgba(C.WL,0.15),pointRadius:0,fill:'+1',tension:0.4},{label:'Biên dưới',data:dL,borderColor:'transparent',pointRadius:0,fill:false,tension:0.4},{label:'Dự báo TB',data:dM,borderColor:'#FF9800',borderWidth:2,pointRadius:0,tension:0.4,fill:false}];
     }
-    else if (currentTab === 'FLOW_24H') {
-      const data = state.latest24h; labels = data.map(r => formatChartLabel(r.time));
-      datasets = [ { label:'Q về', data: data.map(r=>r.inflow), borderColor:rgba(C.IN,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }, { label:'Q máy', data: data.map(r=>r.turbine_flow), borderColor:rgba(C.TB,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }, { label:'Q xả', data: data.map(r=>r.spillway_flow), borderColor:rgba(C.SP,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }, ...getFlowLimitLines(data) ];
+    else if(currentTab==='RF_DAILY_FC'){
+      const tl=new Date($("day").value).setHours(0,0,0,0)+7*86400000; const f=state.rainFc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=new Date($("day").value).setHours(0,0,0,0)&&t<tl;});
+      const agg=aggregateByDay(f,'forecast_time'); labels=Object.keys(agg).sort(); const d=labels.map(k=>agg[k]); let s=0; const a=d.map(v=>{s+=v;return s;});
+      datasets=[{type:'bar',label:'Mưa ngày',data:d,backgroundColor:rgba(C.RN,0.7),yAxisID:'y'},{type:'line',label:'Lũy kế',data:a,borderColor:rgba(C.ACC,1),backgroundColor:rgba(C.ACC,0.2),pointRadius:4,fill:false,yAxisID:'y1'}];
+      opts.scales.y1={type:'linear',display:true,position:'right',grid:{drawOnChartArea:false},ticks:{color:rgba(C.ACC,0.9)}};
     }
-    else if (currentTab === 'FLOW_7D') {
-      const data = state.hourly7D_Obs; labels = data.map(r => formatChartLabel(r.time));
-      datasets = [ { label:'Q về', data: data.map(r=>r.inflow), borderColor:rgba(C.IN,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }, { label:'Q máy', data: data.map(r=>r.turbine_flow), borderColor:rgba(C.TB,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }, { label:'Q xả', data: data.map(r=>r.spillway_flow), borderColor:rgba(C.SP,1), borderWidth:1.5, pointRadius:0, tension:0.3, fill:false }, ...getFlowLimitLines(data) ];
+    else if(currentTab==='RF_HOURLY_ACC'){
+      const tl=new Date($("day").value).setHours(0,0,0,0)+7*86400000; const f=state.rainFc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=new Date($("day").value).setHours(0,0,0,0)&&t<=tl;});
+      labels=f.map(r=>formatChartLabel(r.forecast_time)); const d=f.map(r=>getRain(r)); let s=0; const a=d.map(v=>{s+=v;return s;});
+      datasets=[{type:'bar',label:'Mưa giờ',data:d,backgroundColor:rgba(C.RN,0.6),yAxisID:'y'},{type:'line',label:'Lũy kế',data:a,borderColor:rgba(C.ACC,1),backgroundColor:rgba(C.ACC,0.2),pointRadius:0,tension:0.3,fill:false,yAxisID:'y1'}];
+      opts.scales.y1={type:'linear',display:true,position:'right',grid:{drawOnChartArea:false},ticks:{color:rgba(C.ACC,0.9)}};
     }
-    else if (currentTab.startsWith('IN_OBS_FC_')) {
-      const dStart = new Date($("day").value).setHours(0,0,0,0);
-      const tMin = dStart - 3*86400000; const tMax = dStart + 4*86400000;
-      
-      const obsData = state.hourly3D.filter(r => { const t = new Date(r.time).getTime(); return t >= tMin && t < tMax; });
-      
-      let fcData = [];
-      if (currentTab === 'IN_OBS_FC_V7') fcData = state.inflowFc_V7;
-      else if (currentTab === 'IN_OBS_FC_MIX') fcData = state.inflowFc_Mix;
-      else if (currentTab === 'IN_OBS_FC_AI') fcData = state.inflowFc_AI;
-      
-      fcData = fcData.filter(r => { const t = new Date(r.forecast_time).getTime(); return t >= tMin && t < tMax; });
-      
-      const allT = [...new Set([...obsData.map(r=>r.time), ...fcData.map(r=>r.forecast_time)])].sort();
-      labels = allT.map(t => formatChartLabel(t));
-      const dObs = allT.map(t => obsData.find(x => x.time === t)?.inflow ?? null);
-      const dFc = allT.map(t => { const item = fcData.find(x => x.forecast_time === t); return item ? getFlowFc(item) : null; });
-      
-      const obsMap = new Map();
-      state.hourly7D_Obs.forEach(x => obsMap.set(new Date(x.time).getTime(), x.inflow));
-      const lastObsTime = state.lastObs ? new Date(state.lastObs.time).getTime() : 0;
-      const dMA = allT.map(tStr => {
-        const tCurrent = new Date(tStr).getTime(); if (tCurrent > lastObsTime) return null;
-        let sum=0, cnt=0;
-        for(let i=0; i<24; i++){ 
-           const tPrev = tCurrent - i*3600000; 
-           if(obsMap.has(tPrev)){ const val = obsMap.get(tPrev); if(val !== null && val !== undefined) { sum += val; cnt++; } }
-        }
-        return cnt > 0 ? sum/cnt : null;
-      });
-
-      datasets = [
-        { label: 'Q Thực đo', data: dObs, borderColor:rgba(C.IN,1), borderWidth:2, pointRadius:0, tension:0.3 },
-        { label: 'MA 24h', data: dMA, borderColor:'#e879f9', borderWidth:1.5, pointRadius:0, tension:0.4, borderDash:[2,2], fill:false },
-        { 
-            label: 'Q Dự báo', 
-            data: dFc, 
-            borderColor: tabMeta[currentTab].color === C.IF ? '#FF9800' : `rgb(${tabMeta[currentTab].color})`, 
-            borderDash:[4,4], borderWidth:2, pointRadius:0, tension:0.3 
-        }
-      ];
+    else if(currentTab==='RF_COMPARE'){
+        const te=new Date($("day").value).setHours(0,0,0,0)+86400000-1; const ts=te-7*86400000;
+        const o=state.hourly7D_Obs.filter(r=>{const t=new Date(r.time).getTime();return t>=ts&&t<=te;});
+        const f=state.rainFc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=ts&&t<=te;});
+        const ao=aggregateRainByDay(o,'time'); const af=aggregateRainByDay(f,'forecast_time','rainfall_mm');
+        const all=[...new Set([...Object.keys(ao),...Object.keys(af)])].sort();
+        datasets=[{type:'bar',label:'Thực tế',data:all.map(k=>ao[k]||0),backgroundColor:rgba(C.RF,0.7)},{type:'bar',label:'Dự báo',data:all.map(k=>af[k]||0),backgroundColor:rgba(C.RN,0.7)}];
+        labels=all;
     }
-    else if (currentTab === 'IN_FC_7D') {
-      const tLimit = new Date($("day").value).setHours(0,0,0,0) + 7*86400000; 
-      const times = Object.keys(state.fcEnsemble || {}).filter(t => { 
-           const time = new Date(t).getTime(); return time >= new Date($("day").value).setHours(0,0,0,0) && time <= tLimit;
-        }).sort();
-      labels = times.map(t => formatChartLabel(t));
-      const getVal = (t, src) => { 
-          const group = state.fcEnsemble[t] || []; const found = group.find(i => i.source === src); 
-          return found ? getFlowFc(found) : null; 
-      };
-      const d_high_raw = []; const d_low_raw = []; const d_mean = [];
-      times.forEach(t => {
-          let vMean = getVal(t, 'rf2q_v7'); if (vMean === null) vMean = 0;
-          const realMax = vMean * 1.15; const realMin = vMean * 0.70;
-          d_high_raw.push(realMax); d_low_raw.push(realMin); d_mean.push(vMean);
-      });
-      datasets = [
-        { label: 'Biên trên', data: d_high_raw, borderColor: 'transparent', backgroundColor: rgba(C.WL, 0.15), pointRadius: 0, fill: '+1', tension: 0.4, order: 3 },
-        { label: 'Biên dưới', data: d_low_raw, borderColor: 'transparent', backgroundColor: 'transparent', pointRadius: 0, fill: false, tension: 0.4, order: 2 },
-        { label: 'Dự báo TB', data: d_mean, borderColor: '#FF9800', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: false, order: 1 }
-      ];
-    }
-    else if (currentTab === 'RF_DAILY_FC') {
-      const tLimit = new Date($("day").value).setHours(0,0,0,0) + 7*86400000;
-      const filtered = state.rainFc.filter(r => { const t = new Date(r.forecast_time).getTime(); return t >= (new Date($("day").value).setHours(0,0,0,0)) && t < tLimit; });
-      const agg = aggregateByDay(filtered, 'forecast_time');
-      labels = Object.keys(agg).sort();
-      const dailyData = labels.map(k => agg[k]);
-      let sum = 0; const accData = dailyData.map(val => { sum += val; return sum; });
-      datasets = [
-        { type: 'bar', label: 'Mưa ngày (mm)', data: dailyData, backgroundColor: rgba(C.RN, 0.7), borderColor: rgba(C.RN, 1), borderWidth: 1, order: 2, yAxisID: 'y' },
-        { type: 'line', label: 'Lũy kế (mm)', data: accData, borderColor: rgba(C.ACC, 1), backgroundColor: rgba(C.ACC, 0.2), borderWidth: 2, pointRadius: 4, tension: 0.1, fill: false, order: 1, yAxisID: 'y1' }
-      ];
-      opts.scales.y1 = { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: rgba(C.ACC, 0.9) } };
-    }
-    else if (currentTab === 'RF_HOURLY_ACC') {
-      const tLimit = new Date($("day").value).setHours(0,0,0,0) + 7*86400000;
-      const filtered = state.rainFc.filter(r => { const t = new Date(r.forecast_time).getTime(); return t >= (new Date($("day").value).setHours(0,0,0,0)) && t <= tLimit; });
-      labels = filtered.map(r => formatChartLabel(r.forecast_time));
-      const hourlyData = filtered.map(r => getRain(r));
-      let sum = 0; const accData = hourlyData.map(val => { sum += val; return sum; });
-      datasets = [
-        { type: 'bar', label: 'Mưa giờ (mm)', data: hourlyData, backgroundColor: rgba(C.RN, 0.6), borderColor: rgba(C.RN, 1), borderWidth: 1, order: 2, yAxisID: 'y' },
-        { type: 'line', label: 'Lũy kế (mm)', data: accData, borderColor: rgba(C.ACC, 1), backgroundColor: rgba(C.ACC, 0.2), borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false, order: 1, yAxisID: 'y1' }
-      ];
-      opts.scales.y1 = { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: rgba(C.ACC, 0.9) } };
-    }
-    else if (currentTab === 'RF_COMPARE') {
-      const tEnd = new Date($("day").value).setHours(0,0,0,0) + 86400000 - 1; 
-      const tStartCompare = tEnd - 7*86400000;
-      
-      const obs = state.hourly7D_Obs.filter(r => { const t=new Date(r.time).getTime(); return t>=tStartCompare && t<=tEnd; });
-      const fc = state.rainFc.filter(r => { const t=new Date(r.forecast_time).getTime(); return t>=tStartCompare && t<=tEnd; });
-      
-      // Use helper to sum rainfallreal
-      const aggObs = aggregateRainByDay(obs, 'time'); // defaults to rainfallreal
-      const aggFc = aggregateRainByDay(fc, 'forecast_time', 'rainfall_mm');
-      
-      const allDays = [...new Set([...Object.keys(aggObs), ...Object.keys(aggFc)])].sort();
-      datasets = [
-        { type: 'bar', label: 'Thực tế', data: allDays.map(k => aggObs[k]||0), backgroundColor: rgba(C.RF, 0.7) },
-        { type: 'bar', label: 'Dự báo', data: allDays.map(k => aggFc[k]||0), backgroundColor: rgba(C.RN, 0.7) }
-      ];
-      labels = allDays;
-    }
-
-    const isMixed = (currentTab === 'RF_HOURLY_ACC' || currentTab === 'RF_DAILY_FC');
-    const type = (currentTab.startsWith('RF_') && !isMixed) ? 'bar' : 'line';
-    chart = new Chart(ctx, { type: (isMixed ? 'bar' : type), data:{labels, datasets}, options:opts });
+    const ty=(currentTab.startsWith('RF_')&&currentTab!=='RF_COMPARE')?'bar':'line';
+    chart=new Chart(ctx,{type:(currentTab==='RF_HOURLY_ACC'||currentTab==='RF_DAILY_FC'?'bar':ty),data:{labels,datasets},options:opts});
   }
 
-  function goTab(name, el){
-    document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  function goTab(name,el){
+    document.querySelectorAll('.tab-pane').forEach(t=>t.classList.remove('active'));
+    document.getElementById('tab-'+name).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
     el.classList.add('active');
-
-    if(name === 'data') loadTableData();
-    if(name === 'forecast') loadForecasts(); 
-    if(name === 'chart' && chart) chart.resize();
+    if(name==='data') loadTableData();
+    if(name==='forecast') loadBulletins();
+    if(name==='notif') loadAIBulletins(); 
+    if(name==='chart'&&chart) chart.resize();
   }
 
-  async function loadTableData() {
-    const tb = $("tableBody");
-    tb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Đang lấy 24h số liệu gần nhất...</td></tr>`;
-    try {
-      const data = state.latest24h;
-      if(data.length === 0) { tb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px;">Không có dữ liệu</td></tr>`; return; }
-
-      // We no longer need separate rain query, it's in 'data'
-      tb.innerHTML = "";
-      
-      // REVERSE the data for the table to show newest first
-      const tableData = [...data].reverse();
-
-      tableData.forEach(row => {
-        // Direct read from row
-        const rVal = getRain(row);
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${formatTableTime(row.time)}</td>
-          <td style="color:rgb(var(--c-wl))">${fmt2.format(row.water_level)}</td>
-          <td style="color:rgb(var(--c-in))">${fmt2.format(row.inflow)}</td>
-          <td style="color:rgb(var(--c-tb))">${fmt2.format(row.turbine_flow)}</td>
-          <td style="color:rgb(var(--c-sp))">${fmt2.format(row.spillway_flow)}</td>
-          <td style="color:${rVal>0?'rgb(var(--c-green))':'#64748b'}">${rVal>0 ? fmt1.format(rVal) : '-'}</td>
-        `;
+  async function loadTableData(){
+    const tb=$("tableBody"); tb.innerHTML=`<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Đang tải...</td></tr>`;
+    try{
+      const d=state.latest24h; if(!d.length){tb.innerHTML=`<tr><td colspan="6" style="text-align:center; padding:20px;">Không có dữ liệu</td></tr>`;return;}
+      tb.innerHTML="";
+      [...d].reverse().forEach(row=>{
+        const rVal=getRain(row); const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${formatTableTime(row.time)}</td><td style="color:rgb(var(--c-wl))">${fmt2.format(row.water_level)}</td><td style="color:rgb(var(--c-in))">${fmt2.format(row.inflow)}</td><td style="color:rgb(var(--c-tb))">${fmt2.format(row.turbine_flow)}</td><td style="color:rgb(var(--c-sp))">${fmt2.format(row.spillway_flow)}</td><td style="color:${rVal>0?'rgb(var(--c-green))':'#64748b'}">${rVal>0?fmt1.format(rVal):'-'}</td>`;
         tb.appendChild(tr);
       });
-    } catch(e) { console.error(e); }
+    }catch(e){console.error(e);}
   }
 
-  async function loadForecasts() {
+  // --- HÀM TẠO AI INSIGHT (MỚI - CALL V4) ---
+  async function generateAI() {
+      const btn = document.querySelector('#tab-notif button');
+      btn.innerText = "Đang suy nghĩ..."; btn.disabled = true;
+      try {
+          const { data, error } = await sb.rpc('generate_ai_operational_insight_v4');
+          if (error) throw error;
+          toast("AI đã tạo bản tin mới!");
+          loadAIBulletins(); 
+      } catch (e) { console.error(e); toast("Lỗi AI: " + e.message); } 
+      finally { btn.innerText = "✨ Tạo nhận định"; btn.disabled = false; }
+  }
+
+  // --- HÀM TẢI BẢN TIN THƯỜNG (TAB DỰ BÁO) ---
+  async function loadBulletins() {
     const container = $("forecast-list");
     try {
-      const { data, error } = await sb.from('bulletins').select('*').order('created_at', { ascending: false }).limit(10);
+      const { data, error } = await sb.from('bulletins').select('*').order('created_at', { ascending: false }).limit(20);
       if (error) throw error;
-      if (!data || data.length === 0) {
-        container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted);">Chưa có bản tin nào.</div>`;
-        return;
-      }
       container.innerHTML = "";
-      data.forEach((item, index) => {
-        const title = item.title || "";
-        const summary = item.summary || "";
-        const text = (title + " " + summary).toLowerCase();
-        
+      if (!data || data.length === 0) { container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted);">Chưa có bản tin nào.</div>`; return; }
+
+      data.forEach(item => {
+        const title = item.title || ""; const summary = item.summary || ""; const text = (title + " " + summary).toLowerCase();
         let theme = { color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: '🌤️', label: 'Dự báo' };
-
-        // --- CẬP NHẬT LOGIC AI ---
-        if (item.type === 'ai_analysis') {
-            theme = { color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.15)', icon: '🤖', label: 'AI Nhận định' };
-        } 
-        // -------------------------
-        else if (text.includes('lũ') || text.includes('bão') || text.includes('khẩn cấp') || item.type === 'urgent') {
-            theme = { color: '#ef4444', bg: 'rgba(239,68,68,0.15)', icon: '⛈️', label: 'Khẩn cấp' };
-        } else if (text.includes('sạt lở') || text.includes('cảnh báo') || item.type === 'warning') {
-            theme = { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: '⚠️', label: 'Cảnh báo' };
-        } else if (text.includes('vận hành') || text.includes('xả') || text.includes('điều tiết')) {
-            theme = { color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: '💧', label: 'Vận hành' };
-        }
-
-        const timeStr = formatToVNTime(item.created_at);
-        const displaySummary = summary || (item.content ? item.content.substring(0, 80) + "..." : "Xem chi tiết");
-        const content = item.content || "Không có nội dung";
         
-        const div = document.createElement("div");
-        div.className = "list-item";
-        div.innerHTML = `
-            <div class="accordion-header" onclick="this.nextElementSibling.classList.toggle('open')">
-               <div class="icon-box" style="background:${theme.bg}; color:${theme.color};">${theme.icon}</div>
-               <div class="item-content">
-                  <h4 style="white-space: normal; color:${theme.color === '#10b981' ? 'var(--text-main)' : theme.color}">${title || 'Bản tin dự báo'}</h4>
-                  <p>${displaySummary}</p>
-                  <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
-                    <span style="font-size:10px; font-weight:700; color:${theme.color}; border:1px solid ${theme.bg}; padding:2px 6px; border-radius:4px;">${theme.label}</span>
-                    <span class="item-date">${timeStr}</span>
-                  </div>
-               </div>
-            </div>
-            <div class="accordion-body">${content}</div>
-        `;
-        container.appendChild(div);
+        if (text.includes('lũ') || text.includes('bão') || item.type === 'urgent') { theme = { color: '#ef4444', bg: 'rgba(239,68,68,0.15)', icon: '⛈️', label: 'Khẩn cấp' }; } 
+        else if (text.includes('cảnh báo') || item.type === 'warning') { theme = { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: '⚠️', label: 'Cảnh báo' }; } 
+        else if (text.includes('vận hành') || text.includes('xả')) { theme = { color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: '💧', label: 'Vận hành' }; }
+
+        renderItem(container, item, theme);
       });
-    } catch (e) { 
-        console.error(e); 
-        container.innerHTML = `<div style="padding:20px; text-align:center; color:#ef4444;">Lỗi tải dữ liệu: ${e.message}</div>`;
-    }
+    } catch (e) { console.error(e); }
+  }
+
+  // --- HÀM TẢI AI INSIGHT (MỚI - TAB THÔNG BÁO) ---
+  async function loadAIBulletins() {
+    const container = $("ai-list");
+    try {
+      const { data, error } = await sb.from('ai_bulletins').select('*').order('created_at', { ascending: false }).limit(5);
+      if (error) throw error;
+      container.innerHTML = "";
+      if (!data || data.length === 0) { container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted); font-size:12px;">Chưa có nhận định nào. Nhấn nút để tạo mới.</div>`; return; }
+
+      data.forEach(item => {
+        let theme = { color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.15)', icon: '🤖', label: 'AI Nhận định' };
+        if (item.severity === 'critical') theme = { color: '#ef4444', bg: 'rgba(239,68,68,0.15)', icon: '🚨', label: 'AI Cảnh báo' };
+        else if (item.severity === 'warning') theme = { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: '⚠️', label: 'AI Lưu ý' };
+
+        renderItem(container, item, theme);
+      });
+    } catch (e) { console.error(e); }
+  }
+
+  function renderItem(container, item, theme) {
+      const timeStr = formatToVNTime(item.created_at);
+      const displaySummary = item.summary || (item.content ? item.content.substring(0, 80) + "..." : "Xem chi tiết");
+      const div = document.createElement("div"); div.className = "list-item";
+      div.innerHTML = `
+        <div class="accordion-header" onclick="this.nextElementSibling.classList.toggle('open')">
+           <div class="icon-box" style="background:${theme.bg}; color:${theme.color};">${theme.icon}</div>
+           <div class="item-content">
+              <h4 style="white-space: normal; color:${theme.color==='#10b981'?'var(--text-main)':theme.color}">${item.title||'Bản tin'}</h4>
+              <p>${displaySummary}</p>
+              <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+                <span style="font-size:10px; font-weight:700; color:${theme.color}; border:1px solid ${theme.bg}; padding:2px 6px; border-radius:4px;">${theme.label}</span>
+                <span class="item-date" style="font-size:10px; color:#64748b;">${timeStr}</span>
+              </div>
+           </div>
+        </div>
+        <div class="accordion-body">${item.content || "Không có nội dung"}</div>
+      `;
+      container.appendChild(div);
   }
 </script>
 </body>
