@@ -118,10 +118,19 @@
     .btn-action, button { background: rgba(59, 130, 246, 0.2); color: #60a5fa; font-weight: 700; width: auto; white-space: nowrap; padding: 10px 18px; cursor: pointer; }
     .chip { padding:4px 10px; border-radius:99px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); color:var(--text-muted); font-size:11px; }
 
-    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-    .tab { padding: 6px 12px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: var(--text-muted); font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+    /* --- [ĐÃ SỬA] Tabs chia 3 cột đều nhau --- */
+    .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+    .tab { 
+      padding: 8px 4px; border-radius: 99px; 
+      border: 1px solid rgba(255,255,255,0.1); 
+      background: rgba(255,255,255,0.03); 
+      color: var(--text-muted); font-size: 11px; font-weight: 600; 
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; 
+      text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+    }
     .tab.active { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white; }
-    .swatch { width: 8px; height: 8px; border-radius: 50%; }
+    .swatch { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    
     canvas { width: 100% !important; height: 320px !important; }
 
     .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
@@ -492,7 +501,28 @@
       fc=fc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=tm&&t<tx;});
       const all=[...new Set([...obs.map(r=>r.time),...fc.map(r=>r.forecast_time)])].sort();
       labels=all.map(t=>formatChartLabel(t));
-      datasets=[{label:'Q Thực đo',data:all.map(t=>obs.find(x=>x.time===t)?.inflow??null),borderColor:rgba(C.IN,1),borderWidth:2,pointRadius:0,tension:0.3},{label:'MA 24h',data:all.map(t=>{const c=new Date(t).getTime();let s=0,n=0;for(let i=0;i<24;i++){const p=state.hourly7D_Obs.find(x=>new Date(x.time).getTime()===c-i*3600000);if(p){s+=p.inflow;n++;}}return n?s/n:null;}),borderColor:'#e879f9',borderWidth:1.5,borderDash:[2,2],fill:false},{label:'Q Dự báo',data:all.map(t=>{const i=fc.find(x=>x.forecast_time===t);return i?getFlowFc(i):null;}),borderColor:tabMeta[currentTab].color.includes(',')?`rgb(${tabMeta[currentTab].color})`:tabMeta[currentTab].color,borderDash:[4,4],borderWidth:2,pointRadius:0,tension:0.3}];
+      
+      // [SỬA] MA 24h nét đứt đơn giản
+      datasets=[{label:'Q Thực đo',data:all.map(t=>obs.find(x=>x.time===t)?.inflow??null),borderColor:rgba(C.IN,1),borderWidth:2,pointRadius:0,tension:0.3},
+      {
+        label: 'MA 24h',
+        data: all.map(t => {
+            const c = new Date(t).getTime();
+            let s = 0, n = 0;
+            for (let i = 0; i < 24; i++) {
+                const p = state.hourly7D_Obs.find(x => new Date(x.time).getTime() === c - i * 3600000);
+                if (p) { s += p.inflow; n++; }
+            }
+            return n ? s / n : null;
+        }),
+        borderColor: '#e879f9', // Tím nhạt
+        borderWidth: 1.5,
+        borderDash: [6, 6], // Nét đứt đơn giản
+        fill: false,
+        pointRadius: 0,
+        tension: 0.4 
+      },
+      {label:'Q Dự báo',data:all.map(t=>{const i=fc.find(x=>x.forecast_time===t);return i?getFlowFc(i):null;}),borderColor:tabMeta[currentTab].color.includes(',')?`rgb(${tabMeta[currentTab].color})`:tabMeta[currentTab].color,borderDash:[4,4],borderWidth:2,pointRadius:0,tension:0.3}];
     }
     else if(currentTab==='IN_FC_7D'){
       const tl=new Date($("day").value).setHours(0,0,0,0)+7*86400000; const ts=Object.keys(state.fcEnsemble||{}).filter(t=>{const tm=new Date(t).getTime();return tm>=new Date($("day").value).setHours(0,0,0,0)&&tm<=tl;}).sort();
@@ -502,14 +532,21 @@
       datasets=[{label:'Biên trên',data:dH,borderColor:'transparent',backgroundColor:rgba(C.WL,0.15),pointRadius:0,fill:'+1',tension:0.4},{label:'Biên dưới',data:dL,borderColor:'transparent',pointRadius:0,fill:false,tension:0.4},{label:'Dự báo TB',data:dM,borderColor:'#FF9800',borderWidth:2,pointRadius:0,tension:0.4,fill:false}];
     }
     else if(currentTab==='RF_DAILY_FC'){
-      const tl=new Date($("day").value).setHours(0,0,0,0)+7*86400000; const f=state.rainFc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=new Date($("day").value).setHours(0,0,0,0)&&t<tl;});
-      const agg=aggregateByDay(f,'forecast_time'); labels=Object.keys(agg).sort(); const d=labels.map(k=>agg[k]); let s=0; const a=d.map(v=>{s+=v;return s;});
+      const tl=new Date($("day").value).setHours(0,0,0,0)+7*86400000;
+      const f=state.rainFc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=new Date($("day").value).setHours(0,0,0,0)&&t<tl;});
+      // [FIX] Sửa lại để lấy đúng cột rainfall_mm
+      const agg=aggregateRainByDay(f,'forecast_time', 'rainfall_mm'); 
+      labels=Object.keys(agg).sort(); const d=labels.map(k=>agg[k]); let s=0; const a=d.map(v=>{s+=v;return s;});
       datasets=[{type:'bar',label:'Mưa ngày',data:d,backgroundColor:rgba(C.RN,0.7),yAxisID:'y'},{type:'line',label:'Lũy kế',data:a,borderColor:rgba(C.ACC,1),backgroundColor:rgba(C.ACC,0.2),pointRadius:4,fill:false,yAxisID:'y1'}];
       opts.scales.y1={type:'linear',display:true,position:'right',grid:{drawOnChartArea:false},ticks:{color:rgba(C.ACC,0.9)}};
     }
     else if(currentTab==='RF_HOURLY_ACC'){
-      const tl=new Date($("day").value).setHours(0,0,0,0)+7*86400000; const f=state.rainFc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=new Date($("day").value).setHours(0,0,0,0)&&t<=tl;});
-      labels=f.map(r=>formatChartLabel(r.forecast_time)); const d=f.map(r=>getRain(r)); let s=0; const a=d.map(v=>{s+=v;return s;});
+      const tl=new Date($("day").value).setHours(0,0,0,0)+7*86400000; 
+      const f=state.rainFc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=new Date($("day").value).setHours(0,0,0,0)&&t<=tl;});
+      labels=f.map(r=>formatChartLabel(r.forecast_time)); 
+      // [FIX] Lấy trực tiếp từ rainfall_mm thay vì dùng hàm getRain (vốn chỉ tìm rainfallreal)
+      const d=f.map(r=>Number(r.rainfall_mm||0)); 
+      let s=0; const a=d.map(v=>{s+=v;return s;});
       datasets=[{type:'bar',label:'Mưa giờ',data:d,backgroundColor:rgba(C.RN,0.6),yAxisID:'y'},{type:'line',label:'Lũy kế',data:a,borderColor:rgba(C.ACC,1),backgroundColor:rgba(C.ACC,0.2),pointRadius:0,tension:0.3,fill:false,yAxisID:'y1'}];
       opts.scales.y1={type:'linear',display:true,position:'right',grid:{drawOnChartArea:false},ticks:{color:rgba(C.ACC,0.9)}};
     }
@@ -604,12 +641,12 @@
     }
   }
 
-  // --- HÀM MỚI CHO AI ---
+  // --- [SỬA] HÀM MỚI CHO AI (GỌI V4) ---
   async function generateAI() {
       const btn = document.querySelector('#tab-notif button');
       btn.innerText = "Đang suy nghĩ..."; btn.disabled = true;
       try {
-          const { data, error } = await sb.rpc('generate_ai_operational_insight_v3');
+          const { data, error } = await sb.rpc('generate_ai_operational_insight_v4');
           if (error) throw error;
           toast("AI đã tạo bản tin mới!");
           loadAIBulletins(); 
@@ -617,6 +654,7 @@
       finally { btn.innerText = "✨ Tạo nhận định"; btn.disabled = false; }
   }
 
+  // --- [SỬA] HÀM LOAD AI VỚI MÀU SẮC ---
   async function loadAIBulletins() {
     const container = $("ai-list");
     try {
@@ -631,7 +669,14 @@
       data.forEach(item => {
         const timeStr = formatToVNTime(item.created_at);
         const div = document.createElement("div"); div.className = "list-item";
+        
+        // Logic màu sắc theo mức độ cảnh báo từ V4
         let theme = { color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.15)', icon: '🤖', label: 'AI Nhận định' };
+        if (item.severity === 'critical') {
+            theme = { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)', icon: '🚨', label: 'Cảnh báo' };
+        } else if (item.severity === 'warning') {
+            theme = { color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)', icon: '⚠️', label: 'Lưu ý' };
+        }
         
         div.innerHTML = `
             <div class="accordion-header" onclick="this.nextElementSibling.classList.toggle('open')">
