@@ -19,7 +19,19 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js').catch(err => console.log('SW Failed:', err));
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(reg => {
+             console.log('SW Registered!', reg.scope);
+             reg.onupdatefound = () => {
+               const installingWorker = reg.installing;
+               installingWorker.onstatechange = () => {
+                 if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                     window.location.reload();
+                 }
+               };
+             };
+          })
+          .catch(err => console.log('SW Failed:', err));
       });
     }
   </script>
@@ -30,8 +42,7 @@
       --text-main: #e2e8f0; --text-muted: #94a3b8;
       --c-wl: 34, 211, 238; --c-in: 59, 130, 246; --c-tb: 245, 158, 11;
       --c-sp: 239, 68, 68; --c-rn: 167, 139, 250; --c-green: 16, 185, 129;
-      --c-rn-real: 34, 197, 94; --c-acc: 250, 204, 21; 
-      --c-hec: 6, 182, 212; /* [MỚI] Màu Cyan cho HEC */
+      --c-rn-real: 34, 197, 94; --c-acc: 250, 204, 21;
       --font-sans: 'Inter', sans-serif; --font-mono: 'JetBrains Mono', monospace;
       --nav-height: 65px;
     }
@@ -107,7 +118,6 @@
     .btn-action, button { background: rgba(59, 130, 246, 0.2); color: #60a5fa; font-weight: 700; width: auto; white-space: nowrap; padding: 10px 18px; cursor: pointer; }
     .chip { padding:4px 10px; border-radius:99px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); color:var(--text-muted); font-size:11px; }
 
-    /* --- [ĐÃ SỬA] Tabs chia 3 cột đều nhau --- */
     .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
     .tab { 
       padding: 8px 4px; border-radius: 99px; 
@@ -233,7 +243,7 @@
         <div class="cardBody">
           <div class="row">
             <div class="control"><label>Ngày xem</label><input id="day" type="date"></div>
-            <div class="control" style="flex:0"><label>&nbsp;</label><button id="btnLoad">Tải lại</button></div>
+            <div class="control" style="flex:0"><label>&nbsp;</label><button id="btnLoad" onclick="loadData()">Tải lại</button></div>
           </div>
         </div>
       </section>
@@ -289,7 +299,7 @@
       
       <div class="card" style="border: 1px solid rgba(139,92,246,0.3);">
         <div class="cardHead">
-            <b style="color:#c084fc;">🤖 AI Nhận định</b> 
+            <b style="color:#c084fc;">🤖 Nhận định AI</b> 
             <button onclick="generateAI()" style="width:auto; padding:6px 12px; font-size:11px; margin-left:auto; background:rgba(139,92,246,0.2); border:1px solid rgba(139,92,246,0.4); color:#c084fc; cursor:pointer;">✨ Tạo nhận định</button>
         </div>
         <div id="ai-list" style="padding:0;">
@@ -372,17 +382,17 @@
   const SB_URL = "https://ycthhachfxczwkburnfa.supabase.co";
   const SB_KEY = "sb_publishable_Q0KbTLPBE4owO72Mz-GN6A_khF9z_Ss";
   const RES_CONST = { WL_MAX_CHECK:382.2, WL_NORMAL:380.0, WL_FLOOD:376.0, WL_FLOOD_MIN:370.0, WL_DEAD:340.0, VOL_DEAD:77.07, VOL_MAX:343.55 };
-  const C = { WL:'34, 211, 238', IN:'59, 130, 246', TB:'245, 158, 11', SP:'239, 68, 68', RN:'167, 139, 250', IF:'255, 152, 0', RF:'34, 197, 94', ACC:'250, 204, 21', HEC:'6, 182, 212' };
+  const C = { WL:'34, 211, 238', IN:'59, 130, 246', TB:'245, 158, 11', SP:'239, 68, 68', RN:'167, 139, 250', IF:'255, 152, 0', RF:'34, 197, 94', ACC:'250, 204, 21', HEC:'255, 87, 34' };
 
   let sb=null, chart=null, currentTab="WL_24H";
   const tabMeta = {
     WL_24H:{name:"MNH 24h",hint:"Mực nước 24h qua",color:C.WL}, FLOW_24H:{name:"Q 24h",hint:"Dòng chảy 24h qua",color:C.IN},
     WL_7D:{name:"MNH 7D",hint:"Mực nước 7 ngày",color:C.WL}, FLOW_7D:{name:"Q Tổng hợp",hint:"Q về/máy/xả 7 ngày",color:C.IN},
     IN_OBS_FC_V7:{name:"Q Về vs DB (V7)",hint:"Thực tế vs Mô hình V7",color:'34, 197, 94'}, 
-    IN_OBS_FC_MIX:{name:"Q Về vs DB (Mixed)",hint:"Thực tế vs Mô hình Mixed",color:'233, 30, 99'}, 
-    IN_OBS_FC_AI:{name:"Q Về vs DB (AI)",hint:"Thực tế vs Mô hình AI V1",color:'156, 39, 176'}, 
-    IN_FC_HEC:{name:"Q DB HEC-HMS",hint:"Dự báo HEC-HMS Lite",color:C.HEC}, /* TAB MỚI */
-    IN_FC_7D:{name:"Q Dự báo(dải min max)",hint:"Dự báo 7 ngày tới (Ensemble)",color:C.IF},
+    IN_OBS_FC_MIX:{name:"Q Về vs DB (Mixed)",hint:"Thực tế vs Mô hình Mixed (Mưa thực + DB)",color:'233, 30, 99'}, 
+    IN_OBS_FC_AI:{name:"Q Về vs DB (AI)",hint:"Thực tế vs Mô hình AI V1 (Tự học)",color:'156, 39, 176'}, 
+    IN_OBS_FC_HEC:{name:"Q Về vs HEC-HMS",hint:"Thực tế vs Mô hình HEC-HMS",color:C.HEC}, 
+    IN_FC_7D:{name:"Q Dự báo",hint:"Dự báo 7 ngày tới (Ensemble)",color:C.IF},
     RF_DAILY_FC:{name:"Mưa Ngày",hint:"Mưa ngày & Lũy kế",color:C.RN}, RF_HOURLY_ACC:{name:"Mưa Giờ",hint:"Mưa giờ & Lũy kế",color:C.RN}, RF_COMPARE:{name:"Mưa Thực vs DB",hint:"So sánh mưa Thực & DB",color:C.RF}
   };
   const state = { hourly24h:[], hourly3D:[], hourly7D_Obs:[], inflowFc_V7:[], inflowFc_Mix:[], inflowFc_AI:[], inflowFc_HEC:[], rainFc:[], rainObs7D:[], rain24hRaw:[], latest24h:[], fcEnsemble:{}, lastObs:null, rainAtHour:0, rain24hSum:0, storage:null };
@@ -406,7 +416,7 @@
       const t7DaysAgo=new Date(dSelected.getTime()-6*86400000).toISOString(); const tFcStart=new Date(dSelected.getTime()-1*86400000).toISOString(); const tFcEnd=new Date(dSelected.getTime()+10*86400000).toISOString();
       const now=new Date(); const future7d=new Date(now.getTime()+7*24*3600*1000).toISOString();
 
-      const [res1,res2,res4,res6,res7,res8,resLatest,resRainFc,resFcFuture,resRainFcFuture,resHEC] = await Promise.all([
+      const [res1,res2,res4,res6,res7,res8,resLatest,resRainFc,resFcFuture,resRainFcFuture,resHec] = await Promise.all([
         sb.from('reservoir_hourly_data').select('*').gte('time',tStart).lte('time',tEnd).order('time',{ascending:true}),
         sb.from('inflow_forecast').select('*').gte('forecast_time',tFcStart).lte('forecast_time',tFcEnd).order('created_at',{ascending:false}), 
         sb.from('reservoir_hourly_data').select('*').gte('time',tFcStart).lte('time',tEnd).order('time',{ascending:true}), 
@@ -417,8 +427,7 @@
         sb.from('rainfall_forecast').select('*').gte('forecast_time',tFcStart).lte('forecast_time',tFcEnd).order('created_at',{ascending:false}),
         sb.from('inflow_forecast').select('*').gte('forecast_time',now.toISOString()).lte('forecast_time',future7d),
         sb.from('rainfall_forecast').select('*').gte('forecast_time',now.toISOString()).lte('forecast_time',future7d),
-        // [THÊM TRUY VẤN MỚI CHO HEC-HMS]
-        sb.from('inflow_forecast_sql').select('*').eq('source','sql_hec_hms_lite').gte('forecast_time',tFcStart).lte('forecast_time',tFcEnd).order('forecast_time',{ascending:true})
+        sb.from('inflow_forecast_sql').select('*').gte('forecast_time',tFcStart).lte('forecast_time',tFcEnd).order('created_at', {ascending:false})
       ]);
 
       state.hourly24h = getLatestUniqueData(res1.data,'time');
@@ -426,10 +435,7 @@
       state.inflowFc_V7=getLatestUniqueData(allForecasts.filter(i=>i.source==='rf2q_v7'),'forecast_time');
       state.inflowFc_Mix=getLatestUniqueData(allForecasts.filter(i=>i.source==='rf2q_mixed_real_fc'),'forecast_time');
       state.inflowFc_AI=getLatestUniqueData(allForecasts.filter(i=>i.source==='rf2q_ai_v1'),'forecast_time');
-      
-      // [CẬP NHẬT STATE]
-      state.inflowFc_HEC=getLatestUniqueData(resHEC.data || [],'forecast_time');
-      
+      state.inflowFc_HEC=getLatestUniqueData(resHec.data, 'forecast_time');
       state.rainFc = getLatestUniqueData(resRainFc.data,'forecast_time').map(i=>({forecast_time:i.forecast_time, rainfall_mm:Number(i.rainfall_mm)||0}));
       const mapFc={}; (res2.data||[]).forEach(i=>{ if(!mapFc[i.forecast_time]) mapFc[i.forecast_time]=[]; mapFc[i.forecast_time].push(i); }); state.fcEnsemble=mapFc;
       state.hourly3D = getLatestUniqueData(res4.data,'time'); state.hourly7D_Obs = getLatestUniqueData(res7.data,'time'); 
@@ -453,7 +459,6 @@
 
   function getLatestUniqueData(arr,k){ if(!arr)return[]; const m=new Map(); [...arr].sort((a,b)=>new Date(b.created_at||b.time)-new Date(a.created_at||a.time)).forEach(i=>{if(!m.has(i[k]))m.set(i[k],i)}); return Array.from(m.values()).sort((a,b)=>new Date(a[k])-new Date(b[k])); }
   function aggregateRainByDay(data,k,v){ const m={}; data.forEach(r=>{ const d=extractDateVN(r[k]); if(d){ const val=v?getValSafe(r[v]):getRain(r); m[d]=(m[d]||0)+val; } }); return m; }
-  function aggregateByDay(d,k){ return aggregateRainByDay(d,k); }
 
   function renderOverview(fcFlow,fcRain){
     const l=state.lastObs; if(!l)return;
@@ -492,26 +497,32 @@
     else if(currentTab.startsWith('IN_OBS_FC_')){
       const ds=new Date($("day").value).setHours(0,0,0,0); const tm=ds-3*86400000; const tx=ds+4*86400000;
       const obs=state.hourly3D.filter(r=>{const t=new Date(r.time).getTime();return t>=tm&&t<tx;});
-      let fc=[]; if(currentTab.includes('V7')) fc=state.inflowFc_V7; else if(currentTab.includes('MIX')) fc=state.inflowFc_Mix; else fc=state.inflowFc_AI;
+      let fc=[]; if(currentTab.includes('V7')) fc=state.inflowFc_V7; else if(currentTab.includes('MIX')) fc=state.inflowFc_Mix; else if(currentTab.includes('HEC')) fc=state.inflowFc_HEC; else fc=state.inflowFc_AI;
       fc=fc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=tm&&t<tx;});
       const all=[...new Set([...obs.map(r=>r.time),...fc.map(r=>r.forecast_time)])].sort();
       labels=all.map(t=>formatChartLabel(t));
-      datasets=[{label:'Q Thực đo',data:all.map(t=>obs.find(x=>x.time===t)?.inflow??null),borderColor:rgba(C.IN,1),borderWidth:2,pointRadius:0,tension:0.3},{label:'MA 24h',data:all.map(t=>{const c=new Date(t).getTime();let s=0,n=0;for(let i=0;i<24;i++){const p=state.hourly7D_Obs.find(x=>new Date(x.time).getTime()===c-i*3600000);if(p){s+=p.inflow;n++;}}return n?s/n:null;}),borderColor:'#e879f9',borderWidth:1.5,borderDash:[2,2],fill:false},{label:'Q Dự báo',data:all.map(t=>{const i=fc.find(x=>x.forecast_time===t);return i?getFlowFc(i):null;}),borderColor:tabMeta[currentTab].color.includes(',')?`rgb(${tabMeta[currentTab].color})`:tabMeta[currentTab].color,borderDash:[4,4],borderWidth:2,pointRadius:0,tension:0.3}];
+      
+      datasets=[{label:'Q Thực đo',data:all.map(t=>obs.find(x=>x.time===t)?.inflow??null),borderColor:rgba(C.IN,1),borderWidth:2,pointRadius:0,tension:0.3},
+      {
+        label: 'MA 24h',
+        data: all.map(t => {
+            const c = new Date(t).getTime();
+            let s = 0, n = 0;
+            for (let i = 0; i < 24; i++) {
+                const p = state.hourly7D_Obs.find(x => new Date(x.time).getTime() === c - i * 3600000);
+                if (p) { s += p.inflow; n++; }
+            }
+            return n ? s / n : null;
+        }),
+        borderColor: '#e879f9', 
+        borderWidth: 1.5,
+        borderDash: [6, 6], 
+        fill: false,
+        pointRadius: 0,
+        tension: 0.4 
+      },
+      {label:'Q Dự báo',data:all.map(t=>{const i=fc.find(x=>x.forecast_time===t);return i?getFlowFc(i):null;}),borderColor:tabMeta[currentTab].color.includes(',')?`rgb(${tabMeta[currentTab].color})`:tabMeta[currentTab].color,borderDash:[4,4],borderWidth:2,pointRadius:0,tension:0.3}];
     }
-    
-    // [THÊM LOGIC VẼ BIỂU ĐỒ HEC-HMS]
-    else if(currentTab==='IN_FC_HEC'){
-        const ds=new Date($("day").value).setHours(0,0,0,0); const tm=ds-3*86400000; const tx=ds+4*86400000;
-        const obs=state.hourly3D.filter(r=>{const t=new Date(r.time).getTime();return t>=tm&&t<tx;});
-        const fc=state.inflowFc_HEC.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=tm&&t<tx;});
-        const all=[...new Set([...obs.map(r=>r.time),...fc.map(r=>r.forecast_time)])].sort();
-        labels=all.map(t=>formatChartLabel(t));
-        datasets=[
-            {label:'Q Thực đo',data:all.map(t=>obs.find(x=>x.time===t)?.inflow??null),borderColor:rgba(C.IN,1),borderWidth:2,pointRadius:0,tension:0.3},
-            {label:'Q HEC-HMS',data:all.map(t=>{const i=fc.find(x=>x.forecast_time===t);return i?Number(i.inflow_m3s):null;}),borderColor:rgba(C.HEC,1),borderDash:[4,4],borderWidth:2,pointRadius:0,tension:0.3}
-        ];
-    }
-    
     else if(currentTab==='IN_FC_7D'){
       const tl=new Date($("day").value).setHours(0,0,0,0)+7*86400000; const ts=Object.keys(state.fcEnsemble||{}).filter(t=>{const tm=new Date(t).getTime();return tm>=new Date($("day").value).setHours(0,0,0,0)&&tm<=tl;}).sort();
       labels=ts.map(t=>formatChartLabel(t));
@@ -520,14 +531,19 @@
       datasets=[{label:'Biên trên',data:dH,borderColor:'transparent',backgroundColor:rgba(C.WL,0.15),pointRadius:0,fill:'+1',tension:0.4},{label:'Biên dưới',data:dL,borderColor:'transparent',pointRadius:0,fill:false,tension:0.4},{label:'Dự báo TB',data:dM,borderColor:'#FF9800',borderWidth:2,pointRadius:0,tension:0.4,fill:false}];
     }
     else if(currentTab==='RF_DAILY_FC'){
-      const tl=new Date($("day").value).setHours(0,0,0,0)+7*86400000; const f=state.rainFc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=new Date($("day").value).setHours(0,0,0,0)&&t<tl;});
-      const agg=aggregateByDay(f,'forecast_time'); labels=Object.keys(agg).sort(); const d=labels.map(k=>agg[k]); let s=0; const a=d.map(v=>{s+=v;return s;});
+      const tl=new Date($("day").value).setHours(0,0,0,0)+7*86400000;
+      const f=state.rainFc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=new Date($("day").value).setHours(0,0,0,0)&&t<tl;});
+      const agg=aggregateRainByDay(f,'forecast_time', 'rainfall_mm'); 
+      labels=Object.keys(agg).sort(); const d=labels.map(k=>agg[k]); let s=0; const a=d.map(v=>{s+=v;return s;});
       datasets=[{type:'bar',label:'Mưa ngày',data:d,backgroundColor:rgba(C.RN,0.7),yAxisID:'y'},{type:'line',label:'Lũy kế',data:a,borderColor:rgba(C.ACC,1),backgroundColor:rgba(C.ACC,0.2),pointRadius:4,fill:false,yAxisID:'y1'}];
       opts.scales.y1={type:'linear',display:true,position:'right',grid:{drawOnChartArea:false},ticks:{color:rgba(C.ACC,0.9)}};
     }
     else if(currentTab==='RF_HOURLY_ACC'){
-      const tl=new Date($("day").value).setHours(0,0,0,0)+7*86400000; const f=state.rainFc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=new Date($("day").value).setHours(0,0,0,0)&&t<=tl;});
-      labels=f.map(r=>formatChartLabel(r.forecast_time)); const d=f.map(r=>getRain(r)); let s=0; const a=d.map(v=>{s+=v;return s;});
+      const tl=new Date($("day").value).setHours(0,0,0,0)+7*86400000; 
+      const f=state.rainFc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=new Date($("day").value).setHours(0,0,0,0)&&t<=tl;});
+      labels=f.map(r=>formatChartLabel(r.forecast_time)); 
+      const d=f.map(r=>Number(r.rainfall_mm||0)); 
+      let s=0; const a=d.map(v=>{s+=v;return s;});
       datasets=[{type:'bar',label:'Mưa giờ',data:d,backgroundColor:rgba(C.RN,0.6),yAxisID:'y'},{type:'line',label:'Lũy kế',data:a,borderColor:rgba(C.ACC,1),backgroundColor:rgba(C.ACC,0.2),pointRadius:0,tension:0.3,fill:false,yAxisID:'y1'}];
       opts.scales.y1={type:'linear',display:true,position:'right',grid:{drawOnChartArea:false},ticks:{color:rgba(C.ACC,0.9)}};
     }
@@ -622,7 +638,6 @@
     }
   }
 
-  // --- [SỬA] HÀM MỚI CHO AI (GỌI V4) ---
   async function generateAI() {
       const btn = document.querySelector('#tab-notif button');
       btn.innerText = "Đang suy nghĩ..."; btn.disabled = true;
@@ -635,7 +650,6 @@
       finally { btn.innerText = "✨ Tạo nhận định"; btn.disabled = false; }
   }
 
-  // --- [SỬA] HÀM LOAD AI VỚI MÀU SẮC ---
   async function loadAIBulletins() {
     const container = $("ai-list");
     try {
@@ -651,7 +665,6 @@
         const timeStr = formatToVNTime(item.created_at);
         const div = document.createElement("div"); div.className = "list-item";
         
-        // Logic màu sắc theo mức độ cảnh báo từ V4
         let theme = { color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.15)', icon: '🤖', label: 'AI Nhận định' };
         if (item.severity === 'critical') {
             theme = { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)', icon: '🚨', label: 'Cảnh báo' };
