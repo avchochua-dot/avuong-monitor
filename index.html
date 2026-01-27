@@ -232,6 +232,22 @@
         <div class="fc-range fc-highlight" id="fcFlowRange">-- - --</div>
       </div>
       <div class="forecast-row">
+        <div class="fc-info"><span class="fc-title">Dung tích về 24h (Min-Max)</span><span class="fc-desc">Tổng lượng nước vào hồ (Tr.m³)</span></div>
+        <div class="fc-range" style="color:#facc15;" id="fcVol24h">-- - --</div>
+      </div>
+      <div class="forecast-row">
+        <div class="fc-info"><span class="fc-title">Mực nước hồ 24h (Min-Max)</span><span class="fc-desc">Dựa trên Q máy & Q xả hiện tại</span></div>
+        <div class="fc-range fc-highlight" id="fcWl24h">-- - --</div>
+      </div>
+      <div class="forecast-row">
+        <div class="fc-info"><span class="fc-title">Dung tích về 7 ngày (Min-Max)</span><span class="fc-desc">Tổng lượng nước vào hồ (Tr.m³)</span></div>
+        <div class="fc-range" style="color:#facc15;" id="fcVol7d">-- - --</div>
+      </div>
+      <div class="forecast-row">
+        <div class="fc-info"><span class="fc-title">Mực nước hồ 7 ngày (Min-Max)</span><span class="fc-desc">Dựa trên Q máy & Q xả hiện tại</span></div>
+        <div class="fc-range fc-highlight" id="fcWl7d">-- - --</div>
+      </div>
+      <div class="forecast-row">
         <div class="fc-info"><span class="fc-title">Mưa ngày (Min-Max)</span><span class="fc-desc">Lượng mưa tích lũy 24h</span></div>
         <div class="fc-range fc-rain" id="fcRainRange">-- - --</div>
       </div>
@@ -370,13 +386,18 @@
   function parseLiteral(iso) { if(!iso) return null; const datePart=iso.substring(0,10); const timePart=iso.substring(11,16); const [y,m,d]=datePart.split('-'); return {day:d,month:m,year:y,time:timePart}; }
   function extractDateVN(iso) { const d=new Date(iso); if(isNaN(d.getTime())) return null; const vnTime=new Date(d.getTime()+7*60*60*1000); const day=String(vnTime.getUTCDate()).padStart(2,'0'); const month=String(vnTime.getUTCMonth()+1).padStart(2,'0'); return `${day}/${month}`; }
   function getYearMD(iso) { const d=new Date(iso); if(isNaN(d.getTime())) return null; const vnTime=new Date(d.getTime()+7*60*60*1000); return vnTime.toISOString().split('T')[0]; }
-  function formatTimeVN(iso){ const p=parseLiteral(iso); return p?p.time:"-"; }
-  function formatDateTimeVN(iso){ const p=parseLiteral(iso); return p?`${p.time} ${p.day}/${p.month}/${p.year}`:"-"; }
   function formatChartLabel(iso){ const p=parseLiteral(iso); return p?`${p.time} ${p.day}/${p.month}`:"-"; }
   function formatTableTime(iso) { const p=parseLiteral(iso); if(!p) return "-"; const h=parseInt(p.time.split(':')[0]); return `${h}h ${p.day}/${p.month}`; }
   function rgba(rgb,a){ return `rgba(${rgb}, ${a})`; }
   function toast(msg){ const t=$("toast"); t.textContent=msg; t.style.display="block"; setTimeout(()=>t.style.display="none", 2500); }
   function formatToVNTime(isoString) { const date=new Date(isoString); if(isNaN(date.getTime())) return isoString; const vnDate=new Date(date.toLocaleString("en-US",{timeZone:"Asia/Ho_Chi_Minh"})); const hh=String(vnDate.getHours()).padStart(2,'0'); const mm=String(vnDate.getMinutes()).padStart(2,'0'); const dd=String(vnDate.getDate()).padStart(2,'0'); const mo=String(vnDate.getMonth()+1).padStart(2,'0'); const yyyy=vnDate.getFullYear(); return `${hh}:${mm} ${dd}/${mo}/${yyyy}`; }
+
+  // [THÊM] Nội suy Dung tích -> Mực nước
+  function volToWl(vol) {
+    if (vol <= RES_CONST.VOL_DEAD) return RES_CONST.WL_DEAD;
+    if (vol >= RES_CONST.VOL_MAX) return RES_CONST.WL_NORMAL;
+    return RES_CONST.WL_DEAD + (vol - RES_CONST.VOL_DEAD) * (RES_CONST.WL_NORMAL - RES_CONST.WL_DEAD) / (RES_CONST.VOL_MAX - RES_CONST.VOL_DEAD);
+  }
 
   // --- CONFIG ---
   const SB_URL = "https://ycthhachfxczwkburnfa.supabase.co";
@@ -403,7 +424,10 @@
     if(window.supabase){ sb=window.supabase.createClient(SB_URL,SB_KEY); sb.auth.getSession().then(({data:{session}})=>{ if(session) showApp(); else showLogin(); }); }
   });
 
-  async function handleLogin(){ const e=$("loginEmail").value, p=$("loginPass").value; if(!e||!p){$("loginError").textContent="Vui lòng nhập Email và Mật khẩu";return;} $("loginError").textContent="Đang kiểm tra..."; const{data,error}=await sb.auth.signInWithPassword({email:e,password:p}); if(error)$("loginError").textContent="Đăng nhập thất bại: "+error.message; else showApp(); }
+  async function handleLogin(){ const e=$("loginEmail").value, p=$("loginPass").value; if(!e||!p){$("loginError").textContent="Vui lòng nhập Email và Mật khẩu";return;} $("loginError").textContent="Đang kiểm tra..."; const{data,error}=await sb.auth.signInWithPassword({email:e,password:p}); if(error)$("loginError").textContent="Đăng nhập thất bại: "+error.message; else { 
+    try { await sb.from('usage_logs').insert([{ email: e, user_agent: navigator.userAgent }]); } catch (le) { console.error(le); }
+    showApp(); 
+  }}
   async function handleLogout(){ await sb.auth.signOut(); showLogin(); }
   function showApp(){ $("login-view").style.display="none"; $("main-view").style.display="flex"; loadData(); }
   function showLogin(){ $("login-view").style.display="flex"; $("main-view").style.display="none"; $("loginEmail").value=""; $("loginPass").value=""; $("loginError").textContent=""; }
@@ -478,7 +502,49 @@
     $("txtVol").textContent=fmt2.format(vCur);
     const vUse=Math.max(0,vCur-RES_CONST.VOL_DEAD); $("txtVolUsefulLeft").textContent=fmt2.format(vUse); $("txtPctUseful").textContent=fmt2.format((vUse/(RES_CONST.VOL_MAX-RES_CONST.VOL_DEAD))*100)+"%";
     const vRem=Math.max(0,RES_CONST.VOL_MAX-vCur); $("txtVolRemain").textContent=fmt2.format(vRem); $("txtPctTotal").textContent=fmt2.format((vCur/RES_CONST.VOL_MAX)*100)+"%";
-    if(fcFlow&&fcFlow.length){ const f=fcFlow.map(x=>getFlowFc(x)); $("fcFlowRange").textContent=`${fmt2.format(Math.min(...f))} - ${fmt2.format(Math.max(...f))}`; }
+    
+    // [LOGIC MỚI] DỰ BÁO LƯU LƯỢNG, DUNG TÍCH VÀ MỰC NƯỚC (ENSEMBLE)
+    if(fcFlow&&fcFlow.length){
+        const ensemble = {};
+        fcFlow.forEach(i => { if(!ensemble[i.source]) ensemble[i.source] = []; ensemble[i.source].push(i); });
+        
+        const qOutCurrent = Number(l.turbine_flow) + Number(l.spillway_flow); // Q chạy máy + Q xả gần nhất
+        let minF=Infinity, maxF=-Infinity, minV24=Infinity, maxV24=-Infinity, minV7=Infinity, maxV7=-Infinity;
+        let minWl24=Infinity, maxWl24=-Infinity, minWl7=Infinity, maxWl7=-Infinity;
+
+        Object.keys(ensemble).forEach(src => {
+            const data = ensemble[src].sort((a,b)=>new Date(a.forecast_time)-new Date(b.forecast_time));
+            const flows = data.map(x => getFlowFc(x));
+            const avgF = flows.reduce((a,b)=>a+b,0)/flows.length;
+            if(avgF < minF) minF = avgF; if(avgF > maxF) maxF = avgF;
+            
+            // Tính cho 24h
+            const v24_in = (flows.slice(0,24).reduce((a,b)=>a+b,0)*3600)/1000000;
+            const v24_out = (qOutCurrent * 24 * 3600)/1000000;
+            const vol24_final = Math.max(RES_CONST.VOL_DEAD, Math.min(RES_CONST.VOL_MAX, vCur + v24_in - v24_out));
+            const wl24 = volToWl(vol24_final);
+
+            if(v24_in < minV24) minV24 = v24_in; if(v24_in > maxV24) maxV24 = v24_in;
+            if(wl24 < minWl24) minWl24 = wl24; if(wl24 > maxWl24) maxWl24 = wl24;
+            
+            // Tính cho 7D
+            const steps = flows.length;
+            const v7_in = (flows.reduce((a,b)=>a+b,0)*3600)/1000000;
+            const v7_out = (qOutCurrent * steps * 3600)/1000000;
+            const vol7_final = Math.max(RES_CONST.VOL_DEAD, Math.min(RES_CONST.VOL_MAX, vCur + v7_in - v7_out));
+            const wl7 = volToWl(vol7_final);
+
+            if(v7_in < minV7) minV7 = v7_in; if(v7_in > maxV7) maxV7 = v7_in;
+            if(wl7 < minWl7) minWl7 = wl7; if(wl7 > maxWl7) maxWl7 = wl7;
+        });
+
+        $("fcFlowRange").textContent=`${fmt2.format(minF)} - ${fmt2.format(maxF)}`;
+        $("fcVol24h").textContent=`${fmt2.format(minV24)} - ${fmt2.format(maxV24)}`;
+        $("fcWl24h").textContent=`${fmt2.format(minWl24)} - ${fmt2.format(maxWl24)}`;
+        $("fcVol7d").textContent=`${fmt2.format(minV7)} - ${fmt2.format(maxV7)}`;
+        $("fcWl7d").textContent=`${fmt2.format(minWl7)} - ${fmt2.format(maxWl7)}`;
+    }
+    
     if(fcRain&&fcRain.length){ const m={}; fcRain.forEach(r=>{ const d=r.forecast_time.substring(0,10); m[d]=(m[d]||0)+Number(r.rainfall_mm); }); const v=Object.values(m); if(v.length) $("fcRainRange").textContent=`${fmt1.format(Math.min(...v))} - ${fmt1.format(Math.max(...v))}`; }
   }
 
@@ -598,22 +664,21 @@
       data.forEach((item, index) => {
         const title = item.title || "";
         const summary = item.summary || "";
-        const text = (title + " " + summary).toLowerCase();
-        
-        let theme = { color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: '🌤️', label: 'Dự báo' };
-
-        if (text.includes('lũ') || text.includes('bão') || text.includes('khẩn cấp') || item.type === 'urgent') {
-            theme = { color: '#ef4444', bg: 'rgba(239,68,68,0.15)', icon: '⛈️', label: 'Khẩn cấp' };
-        } else if (text.includes('sạt lở') || text.includes('cảnh báo') || item.type === 'warning') {
-            theme = { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: '⚠️', label: 'Cảnh báo' };
-        } else if (text.includes('vận hành') || text.includes('xả') || text.includes('điều tiết')) {
-            theme = { color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: '💧', label: 'Vận hành' };
-        }
-
         const timeStr = formatToVNTime(item.created_at);
         const displaySummary = summary || (item.content ? item.content.substring(0, 80) + "..." : "Xem chi tiết");
         const content = item.content || "Không có nội dung";
         
+        // [CỐ ĐỊNH LỖI PHÍM TEXT] Logic màu sắc cho dự báo
+        let theme = { color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: '🌤️', label: 'Dự báo' };
+        const checkText = (title + summary).toLowerCase();
+        if (checkText.includes('lũ') || checkText.includes('bão') || checkText.includes('khẩn cấp') || item.type === 'urgent') {
+            theme = { color: '#ef4444', bg: 'rgba(239,68,68,0.15)', icon: '⛈️', label: 'Khẩn cấp' };
+        } else if (checkText.includes('sạt lở') || checkText.includes('cảnh báo') || item.type === 'warning') {
+            theme = { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: '⚠️', label: 'Cảnh báo' };
+        } else if (checkText.includes('vận hành') || checkText.includes('xả') || checkText.includes('điều tiết')) {
+            theme = { color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: '💧', label: 'Vận hành' };
+        }
+
         const div = document.createElement("div");
         div.className = "list-item";
         div.innerHTML = `
@@ -635,6 +700,34 @@
     } catch (e) { 
         console.error(e); 
         container.innerHTML = `<div style="padding:20px; text-align:center; color:#ef4444;">Lỗi tải dữ liệu: ${e.message}</div>`;
+    }
+  }
+
+  async function handleLogin() {
+    const e = $("loginEmail").value, p = $("loginPass").value;
+    if (!e || !p) { $("loginError").textContent = "Vui lòng nhập Email và Mật khẩu"; return; }
+    
+    $("loginError").textContent = "Đang kiểm tra...";
+    
+    // 1. Thực hiện đăng nhập
+    const { data, error } = await sb.auth.signInWithPassword({ email: e, password: p });
+    
+    if (error) {
+      $("loginError").textContent = "Đăng nhập thất bại: " + error.message;
+    } else {
+      // 2. Nếu đăng nhập thành công -> Ghi Log vào bảng usage_logs
+      try {
+        await sb.from('usage_logs').insert([
+          { 
+            email: e, 
+            user_agent: navigator.userAgent 
+          }
+        ]);
+      } catch (logError) {
+        console.error("Không thể ghi log:", logError);
+      }
+      
+      showApp(); 
     }
   }
 
