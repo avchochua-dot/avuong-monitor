@@ -392,7 +392,7 @@
   function toast(msg){ const t=$("toast"); t.textContent=msg; t.style.display="block"; setTimeout(()=>t.style.display="none", 2500); }
   function formatToVNTime(isoString) { const date=new Date(isoString); if(isNaN(date.getTime())) return isoString; const vnDate=new Date(date.toLocaleString("en-US",{timeZone:"Asia/Ho_Chi_Minh"})); const hh=String(vnDate.getHours()).padStart(2,'0'); const mm=String(vnDate.getMinutes()).padStart(2,'0'); const dd=String(vnDate.getDate()).padStart(2,'0'); const mo=String(vnDate.getMonth()+1).padStart(2,'0'); const yyyy=vnDate.getFullYear(); return `${hh}:${mm} ${dd}/${mo}/${yyyy}`; }
 
-  // [THÊM] Nội suy Dung tích -> Mực nước
+  // [THÊM] Quy đổi Dung tích -> Mực nước hồ
   function volToWl(vol) {
     if (vol <= RES_CONST.VOL_DEAD) return RES_CONST.WL_DEAD;
     if (vol >= RES_CONST.VOL_MAX) return RES_CONST.WL_NORMAL;
@@ -424,10 +424,7 @@
     if(window.supabase){ sb=window.supabase.createClient(SB_URL,SB_KEY); sb.auth.getSession().then(({data:{session}})=>{ if(session) showApp(); else showLogin(); }); }
   });
 
-  async function handleLogin(){ const e=$("loginEmail").value, p=$("loginPass").value; if(!e||!p){$("loginError").textContent="Vui lòng nhập Email và Mật khẩu";return;} $("loginError").textContent="Đang kiểm tra..."; const{data,error}=await sb.auth.signInWithPassword({email:e,password:p}); if(error)$("loginError").textContent="Đăng nhập thất bại: "+error.message; else { 
-    try { await sb.from('usage_logs').insert([{ email: e, user_agent: navigator.userAgent }]); } catch (le) { console.error(le); }
-    showApp(); 
-  }}
+  async function handleLogin(){ const e=$("loginEmail").value, p=$("loginPass").value; if(!e||!p){$("loginError").textContent="Vui lòng nhập Email và Mật khẩu";return;} $("loginError").textContent="Đang kiểm tra..."; const{data,error}=await sb.auth.signInWithPassword({email:e,password:p}); if(error)$("loginError").textContent="Đăng nhập thất bại: "+error.message; else showApp(); }
   async function handleLogout(){ await sb.auth.signOut(); showLogin(); }
   function showApp(){ $("login-view").style.display="none"; $("main-view").style.display="flex"; loadData(); }
   function showLogin(){ $("login-view").style.display="flex"; $("main-view").style.display="none"; $("loginEmail").value=""; $("loginPass").value=""; $("loginError").textContent=""; }
@@ -482,7 +479,16 @@
   }
 
   function getLatestUniqueData(arr,k){ if(!arr)return[]; const m=new Map(); [...arr].sort((a,b)=>new Date(b.created_at||b.time)-new Date(a.created_at||a.time)).forEach(i=>{if(!m.has(i[k]))m.set(i[k],i)}); return Array.from(m.values()).sort((a,b)=>new Date(a[k])-new Date(b[k])); }
-  function aggregateRainByDay(data,k,v){ const m={}; data.forEach(r=>{ const d=extractDateVN(r[k]); if(d){ const val=v?getValSafe(r[v]):getRain(r); m[d]=(m[d]||0)+val; } }); return m; }
+  function aggregateRainByDay(data,k,v){ 
+    const m={}; 
+    // [SỬA] Sắp xếp lại dữ liệu thô trước khi gộp để đảm bảo thứ tự ngày đúng
+    const sortedData = [...data].sort((a,b) => new Date(a[k]) - new Date(b[k]));
+    sortedData.forEach(r=>{ 
+      const d=extractDateVN(r[k]); 
+      if(d){ const val=v?getValSafe(r[v]):getRain(r); m[d]=(m[d]||0)+val; } 
+    }); 
+    return m; 
+  }
 
   function renderOverview(fcFlow,fcRain){
     const l=state.lastObs; if(!l)return;
@@ -503,12 +509,11 @@
     const vUse=Math.max(0,vCur-RES_CONST.VOL_DEAD); $("txtVolUsefulLeft").textContent=fmt2.format(vUse); $("txtPctUseful").textContent=fmt2.format((vUse/(RES_CONST.VOL_MAX-RES_CONST.VOL_DEAD))*100)+"%";
     const vRem=Math.max(0,RES_CONST.VOL_MAX-vCur); $("txtVolRemain").textContent=fmt2.format(vRem); $("txtPctTotal").textContent=fmt2.format((vCur/RES_CONST.VOL_MAX)*100)+"%";
     
-    // [LOGIC MỚI] DỰ BÁO LƯU LƯỢNG, DUNG TÍCH VÀ MỰC NƯỚC (ENSEMBLE)
+    // [LOGIC DỰ BÁO]
     if(fcFlow&&fcFlow.length){
         const ensemble = {};
         fcFlow.forEach(i => { if(!ensemble[i.source]) ensemble[i.source] = []; ensemble[i.source].push(i); });
-        
-        const qOutCurrent = Number(l.turbine_flow) + Number(l.spillway_flow); // Q chạy máy + Q xả gần nhất
+        const qOutCurrent = Number(l.turbine_flow) + Number(l.spillway_flow); 
         let minF=Infinity, maxF=-Infinity, minV24=Infinity, maxV24=-Infinity, minV7=Infinity, maxV7=-Infinity;
         let minWl24=Infinity, maxWl24=-Infinity, minWl7=Infinity, maxWl7=-Infinity;
 
@@ -518,22 +523,15 @@
             const avgF = flows.reduce((a,b)=>a+b,0)/flows.length;
             if(avgF < minF) minF = avgF; if(avgF > maxF) maxF = avgF;
             
-            // Tính cho 24h
             const v24_in = (flows.slice(0,24).reduce((a,b)=>a+b,0)*3600)/1000000;
-            const v24_out = (qOutCurrent * 24 * 3600)/1000000;
-            const vol24_final = Math.max(RES_CONST.VOL_DEAD, Math.min(RES_CONST.VOL_MAX, vCur + v24_in - v24_out));
-            const wl24 = volToWl(vol24_final);
-
+            const v24_f = Math.max(RES_CONST.VOL_DEAD, Math.min(RES_CONST.VOL_MAX, vCur + v24_in - (qOutCurrent*24*3600/1000000)));
+            const wl24 = volToWl(v24_f);
             if(v24_in < minV24) minV24 = v24_in; if(v24_in > maxV24) maxV24 = v24_in;
             if(wl24 < minWl24) minWl24 = wl24; if(wl24 > maxWl24) maxWl24 = wl24;
             
-            // Tính cho 7D
-            const steps = flows.length;
             const v7_in = (flows.reduce((a,b)=>a+b,0)*3600)/1000000;
-            const v7_out = (qOutCurrent * steps * 3600)/1000000;
-            const vol7_final = Math.max(RES_CONST.VOL_DEAD, Math.min(RES_CONST.VOL_MAX, vCur + v7_in - v7_out));
-            const wl7 = volToWl(vol7_final);
-
+            const v7_f = Math.max(RES_CONST.VOL_DEAD, Math.min(RES_CONST.VOL_MAX, vCur + v7_in - (qOutCurrent*flows.length*3600/1000000)));
+            const wl7 = volToWl(v7_f);
             if(v7_in < minV7) minV7 = v7_in; if(v7_in > maxV7) maxV7 = v7_in;
             if(wl7 < minWl7) minWl7 = wl7; if(wl7 > maxWl7) maxWl7 = wl7;
         });
@@ -544,7 +542,6 @@
         $("fcVol7d").textContent=`${fmt2.format(minV7)} - ${fmt2.format(maxV7)}`;
         $("fcWl7d").textContent=`${fmt2.format(minWl7)} - ${fmt2.format(maxWl7)}`;
     }
-    
     if(fcRain&&fcRain.length){ const m={}; fcRain.forEach(r=>{ const d=r.forecast_time.substring(0,10); m[d]=(m[d]||0)+Number(r.rainfall_mm); }); const v=Object.values(m); if(v.length) $("fcRainRange").textContent=`${fmt1.format(Math.min(...v))} - ${fmt1.format(Math.max(...v))}`; }
   }
 
@@ -552,6 +549,10 @@
     if(chart) chart.destroy(); const ctx=$("chart").getContext("2d"); $("chartRange").textContent=tabMeta[currentTab].hint;
     const opts={ responsive:true, maintainAspectRatio:false, interaction:{mode:"index",intersect:false}, plugins:{legend:{labels:{color:"#9ca3af",font:{size:11},boxWidth:12}}}, scales:{x:{ticks:{color:"#64748b",font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:6},grid:{color:"rgba(255,255,255,0.05)"}},y:{ticks:{color:"#64748b",font:{size:10}},grid:{color:"rgba(255,255,255,0.05)"}}} };
     let labels=[], datasets=[];
+    
+    // [SỬA LẠI] Lấy mốc giờ cuối cùng có số thực tế
+    const lastObsTime = state.lastObs ? new Date(state.lastObs.time).getTime() : 0;
+
     const getLim=(pts)=>{ 
         let v=376.0; if(pts.length>0){ const last=pts[pts.length-1]; const t=parseLiteral(last.time); if(t){ const d=parseInt(t.day), m=parseInt(t.month); if((m===11&&d>=16)||(m===12&&d<=15)) v=377.0; } }
         return [{label:'MNDBT (380.0)',data:Array(pts.length).fill(380),borderColor:'rgba(239,68,68,0.8)',borderDash:[5,5],pointRadius:0,fill:false},{label:`MN trước lũ (${v})`,data:Array(pts.length).fill(v),borderColor:'rgba(245,158,11,0.8)',borderDash:[5,5],pointRadius:0,fill:false},{label:'MN đón lũ min (370.0)',data:Array(pts.length).fill(370),borderColor:'rgba(34,211,238,0.8)',borderDash:[5,5],pointRadius:0,fill:false}];
@@ -559,7 +560,7 @@
     const getFLim=(pts)=>{ if(!pts.length)return[]; return [{label:'Q duy trì (450)',data:Array(pts.length).fill(450),borderColor:'rgba(59,130,246,0.6)',borderDash:[4,4],pointRadius:0,fill:false},{label:'Q cắt lũ (600)',data:Array(pts.length).fill(600),borderColor:'rgba(239,68,68,0.6)',borderDash:[4,4],pointRadius:0,fill:false}]; };
     if(currentTab==='WL_24H'){ const d=state.latest24h; labels=d.map(r=>formatChartLabel(r.time)); datasets=[{label:'Mực nước (m)',data:d.map(r=>r.water_level),borderColor:rgba(C.WL,1),backgroundColor:rgba(C.WL,0.1),fill:true,borderWidth:2,pointRadius:0,tension:0.3},...getLim(d)]; }
     else if(currentTab==='WL_7D'){ const d=state.hourly7D_Obs; labels=d.map(r=>formatChartLabel(r.time)); datasets=[{label:'Mực nước (m)',data:d.map(r=>r.water_level),borderColor:rgba(C.WL,1),backgroundColor:rgba(C.WL,0.1),fill:true,borderWidth:2,pointRadius:0,tension:0.3},...getLim(d)]; }
-    else if(currentTab==='FLOW_24H'||currentTab==='FLOW_7D'){ const d=currentTab==='FLOW_24H'?state.latest24h:state.hourly7D_Obs; labels=d.map(r=>formatChartLabel(r.time)); datasets=[{label:'Q về',data:d.map(r=>r.inflow),borderColor:rgba(C.IN,1),borderWidth:1.5,pointRadius:0,tension:0.3,fill:false},{label:'Q máy',data:d.map(r=>r.turbine_flow),borderColor:rgba(C.TB,1),borderWidth:1.5,pointRadius:0,tension:0.3,fill:false},{label:'Q xả',data:d.map(r=>r.spillway_flow),borderColor:rgba(C.SP,1),borderWidth:1.5,pointRadius:0,tension:0.3,fill:false},...getFLim(d)]; }
+    else if(currentTab==='FLOW_24H'||currentTab==='FLOW_7D'){ const d=currentTab==='FLOW_24H'?state.latest24h:state.hourly7D_Obs; labels=d.map(r=>formatChartLabel(r.time)); datasets=[{label:'Q về',data:d.map(r=>r.inflow),borderColor:rgba(C.IN,1),borderWidth:1.5,pointRadius:0,tension:0.3,fill:false},{label:'Q máy',data:d.map(r=>r.turbine_flow),borderColor:rgba(C.TB,1),borderWidth:1.5,pointRotation:0,tension:0.3,fill:false},{label:'Q xả',data:d.map(r=>r.spillway_flow),borderColor:rgba(C.SP,1),borderWidth:1.5,pointRadius:0,tension:0.3,fill:false},...getFLim(d)]; }
     else if(currentTab.startsWith('IN_OBS_FC_')){
       const ds=new Date($("day").value).setHours(0,0,0,0); const tm=ds-3*86400000; const tx=ds+4*86400000;
       const obs=state.hourly3D.filter(r=>{const t=new Date(r.time).getTime();return t>=tm&&t<tx;});
@@ -572,20 +573,17 @@
       {
         label: 'MA 24h',
         data: all.map(t => {
-            const c = new Date(t).getTime();
+            const currentT = new Date(t).getTime();
+            // [SỬA LẠI] CHẶN MA 24H TẠI GIỜ CUỐI CÙNG CÓ SỐ LIỆU THẬT
+            if (currentT > lastObsTime) return null; 
             let s = 0, n = 0;
             for (let i = 0; i < 24; i++) {
-                const p = state.hourly7D_Obs.find(x => new Date(x.time).getTime() === c - i * 3600000);
+                const p = state.hourly7D_Obs.find(x => new Date(x.time).getTime() === currentT - i * 3600000);
                 if (p) { s += p.inflow; n++; }
             }
             return n ? s / n : null;
         }),
-        borderColor: '#e879f9', 
-        borderWidth: 1.5,
-        borderDash: [6, 6], 
-        fill: false,
-        pointRadius: 0,
-        tension: 0.4 
+        borderColor: '#e879f9', borderWidth: 1.5, borderDash: [6, 6], fill: false, pointRadius: 0, tension: 0.4 
       },
       {label:'Q Dự báo',data:all.map(t=>{const i=fc.find(x=>x.forecast_time===t);return i?getFlowFc(i):null;}),borderColor:tabMeta[currentTab].color.includes(',')?`rgb(${tabMeta[currentTab].color})`:tabMeta[currentTab].color,borderDash:[4,4],borderWidth:2,pointRadius:0,tension:0.3}];
     }
@@ -600,7 +598,12 @@
       const tl=new Date($("day").value).setHours(0,0,0,0)+7*86400000;
       const f=state.rainFc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=new Date($("day").value).setHours(0,0,0,0)&&t<tl;});
       const agg=aggregateRainByDay(f,'forecast_time', 'rainfall_mm'); 
-      labels=Object.keys(agg).sort(); const d=labels.map(k=>agg[k]); let s=0; const a=d.map(v=>{s+=v;return s;});
+      // [SỬA LẠI] Sắp xếp lại labels (ngày) trước khi vẽ để tránh sai ngày
+      labels=Object.keys(agg).sort((a,b) => {
+          const [d1,m1] = a.split('/'); const [d2,m2] = b.split('/');
+          return new Date(2026, m1-1, d1) - new Date(2026, m2-1, d2);
+      });
+      const d=labels.map(k=>agg[k]); let s=0; const a=d.map(v=>{s+=v;return s;});
       datasets=[{type:'bar',label:'Mưa ngày',data:d,backgroundColor:rgba(C.RN,0.7),yAxisID:'y'},{type:'line',label:'Lũy kế',data:a,borderColor:rgba(C.ACC,1),backgroundColor:rgba(C.ACC,0.2),pointRadius:4,fill:false,yAxisID:'y1'}];
       opts.scales.y1={type:'linear',display:true,position:'right',grid:{drawOnChartArea:false},ticks:{color:rgba(C.ACC,0.9)}};
     }
@@ -618,7 +621,10 @@
         const o=state.hourly7D_Obs.filter(r=>{const t=new Date(r.time).getTime();return t>=ts&&t<=te;});
         const f=state.rainFc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=ts&&t<=te;});
         const ao=aggregateRainByDay(o,'time'); const af=aggregateRainByDay(f,'forecast_time','rainfall_mm');
-        const all=[...new Set([...Object.keys(ao),...Object.keys(af)])].sort();
+        const all=[...new Set([...Object.keys(ao),...Object.keys(af)])].sort((a,b) => {
+            const [d1,m1] = a.split('/'); const [d2,m2] = b.split('/');
+            return new Date(2026, m1-1, d1) - new Date(2026, m2-1, d2);
+        });
         datasets=[{type:'bar',label:'Thực tế',data:all.map(k=>ao[k]||0),backgroundColor:rgba(C.RF,0.7)},{type:'bar',label:'Dự báo',data:all.map(k=>af[k]||0),backgroundColor:rgba(C.RN,0.7)}];
         labels=all;
     }
@@ -668,7 +674,6 @@
         const displaySummary = summary || (item.content ? item.content.substring(0, 80) + "..." : "Xem chi tiết");
         const content = item.content || "Không có nội dung";
         
-        // [CỐ ĐỊNH LỖI PHÍM TEXT] Logic màu sắc cho dự báo
         let theme = { color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: '🌤️', label: 'Dự báo' };
         const checkText = (title + summary).toLowerCase();
         if (checkText.includes('lũ') || checkText.includes('bão') || checkText.includes('khẩn cấp') || item.type === 'urgent') {
