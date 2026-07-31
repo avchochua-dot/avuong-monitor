@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="vi">
 <head>
@@ -153,6 +154,241 @@
     .nav-item span { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
 
     .toast{ position:fixed; left:50%; bottom:80px; transform:translateX(-50%); padding:10px 16px; border-radius:24px; background:rgba(255,255,255,0.1); backdrop-filter:blur(5px); color:white; font-size:12px; display:none; z-index: 200; }
+  
+    /* ===== PWA V2: Tổng quan đầy đủ + Số liệu 24/48/72 + Mở rộng ===== */
+    .overview-update {
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      margin:-4px 0 12px; padding:9px 11px; border-radius:12px;
+      background:rgba(59,130,246,.08); border:1px solid rgba(59,130,246,.16);
+      color:var(--text-muted); font-size:11px; font-weight:700;
+    }
+    .overview-update strong { color:#60a5fa; }
+    .overview-section {
+      margin-bottom:16px; padding:14px; border-radius:16px;
+      background:var(--card-bg); border:1px solid var(--card-border);
+      box-shadow:0 4px 20px rgba(0,0,0,.28);
+    }
+    .overview-section-title {
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      margin-bottom:11px; color:var(--text-muted); text-transform:uppercase;
+      font-size:12px; font-weight:800; letter-spacing:.45px;
+    }
+    .metric-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+    .metric-card {
+      min-height:70px; padding:9px 6px; border-radius:12px;
+      background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.07);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      text-align:center; min-width:0;
+    }
+    .metric-card .metric-label {
+      color:#94a3b8; font-size:8.6px; line-height:1.18;
+      font-weight:800; text-transform:uppercase; letter-spacing:.25px;
+      min-height:20px; display:flex; align-items:center; justify-content:center;
+    }
+    .metric-card .metric-value {
+      margin-top:5px; color:#fff; font-size:16px; line-height:1.05;
+      font-family:var(--font-mono); font-weight:800; overflow-wrap:anywhere;
+    }
+    .metric-card .metric-value small { font-size:10px; color:#94a3b8; margin-left:3px; }
+    .metric-card.blue .metric-value{color:#60a5fa}
+    .metric-card.orange .metric-value{color:#fbbf24}
+    .metric-card.red .metric-value{color:#fb7185}
+    .metric-card.green .metric-value{color:#34d399}
+    .metric-card.purple .metric-value{color:#c084fc}
+    .metric-card.cyan .metric-value{color:#22d3ee}
+    .metric-card .metric-sub{margin-top:5px;color:#64748b;font-size:9.5px;font-weight:700;line-height:1.25}
+    .duration-switch {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:6px;
+      padding:4px; margin-bottom:12px; border-radius:13px;
+      background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.07);
+    }
+    .duration-btn {
+      width:100%!important; padding:9px 4px!important; border-radius:10px!important;
+      border:1px solid transparent!important; background:transparent!important;
+      color:#94a3b8!important; font-size:12px!important; font-weight:800!important;
+    }
+    .duration-btn.active {
+      background:rgba(59,130,246,.22)!important; color:#93c5fd!important;
+      border-color:rgba(59,130,246,.34)!important;
+    }
+    .data-meta { color:#64748b; font-size:10px; font-weight:700; margin:8px 2px 0; }
+    .more-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .more-card {
+      min-height:118px; padding:14px; border-radius:16px;
+      border:1px solid rgba(255,255,255,.08); background:var(--card-bg);
+      color:var(--text-main); cursor:pointer; box-shadow:0 4px 18px rgba(0,0,0,.25);
+      text-decoration:none; display:flex; flex-direction:column; align-items:flex-start;
+      justify-content:space-between;
+    }
+    .more-card .more-icon {
+      width:38px;height:38px;border-radius:13px;display:flex;align-items:center;
+      justify-content:center;font-size:20px;background:rgba(59,130,246,.14);
+    }
+    .more-card b { font-size:13px; line-height:1.25; }
+    .more-card small { color:#64748b; font-size:10px; line-height:1.35; }
+    .more-panel { display:none; margin-top:12px; }
+    .more-panel.active { display:block; }
+    .panel-back {
+      width:auto!important; padding:7px 11px!important; margin-bottom:10px;
+      font-size:11px!important;
+    }
+    .mobile-kpi-row { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0; }
+    .mobile-kpi {
+      padding:12px;border-radius:13px;background:rgba(255,255,255,.035);
+      border:1px solid rgba(255,255,255,.07);
+    }
+    .mobile-kpi span{display:block;color:#94a3b8;font-size:10px;font-weight:800;text-transform:uppercase}
+    .mobile-kpi b{display:block;margin-top:6px;font-size:22px;color:#60a5fa;font-family:var(--font-mono)}
+    .link-list { display:grid; gap:8px; }
+    .external-link {
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:12px; border-radius:13px; border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.035); color:var(--text-main); text-decoration:none;
+      font-size:12px; font-weight:700;
+    }
+    .external-link span:last-child{color:#60a5fa}
+    .quick-questions { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+    .quick-questions button { width:auto!important; padding:7px 9px!important; font-size:10px!important; }
+    .chat-log {
+      min-height:180px; max-height:360px; overflow:auto; padding:10px;
+      border-radius:13px; background:rgba(255,255,255,.025);
+      border:1px solid rgba(255,255,255,.07); margin-bottom:8px;
+    }
+    .chat-msg { max-width:88%; margin:7px 0; padding:9px 11px; border-radius:12px; font-size:12px; line-height:1.45; white-space:pre-wrap; }
+    .chat-msg.user { margin-left:auto; background:rgba(59,130,246,.22); color:#dbeafe; }
+    .chat-msg.ai { background:rgba(139,92,246,.14); color:#e2e8f0; }
+    .chat-compose { display:flex; gap:7px; align-items:flex-end; }
+    .chat-compose textarea {
+      flex:1; min-height:44px; max-height:110px; resize:vertical; border-radius:12px;
+      background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1);
+      color:#fff; padding:11px; font-family:var(--font-sans); outline:none;
+    }
+    .chat-compose button{width:auto!important}
+    .disclaimer { margin-top:8px;color:#fbbf24;font-size:10px;line-height:1.4;font-weight:700; }
+    @media(max-width:380px){ .metric-grid,.more-grid,.mobile-kpi-row{grid-template-columns:1fr} }
+
+
+    @media (max-width:359px){
+      .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    }
+
+    /* ===== Viewer nội bộ trong đúng khung PWA điện thoại ===== */
+    .viewer-panel{
+      position:absolute;
+      left:0;
+      right:0;
+      top:0;
+      bottom:var(--nav-height);
+      z-index:90;
+      display:none;
+      flex-direction:column;
+      width:100%;
+      max-width:100%;
+      overflow:hidden;
+      background:#080b1a;
+      border-left:1px solid rgba(66,153,225,.12);
+      border-right:1px solid rgba(66,153,225,.12);
+    }
+    .viewer-panel.active{display:flex;}
+    .viewer-toolbar{
+      min-height:58px;
+      padding:max(8px,env(safe-area-inset-top)) 10px 8px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(16,21,43,.99);
+      border-bottom:1px solid var(--card-border);
+      flex:0 0 auto;
+    }
+    .viewer-toolbar button,.viewer-toolbar a{
+      width:40px!important;
+      min-width:40px!important;
+      height:40px!important;
+      padding:0!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      border-radius:11px!important;
+      text-decoration:none;
+      text-align:center;
+      background:rgba(59,130,246,.15)!important;
+      border:1px solid rgba(59,130,246,.28)!important;
+      color:#60a5fa!important;
+      font-size:18px!important;
+    }
+    .viewer-title{
+      flex:1;
+      min-width:0;
+      color:#fff;
+      font-size:13px;
+      font-weight:800;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .viewer-stage{
+      position:relative;
+      flex:1;
+      min-height:0;
+      overflow:hidden;
+      background:#0f172a;
+    }
+    .viewer-frame{
+      width:100%;
+      height:100%;
+      min-width:0;
+      border:0;
+      display:block;
+      background:#fff;
+    }
+    .viewer-loading{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      text-align:center;
+      color:#94a3b8;
+      font-size:13px;
+      font-weight:700;
+      background:#0f172a;
+      z-index:2;
+    }
+    .viewer-layerbar{
+      display:flex;
+      gap:6px;
+      overflow-x:auto;
+      padding:8px 10px;
+      background:rgba(16,21,43,.99);
+      border-top:1px solid var(--card-border);
+      flex:0 0 auto;
+      scrollbar-width:none;
+    }
+    .viewer-layerbar::-webkit-scrollbar{display:none;}
+    .viewer-layerbar button{
+      width:auto!important;
+      padding:8px 12px!important;
+      border-radius:999px!important;
+      font-size:11px!important;
+      flex:0 0 auto;
+    }
+    .viewer-layerbar button.active{background:#2563eb!important;color:#fff!important;}
+
+    @media (min-width:601px){
+      .viewer-panel{
+        box-shadow:0 0 0 1px rgba(255,255,255,.04),0 20px 60px rgba(0,0,0,.45);
+      }
+    }
+    .map-option{
+      width:100%!important; display:flex; align-items:center; justify-content:space-between;
+      gap:12px; text-align:left; margin-bottom:8px; padding:13px!important;
+      background:rgba(255,255,255,.035)!important;
+    }
+    .map-option span:first-child{display:flex;flex-direction:column;gap:3px;}
+    .map-option b{color:#e2e8f0;font-size:13px;}
+    .map-option small{color:#64748b;font-size:10px;white-space:normal;}
+
   </style>
 </head>
 <body>
@@ -186,9 +422,21 @@
 
   <div class="main-content">
     
+
     <div id="tab-overview" class="tab-pane active">
+      <div class="overview-update">
+        <span>Trạng thái dữ liệu</span>
+        <strong id="txtDataAge">Đang tải...</strong>
+      </div>
+
       <section class="safety-card">
-        <div class="card-header"><span class="card-title">An Toàn Công Trình</span><span class="warning-tag" id="floodStatus">Bình thường</span></div>
+        <div class="card-header">
+          <div>
+            <span class="card-title">An toàn công trình</span>
+            <div style="font-size:17px;font-weight:800;margin-top:4px;">Giám sát hồ chứa A Vương</div>
+          </div>
+          <span class="warning-tag" id="floodStatus">Bình thường</span>
+        </div>
         <div class="big-number-box">
           <div class="big-label">Mực nước hồ hiện tại</div>
           <div class="big-value"><span id="txtWL">---</span><span class="unit-sub">m</span></div>
@@ -202,55 +450,57 @@
         </div>
       </section>
 
-      <span class="section-title">Số liệu vận hành</span>
-      <div class="stats-grid">
-        <div class="stat-box flow"><span class="stat-label">Q về (m³/s)</span><span class="stat-val" style="color:rgb(var(--c-in))" id="txtQin">--</span></div>
-        <div class="stat-box flow"><span class="stat-label">Q máy (m³/s)</span><span class="stat-val" style="color:rgb(var(--c-tb))" id="txtQtb">--</span></div>
-        <div class="stat-box flow"><span class="stat-label">Q xả (m³/s)</span><span class="stat-val" style="color:rgb(var(--c-sp))" id="txtQsp">0</span></div>
-        <div class="stat-box vol"><span class="stat-label">Dung tích (Tr.m³)</span><span class="stat-val" style="color:#fff" id="txtVol">--</span></div>
-        <div class="stat-box vol"><span class="stat-label">% Toàn bộ</span><span class="stat-val" style="color:rgb(var(--c-wl))" id="txtPctTotal">--%</span></div>
-        <div class="stat-box vol"><span class="stat-label">% Hữu ích</span><span class="stat-val" style="color:rgb(var(--c-wl))" id="txtPctUseful">--%</span></div>
-        <div class="stat-box rain"><span class="stat-label">Mưa 1h (mm)</span><span class="stat-val" style="color:rgb(var(--c-rn))" id="txtRain1h">--</span></div>
-        <div class="stat-box rain"><span class="stat-label">Mưa ngày D</span><span class="stat-val" style="color:rgb(var(--c-rn))" id="txtRainDay">--</span></div>
-        <div class="stat-box rain"><span class="stat-label">Mưa D-1</span><span class="stat-val" style="color:#cbd5e1" id="txtRainD1">--</span></div>
-      </div>
-      
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;">
-          <div style="background:rgba(255,255,255,0.03); border-radius:10px; padding:10px; text-align:center; border:1px solid rgba(255,255,255,0.05);">
-             <div style="font-size:10px; color:#94a3b8; text-transform:uppercase; margin-bottom:2px;">DT Hữu ích còn lại</div>
-             <div style="font-family:var(--font-mono); font-weight:700; color:#e2e8f0;" id="txtVolUsefulLeft">--</div>
-          </div>
-          <div style="background:rgba(255,255,255,0.03); border-radius:10px; padding:10px; text-align:center; border:1px solid rgba(255,255,255,0.05);">
-             <div style="font-size:10px; color:#94a3b8; text-transform:uppercase; margin-bottom:2px;">DT Trống (đến MNDBT)</div>
-             <div style="font-family:var(--font-mono); font-weight:700; color:#e2e8f0;" id="txtVolRemain">--</div>
-          </div>
-      </div>
+      <section class="overview-section">
+        <div class="overview-section-title"><span>Vận hành tức thời</span><span class="chip">Hiện tại</span></div>
+        <div class="metric-grid">
+          <div class="metric-card blue"><span class="metric-label">Q về hiện tại</span><span class="metric-value" id="txtQin">-- <small>m³/s</small></span></div>
+          <div class="metric-card orange"><span class="metric-label">Q máy hiện tại</span><span class="metric-value" id="txtQtb">-- <small>m³/s</small></span></div>
+          <div class="metric-card red"><span class="metric-label">Q xả hiện tại</span><span class="metric-value" id="txtQsp">-- <small>m³/s</small></span></div>
+        </div>
+      </section>
 
-      <span class="section-title">Dự báo 7 ngày tới</span>
-      <div class="forecast-row">
-        <div class="fc-info"><span class="fc-title">Lưu lượng về (Min-Max)</span><span class="fc-desc">Dự báo tổ hợp Ensemble</span></div>
-        <div class="fc-range fc-highlight" id="fcFlowRange">-- - --</div>
-      </div>
-      <div class="forecast-row">
-        <div class="fc-info"><span class="fc-title">Dung tích về 24h (Min-Max)</span><span class="fc-desc">Tổng lượng nước vào hồ (Tr.m³)</span></div>
-        <div class="fc-range" style="color:#facc15;" id="fcVol24h">-- - --</div>
-      </div>
-      <div class="forecast-row">
-        <div class="fc-info"><span class="fc-title">Mực nước hồ 24h (Min-Max)</span><span class="fc-desc">Dựa trên Q máy & Q xả hiện tại</span></div>
-        <div class="fc-range fc-highlight" id="fcWl24h">-- - --</div>
-      </div>
-      <div class="forecast-row">
-        <div class="fc-info"><span class="fc-title">Dung tích về 7 ngày (Min-Max)</span><span class="fc-desc">Tổng lượng nước vào hồ (Tr.m³)</span></div>
-        <div class="fc-range" style="color:#facc15;" id="fcVol7d">-- - --</div>
-      </div>
-      <div class="forecast-row">
-        <div class="fc-info"><span class="fc-title">Mực nước hồ 7 ngày (Min-Max)</span><span class="fc-desc">Dựa trên Q máy & Q xả hiện tại</span></div>
-        <div class="fc-range fc-highlight" id="fcWl7d">-- - --</div>
-      </div>
-      <div class="forecast-row">
-        <div class="fc-info"><span class="fc-title">Mưa ngày (Min-Max)</span><span class="fc-desc">Lượng mưa tích lũy 24h</span></div>
-        <div class="fc-range fc-rain" id="fcRainRange">-- - --</div>
-      </div>
+      <section class="overview-section">
+        <div class="overview-section-title"><span>Trung bình và xu thế</span><span class="chip">24h / 7 ngày</span></div>
+        <div class="metric-grid">
+          <div class="metric-card blue"><span class="metric-label">Q về TB 24h</span><span class="metric-value" id="txtQinAvg24">-- <small>m³/s</small></span></div>
+          <div class="metric-card orange"><span class="metric-label">Q máy TB 24h</span><span class="metric-value" id="txtQtbAvg24">-- <small>m³/s</small></span></div>
+          <div class="metric-card red"><span class="metric-label">Q xả TB 24h</span><span class="metric-value" id="txtQspAvg24">-- <small>m³/s</small></span></div>
+          <div class="metric-card cyan"><span class="metric-label">ΔMN 24h</span><span class="metric-value" id="txtDelta24h">-- <small>m</small></span></div>
+          <div class="metric-card blue"><span class="metric-label">Q về TB 7 ngày</span><span class="metric-value" id="txtQinAvg7d">-- <small>m³/s</small></span></div>
+          <div class="metric-card green"><span class="metric-label">Tần suất thủy văn</span><span class="metric-value" id="txtHydroFrequency">--</span><span class="metric-sub" id="txtHydroGroup">Chưa có dữ liệu</span></div>
+        </div>
+      </section>
+
+      <section class="overview-section">
+        <div class="overview-section-title"><span>Dung tích hồ</span><span class="chip">Triệu m³</span></div>
+        <div class="metric-grid">
+          <div class="metric-card"><span class="metric-label">Dung tích</span><span class="metric-value" id="txtVol">-- <small>tr.m³</small></span></div>
+          <div class="metric-card blue"><span class="metric-label">% toàn bộ</span><span class="metric-value" id="txtPctTotal">--%</span></div>
+          <div class="metric-card green"><span class="metric-label">% hữu ích</span><span class="metric-value" id="txtPctUseful">--%</span></div>
+          <div class="metric-card"><span class="metric-label">DT hữu ích còn lại</span><span class="metric-value" id="txtVolUsefulLeft">-- <small>tr.m³</small></span></div>
+          <div class="metric-card"><span class="metric-label">DT trống đến MNDBT</span><span class="metric-value" id="txtVolRemain">-- <small>tr.m³</small></span></div>
+          <div class="metric-card purple"><span class="metric-label">Dự báo MN chết</span><span class="metric-value" id="txtDeadLevelForecast">--</span><span class="metric-sub" id="txtDeadLevelDays">Chưa có dữ liệu</span></div>
+        </div>
+      </section>
+
+      <section class="overview-section">
+        <div class="overview-section-title"><span>Mưa lưu vực</span><span class="chip">Thực đo</span></div>
+        <div class="metric-grid">
+          <div class="metric-card purple"><span class="metric-label">Mưa 1h</span><span class="metric-value" id="txtRain1h">-- <small>mm</small></span></div>
+          <div class="metric-card purple"><span class="metric-label">Mưa ngày D</span><span class="metric-value" id="txtRainDay">-- <small>mm</small></span></div>
+          <div class="metric-card"><span class="metric-label">Mưa D-1</span><span class="metric-value" id="txtRainD1">-- <small>mm</small></span></div>
+        </div>
+      </section>
+
+      <section class="overview-section">
+        <div class="overview-section-title"><span>Dự báo 7 ngày tới</span><span class="chip">Ensemble</span></div>
+        <div class="forecast-row"><div class="fc-info"><span class="fc-title">Lưu lượng về (Min-Max)</span><span class="fc-desc">Dự báo tổ hợp Ensemble</span></div><div class="fc-range fc-highlight" id="fcFlowRange">-- - --</div></div>
+        <div class="forecast-row"><div class="fc-info"><span class="fc-title">Dung tích về 24h (Min-Max)</span><span class="fc-desc">Tổng lượng nước vào hồ (Tr.m³)</span></div><div class="fc-range" style="color:#facc15;" id="fcVol24h">-- - --</div></div>
+        <div class="forecast-row"><div class="fc-info"><span class="fc-title">Mực nước hồ 24h (Min-Max)</span><span class="fc-desc">Dựa trên Q máy & Q xả hiện tại</span></div><div class="fc-range fc-highlight" id="fcWl24h">-- - --</div></div>
+        <div class="forecast-row"><div class="fc-info"><span class="fc-title">Dung tích về 7 ngày (Min-Max)</span><span class="fc-desc">Tổng lượng nước vào hồ (Tr.m³)</span></div><div class="fc-range" style="color:#facc15;" id="fcVol7d">-- - --</div></div>
+        <div class="forecast-row"><div class="fc-info"><span class="fc-title">Mực nước hồ 7 ngày (Min-Max)</span><span class="fc-desc">Dựa trên Q máy & Q xả hiện tại</span></div><div class="fc-range fc-highlight" id="fcWl7d">-- - --</div></div>
+        <div class="forecast-row"><div class="fc-info"><span class="fc-title">Mưa ngày (Min-Max)</span><span class="fc-desc">Lượng mưa tích lũy 24h</span></div><div class="fc-range fc-rain" id="fcRainRange">-- - --</div></div>
+      </section>
     </div>
 
     <div id="tab-chart" class="tab-pane">
@@ -286,66 +536,162 @@
       </div>
     </div>
 
+
     <div id="tab-data" class="tab-pane">
       <div class="card">
-        <div class="cardHead"><b>24 giờ gần nhất (Mới nhất)</b></div>
-        <div style="padding:0; overflow:hidden;">
+        <div class="cardHead">
+          <b id="dataTableTitle">24 giờ gần nhất</b>
+          <button onclick="loadTableData()" style="width:auto;padding:6px 10px;font-size:11px;">Cập nhật</button>
+        </div>
+        <div class="duration-switch" aria-label="Chọn thời hạn số liệu">
+          <button class="duration-btn active" data-hours="24" onclick="setDataHours(24,this)">24h</button>
+          <button class="duration-btn" data-hours="48" onclick="setDataHours(48,this)">48h</button>
+          <button class="duration-btn" data-hours="72" onclick="setDataHours(72,this)">72h</button>
+        </div>
+        <div style="padding:0;overflow:hidden;">
           <div class="table-container">
             <table id="dataTable">
               <thead>
                 <tr>
-                  <th style="color:white">Thời gian</th> 
-                  <th style="color:rgb(34,211,238)">MNH</th> 
-                  <th style="color:rgb(59,130,246)">Q về</th> 
-                  <th style="color:rgb(250,204,21)">Q máy</th> 
-                  <th style="color:rgb(239,68,68)">Q xả</th> 
-                  <th style="color:rgb(52, 211, 153)">Mưa</th>
+                  <th style="color:white">Thời gian</th>
+                  <th style="color:rgb(34,211,238)">MNH</th>
+                  <th style="color:rgb(59,130,246)">Q về</th>
+                  <th style="color:rgb(250,204,21)">Q máy</th>
+                  <th style="color:rgb(239,68,68)">Q xả</th>
+                  <th style="color:rgb(52,211,153)">Mưa</th>
                 </tr>
               </thead>
-              <tbody id="tableBody">
-                <tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted)">Đang tải dữ liệu...</td></tr>
-              </tbody>
+              <tbody id="tableBody"><tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted)">Đang tải dữ liệu...</td></tr></tbody>
             </table>
           </div>
+          <div class="data-meta" id="dataTableMeta">Chưa tải dữ liệu.</div>
         </div>
       </div>
     </div>
 
-    <div id="tab-notif" class="tab-pane">
-      
-      <div class="card" style="border: 1px solid rgba(139,92,246,0.3);">
-        <div class="cardHead">
-            <b style="color:#c084fc;">🤖 Nhận định AI</b> 
-            <button onclick="generateAI()" style="width:auto; padding:6px 12px; font-size:11px; margin-left:auto; background:rgba(139,92,246,0.2); border:1px solid rgba(139,92,246,0.4); color:#c084fc; cursor:pointer;">✨ Tạo nhận định</button>
-        </div>
-        <div id="ai-list" style="padding:0;">
-          <div style="padding:20px; text-align:center; color:var(--text-muted); font-size:12px;">Chưa có nhận định nào.</div>
-        </div>
-      </div>
-      <div class="card" style="background:transparent; border:none; box-shadow:none;">
-        <div class="list-item" style="background:var(--card-bg); border-radius:16px; margin-bottom:10px; border:1px solid var(--card-border);">
-          <div class="accordion-header">
-             <div class="icon-box">📢</div>
-             <div class="item-content">
-                <h4>Kế hoạch chạy máy Tết 2026</h4>
-                <p>Thông báo phương thức vận hành đảm bảo điện áp...</p>
-             </div>
+
+    <div id="tab-more" class="tab-pane">
+      <div id="more-home">
+        <div class="card">
+          <div class="cardHead"><b>Mở rộng</b><span class="chip">Chỉ xem</span></div>
+          <div class="more-grid">
+            <button class="more-card" onclick="openMorePanel('downstream')"><span class="more-icon">🌊</span><b>Mực nước hạ du</b><small>Hội Khách, Ái Nghĩa và lịch sử 24–72h.</small></button>
+            <button class="more-card" onclick="openMorePanel('openmeteo')"><span class="more-icon">🌧️</span><b>Mưa Open-Meteo</b><small>Xem dự báo mưa theo nguồn Open-Meteo.</small></button>
+            <button class="more-card" onclick="openMorePanel('openweather')"><span class="more-icon">⛅</span><b>Mưa OpenWeather</b><small>Xem dự báo mưa theo nguồn OpenWeather.</small></button>
+            <button class="more-card" onclick="openWindyViewer('rain')"><span class="more-icon">🌦️</span><b>Bản đồ thời tiết Windy</b><small>Mưa, radar, gió, mây, vệ tinh và nhiệt độ.</small></button>
+            <button class="more-card" onclick="openMorePanel('maps')"><span class="more-icon">🗺️</span><b>Bản đồ ngập lụt</b><small>Mở trực tiếp trong PWA, có nút mở ngoài.</small></button>
+            <button class="more-card" onclick="openMorePanel('floodmarks')"><span class="more-icon">📍</span><b>Mốc lũ hạ du</b><small>Xem Google My Maps trực tiếp trong PWA.</small></button>
+            <button class="more-card" onclick="openMorePanel('reservoirs')"><span class="more-icon">🏞️</span><b>Các hồ liên quan</b><small>Sông Bung 4, Đăk Mi 4, Sông Tranh 2.</small></button>
+            <button class="more-card" onclick="openMorePanel('chat')"><span class="more-icon">🤖</span><b>Chatbox AI</b><small>Hỏi nhanh số liệu đang hiển thị trên ứng dụng.</small></button>
+            <button class="more-card" onclick="openMorePanel('bulletins')"><span class="more-icon">📢</span><b>Nhận định AI</b><small>Xem các nhận định AI gần nhất.</small></button>
           </div>
         </div>
       </div>
-      <div class="card">
-        <div class="cardBody" style="text-align:center; padding:30px 20px;">
-           <div class="logo-container" style="width:120px; height:46px; margin:0 auto 15px;">
-              <img src="https://ycthhachfxczwkburnfa.supabase.co/storage/v1/object/public/Image/Logo%20AVC.png" alt="Logo AVC">
-          </div>
-          <h3 style="color:var(--text-main); margin:0 0 5px;">Công ty CP Thủy điện A Vương</h3>
-          <p style="color:var(--text-muted); font-size:13px; margin-bottom:25px;">Thôn Dung, xã Thạnh Mỹ, TP. Đà Nẵng</p>
-          <div style="text-align:left; background:rgba(255,255,255,0.03); border-radius:12px; padding:15px; margin-bottom:10px;">
-            <small style="color:var(--text-muted);">Hotline Admin</small>
-            <div style="font-size:16px; font-weight:600; color:#3b82f6;">0963.43.43.10</div>
-          </div>
+
+      <div id="more-downstream" class="more-panel card">
+        <button class="panel-back" onclick="closeMorePanel()">← Quay lại</button>
+        <div class="cardHead"><b>Mực nước hạ du</b><button onclick="loadDownstreamMobile()" style="width:auto;padding:6px 10px;font-size:11px;">Cập nhật</button></div>
+        <div class="mobile-kpi-row">
+          <div class="mobile-kpi"><span>Hội Khách</span><b id="moreHoiKhach">-- m</b></div>
+          <div class="mobile-kpi"><span>Ái Nghĩa</span><b id="moreAiNghia">-- m</b></div>
+        </div>
+        <div class="data-meta" id="moreDownstreamStatus">Chưa tải dữ liệu.</div>
+        <div class="table-container" style="margin-top:10px;max-height:360px;overflow:auto;">
+          <table><thead><tr><th>Thời gian</th><th>Hội Khách</th><th>Ái Nghĩa</th></tr></thead><tbody id="moreDownstreamBody"><tr><td colspan="3">Chưa tải</td></tr></tbody></table>
         </div>
       </div>
+
+      <div id="more-openmeteo" class="more-panel card">
+        <button class="panel-back" onclick="closeMorePanel()">← Quay lại</button>
+        <div class="cardHead"><b>Mưa Open-Meteo</b><button onclick="loadRainMobile('openmeteo')" style="width:auto;padding:6px 10px;font-size:11px;">Cập nhật</button></div>
+        <div id="moreOpenMeteoContent" class="data-meta">Chưa tải dữ liệu.</div>
+      </div>
+
+      <div id="more-openweather" class="more-panel card">
+        <button class="panel-back" onclick="closeMorePanel()">← Quay lại</button>
+        <div class="cardHead"><b>Mưa OpenWeather</b><button onclick="loadRainMobile('openweather')" style="width:auto;padding:6px 10px;font-size:11px;">Cập nhật</button></div>
+        <div id="moreOpenWeatherContent" class="data-meta">Chưa tải dữ liệu.</div>
+      </div>
+
+      <div id="more-maps" class="more-panel card">
+        <button class="panel-back" onclick="closeMorePanel()">← Quay lại</button>
+        <div class="cardHead"><b>Bản đồ ngập lụt hạ du</b><span class="chip">Xem trong PWA</span></div>
+        <button class="map-option" onclick="openContentViewer('Xả lũ thiết kế','https://drive.google.com/file/d/1jBnAZF0rU9AEiySrzcCVXkXnRb9mm7Fn/preview','https://drive.google.com/file/d/1jBnAZF0rU9AEiySrzcCVXkXnRb9mm7Fn/view?usp=sharing','map')">
+          <span><b>Xả lũ thiết kế</b><small>Bản đồ/kịch bản ngập lụt theo xả lũ thiết kế.</small></span><span>›</span>
+        </button>
+        <button class="map-option" onclick="openContentViewer('Xả kiểm tra','https://drive.google.com/file/d/1Iaj3p7CG1iJaAIRC6fN4G_cIvzhL-QLb/preview','https://drive.google.com/file/d/1Iaj3p7CG1iJaAIRC6fN4G_cIvzhL-QLb/view?usp=sharing','map')">
+          <span><b>Xả kiểm tra</b><small>Bản đồ/kịch bản ngập lụt theo lưu lượng xả kiểm tra.</small></span><span>›</span>
+        </button>
+        <button class="map-option" onclick="openContentViewer('Lũ kiểm tra và vỡ đập','https://drive.google.com/file/d/1AV0D49QHsCgSNRKBmeFugOXp_8XFXeU1/preview','https://drive.google.com/file/d/1AV0D49QHsCgSNRKBmeFugOXp_8XFXeU1/view?usp=sharing','map')">
+          <span><b>Lũ kiểm tra và vỡ đập</b><small>Kịch bản ngập lụt hạ du trong tình huống lũ kiểm tra/vỡ đập.</small></span><span>›</span>
+        </button>
+        <div class="data-meta">Nếu Google Drive không cho nhúng, dùng nút “Mở ngoài” trong trình xem.</div>
+      </div>
+
+      <div id="more-floodmarks" class="more-panel card">
+        <button class="panel-back" onclick="closeMorePanel()">← Quay lại</button>
+        <div class="cardHead"><b>Mốc lũ hạ du</b><span class="chip">Google My Maps</span></div>
+        <button class="map-option" onclick="openContentViewer('Mốc lũ hạ du','https://www.google.com/maps/d/embed?mid=1OuvFULZypRbV6ABno2txIHFKzQ6nIhc&ehbc=2E312F','https://www.google.com/maps/d/u/0/viewer?mid=1OuvFULZypRbV6ABno2txIHFKzQ6nIhc&ll=15.852535098348215%2C108.00405867314454&z=12','map')">
+          <span><b>Mở bản đồ mốc lũ hạ du</b><small>Xem vị trí mốc trực tiếp trong ứng dụng.</small></span><span>›</span>
+        </button>
+        <div class="data-meta">Có thể phóng to, kéo bản đồ và mở ngoài bằng Google Maps.</div>
+      </div>
+
+      <div id="more-reservoirs" class="more-panel card">
+        <button class="panel-back" onclick="closeMorePanel()">← Quay lại</button>
+        <div class="cardHead"><b>Các hồ liên quan</b><button onclick="loadRelatedReservoirs()" style="width:auto;padding:6px 10px;font-size:11px;">Cập nhật</button></div>
+        <div id="relatedReservoirsContent">
+          <div class="metric-grid">
+            <div class="metric-card"><span class="metric-label">Sông Bung 4</span><span class="metric-value" id="relSongBung4">--</span><span class="metric-sub">Chờ nguồn dữ liệu</span></div>
+            <div class="metric-card"><span class="metric-label">Đăk Mi 4</span><span class="metric-value" id="relDakMi4">--</span><span class="metric-sub">Chờ nguồn dữ liệu</span></div>
+            <div class="metric-card"><span class="metric-label">Sông Tranh 2</span><span class="metric-value" id="relSongTranh2">--</span><span class="metric-sub">Chờ nguồn dữ liệu</span></div>
+          </div>
+          <div class="data-meta" id="relatedReservoirsStatus">Ứng dụng sẽ thử đọc từ /api/related-reservoirs; nếu API chưa có sẽ giữ trạng thái chờ.</div>
+        </div>
+      </div>
+
+      <div id="more-chat" class="more-panel card">
+        <button class="panel-back" onclick="closeMorePanel()">← Quay lại</button>
+        <div class="cardHead"><b>Chatbox AI hỏi nhanh</b><span class="chip">Dữ liệu ứng dụng</span></div>
+        <div class="quick-questions">
+          <button onclick="askQuickAI('Mực nước hồ hiện tại bao nhiêu?')">Mực nước hồ?</button>
+          <button onclick="askQuickAI('Q về đang tăng hay giảm?')">Xu thế Q về?</button>
+          <button onclick="askQuickAI('Mưa 24 giờ hiện tại thế nào?')">Mưa 24h?</button>
+          <button onclick="askQuickAI('Mực nước hạ du hiện tại?')">Hạ du?</button>
+        </div>
+        <div id="mobileChatLog" class="chat-log"><div class="chat-msg ai">Xin chào. Tôi có thể tóm tắt nhanh số liệu đang được PWA tải về.</div></div>
+        <div class="chat-compose"><textarea id="mobileChatInput" placeholder="Nhập câu hỏi nhanh..."></textarea><button onclick="sendMobileChat()">Gửi</button></div>
+        <div class="disclaimer">Thông tin AI chỉ dùng để tham khảo, không thay thế lệnh vận hành hoặc quyết định của cấp có thẩm quyền.</div>
+      </div>
+
+      <div id="more-bulletins" class="more-panel card">
+        <button class="panel-back" onclick="closeMorePanel()">← Quay lại</button>
+        <div class="cardHead"><b style="color:#c084fc;">🤖 Nhận định AI</b><button onclick="loadAIBulletins()" style="width:auto;padding:6px 10px;font-size:11px;">Cập nhật</button></div>
+        <div id="ai-list"><div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;">Chưa tải nhận định.</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="contentViewer" class="viewer-panel" aria-hidden="true">
+    <div class="viewer-toolbar">
+      <button type="button" onclick="closeContentViewer()" aria-label="Quay lại">←</button>
+      <div id="viewerTitle" class="viewer-title">Trình xem</div>
+      <button type="button" onclick="reloadContentViewer()" aria-label="Tải lại">↻</button>
+      <a id="viewerExternalLink" href="#" target="_blank" rel="noopener noreferrer" aria-label="Mở ngoài">↗</a>
+    </div>
+    <div class="viewer-stage">
+      <div id="viewerLoading" class="viewer-loading">Đang tải nội dung...</div>
+      <iframe id="viewerFrame" class="viewer-frame" src="about:blank" title="Trình xem nội dung" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+    </div>
+    <div id="windyLayerBar" class="viewer-layerbar" style="display:none;">
+      <button data-windy-layer="rain" onclick="setWindyLayer('rain')">Mưa</button>
+      <button data-windy-layer="radar" onclick="setWindyLayer('radar')">Radar</button>
+      <button data-windy-layer="wind" onclick="setWindyLayer('wind')">Gió</button>
+      <button data-windy-layer="clouds" onclick="setWindyLayer('clouds')">Mây</button>
+      <button data-windy-layer="satellite" onclick="setWindyLayer('satellite')">Vệ tinh</button>
+      <button data-windy-layer="temp" onclick="setWindyLayer('temp')">Nhiệt độ</button>
+      <button data-windy-layer="thunder" onclick="setWindyLayer('thunder')">Sét</button>
     </div>
   </div>
 
@@ -362,8 +708,8 @@
     <div class="nav-item" onclick="goTab('data', this)">
       <svg viewBox="0 0 24 24"><path d="M4 14h4v-4H4v4zm0 5h4v-4H4v4zM4 9h4V5H4v4zm5 5h12v-4H9v4zm0 5h12v-4H9v4zM9 5v4h12V5H9z"/></svg><span>Số liệu</span>
     </div>
-    <div class="nav-item" onclick="goTab('notif', this)">
-      <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg><span>Thông báo</span>
+    <div class="nav-item" onclick="goTab('more', this)">
+      <svg viewBox="0 0 24 24"><path d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 0h6v6h-6v-6z"/></svg><span>Mở rộng</span>
     </div>
   </nav>
 
@@ -416,7 +762,8 @@
     IN_FC_7D:{name:"Q Dự báo",hint:"Dự báo 7 ngày tới (Ensemble)",color:C.IF},
     RF_DAILY_FC:{name:"Mưa Ngày",hint:"Mưa ngày & Lũy kế",color:C.RN}, RF_HOURLY_ACC:{name:"Mưa Giờ",hint:"Mưa giờ & Lũy kế",color:C.RN}, RF_COMPARE:{name:"Mưa Thực vs DB",hint:"So sánh mưa Thực & DB",color:C.RF}
   };
-  const state = { hourly24h:[], hourly3D:[], hourly7D_Obs:[], inflowFc_V7:[], inflowFc_Mix:[], inflowFc_AI:[], inflowFc_HEC:[], rainFc:[], rainObs7D:[], rain24hRaw:[], latest24h:[], fcEnsemble:{}, lastObs:null, rainAtHour:0, rain24hSum:0, storage:null };
+  const state = { hourly24h:[], hourly3D:[], hourly7D_Obs:[], inflowFc_V7:[], inflowFc_Mix:[], inflowFc_AI:[], inflowFc_HEC:[], rainFc:[], rainObs7D:[], rain24hRaw:[], latest24h:[], fcEnsemble:{}, lastObs:null, rainAtHour:0, rain24hSum:0, storage:null, downstreamLatest:null, downstreamHistory:[] };
+  let dataHours = 24;
 
   window.addEventListener("load",()=>{
     const tc=$("tabs"); Object.keys(tabMeta).forEach(k=>{ const t=document.createElement("span"); t.className=`tab ${k===currentTab?'active':''}`; t.innerHTML=`<span class="swatch" style="background:rgb(${tabMeta[k].color})"></span>${tabMeta[k].name}`; t.onclick=()=>{ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active")); t.classList.add("active"); currentTab=k; renderChart(); }; tc.appendChild(t); });
@@ -424,13 +771,610 @@
     if(window.supabase){ sb=window.supabase.createClient(SB_URL,SB_KEY); sb.auth.getSession().then(({data:{session}})=>{ if(session) showApp(); else showLogin(); }); }
   });
 
-  async function handleLogin(){ const e=$("loginEmail").value, p=$("loginPass").value; if(!e||!p){$("loginError").textContent="Vui lòng nhập Email và Mật khẩu";return;} $("loginError").textContent="Đang kiểm tra..."; const{data,error}=await sb.auth.signInWithPassword({email:e,password:p}); if(error)$("loginError").textContent="Đăng nhập thất bại: "+error.message; else showApp(); }
   async function handleLogout(){ await sb.auth.signOut(); showLogin(); }
   function showApp(){ $("login-view").style.display="none"; $("main-view").style.display="flex"; loadData(); }
   function showLogin(){ $("login-view").style.display="flex"; $("main-view").style.display="none"; $("loginEmail").value=""; $("loginPass").value=""; $("loginError").textContent=""; }
 
+
+  /* ======================================================
+     MOBILE OVERVIEW API
+     - Tổng quan lấy dữ liệu từ /api/mobile-overview
+     - Các tab Biểu đồ, Bản tin, Số liệu và Mở rộng vẫn giữ logic cũ
+     - Nếu API lỗi, giao diện Tổng quan vẫn dùng dữ liệu Supabase cũ
+  ====================================================== */
+
+  async function fetchMobileOverview() {
+    const {
+      data: { session },
+    } = await sb.auth.getSession();
+
+    if (!session?.access_token) {
+      throw new Error("Phiên đăng nhập đã hết hạn");
+    }
+
+    const response = await fetch(
+      "/api/mobile-overview",
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        cache: "no-store",
+      }
+    );
+
+    let result = null;
+
+    try {
+      result = await response.json();
+    } catch {
+      throw new Error(
+        `API Tổng quan trả dữ liệu không đúng JSON, HTTP ${response.status}`
+      );
+    }
+
+    if (!response.ok || !result?.ok) {
+      throw new Error(
+        result?.error ||
+        `Không tải được dữ liệu Tổng quan, HTTP ${response.status}`
+      );
+    }
+
+    return result;
+  }
+
+  function setMetricValue(
+    id,
+    value,
+    {
+      digits = 2,
+      unit = "",
+      signed = false,
+      fallback = "--",
+    } = {}
+  ) {
+    const element = $(id);
+
+    if (!element) {
+      return;
+    }
+
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) {
+      element.textContent = fallback;
+      return;
+    }
+
+    const formatter =
+      digits === 0
+        ? fmt0
+        : digits === 1
+          ? fmt1
+          : fmt2;
+
+    const sign =
+      signed && number > 0
+        ? "+"
+        : "";
+
+    const unitHtml =
+      unit
+        ? ` <small>${unit}</small>`
+        : "";
+
+    element.innerHTML =
+      `${sign}${formatter.format(number)}${unitHtml}`;
+  }
+
+  function setTextSafe(
+    id,
+    value,
+    fallback = "--"
+  ) {
+    const element = $(id);
+
+    if (!element) {
+      return;
+    }
+
+    element.textContent =
+      value === null ||
+      value === undefined ||
+      value === ""
+        ? fallback
+        : String(value);
+  }
+
+  function setOverviewStatus(
+    safety,
+    freshness
+  ) {
+    const tag = $("floodStatus");
+
+    if (!tag) {
+      return;
+    }
+
+    const code =
+      safety?.code ||
+      "unknown";
+
+    const label =
+      safety?.label ||
+      "CHƯA CÓ DỮ LIỆU";
+
+    const styles = {
+      normal: {
+        color: "rgb(var(--c-green))",
+        background: "rgba(16,185,129,0.15)",
+        border: "rgba(16,185,129,0.35)",
+      },
+      warning: {
+        color: "#f59e0b",
+        background: "rgba(245,158,11,0.16)",
+        border: "rgba(245,158,11,0.4)",
+      },
+      danger: {
+        color: "#ef4444",
+        background: "rgba(239,68,68,0.16)",
+        border: "rgba(239,68,68,0.4)",
+      },
+      stale: {
+        color: "#f59e0b",
+        background: "rgba(245,158,11,0.16)",
+        border: "rgba(245,158,11,0.4)",
+      },
+      unknown: {
+        color: "#94a3b8",
+        background: "rgba(148,163,184,0.12)",
+        border: "rgba(148,163,184,0.28)",
+      },
+    };
+
+    const style =
+      styles[code] ||
+      styles.unknown;
+
+    tag.textContent = label;
+    tag.style.color = style.color;
+    tag.style.background = style.background;
+    tag.style.borderColor = style.border;
+    tag.title =
+      freshness?.message ||
+      "";
+  }
+
+  function formatRange(
+    range,
+    digits = 2,
+    fallback = "-- - --"
+  ) {
+    const min =
+      Number(range?.min);
+
+    const max =
+      Number(range?.max);
+
+    if (
+      !Number.isFinite(min) ||
+      !Number.isFinite(max)
+    ) {
+      return fallback;
+    }
+
+    const formatter =
+      digits === 1
+        ? fmt1
+        : fmt2;
+
+    return (
+      `${formatter.format(min)} - ` +
+      `${formatter.format(max)}`
+    );
+  }
+
+  function renderMobileOverview(
+    apiResult
+  ) {
+    const safety =
+      apiResult?.safety || {};
+
+    const current =
+      apiResult?.current || {};
+
+    const averages =
+      apiResult?.averages || {};
+
+    const storage =
+      apiResult?.storage || {};
+
+    const rain =
+      apiResult?.rain || {};
+
+    const forecast =
+      apiResult?.forecast || {};
+
+    const freshness =
+      apiResult?.data_status?.freshness || {};
+
+    const thresholds =
+      safety?.thresholds || {};
+
+    const differences =
+      safety?.differences_m || {};
+
+    setMetricValue(
+      "txtWL",
+      safety.water_level_m,
+      {
+        digits: 2,
+      }
+    );
+
+    const latestTime =
+      apiResult?.data_status?.latest_time;
+
+    if (
+      $("lastUpdate") &&
+      latestTime
+    ) {
+      $("lastUpdate").textContent =
+        formatToVNTime(latestTime)
+          .replace(/\/\d{4}$/, "");
+    }
+
+    setOverviewStatus(
+      safety,
+      freshness
+    );
+
+    const floodMax =
+      Number.isFinite(
+        Number(thresholds.flood_max_m)
+      )
+        ? Number(thresholds.flood_max_m)
+        : RES_CONST.WL_FLOOD;
+
+    if ($("lbl_DonLu")) {
+      $("lbl_DonLu").textContent =
+        `MN Cao nhất trước lũ (${fmt1.format(floodMax)})`;
+    }
+
+    setMetricValue(
+      "diff_KiemTra",
+      differences.to_check,
+      {
+        digits: 2,
+        signed: true,
+      }
+    );
+
+    setMetricValue(
+      "diff_MNDBT",
+      differences.to_normal,
+      {
+        digits: 2,
+        signed: true,
+      }
+    );
+
+    setMetricValue(
+      "diff_DonLu",
+      differences.to_flood_max,
+      {
+        digits: 2,
+        signed: true,
+      }
+    );
+
+    setMetricValue(
+      "diff_DonLuMin",
+      differences.to_flood_min,
+      {
+        digits: 2,
+        signed: true,
+      }
+    );
+
+    setMetricValue(
+      "diff_Chet",
+      differences.above_dead,
+      {
+        digits: 2,
+        signed: true,
+      }
+    );
+
+    setMetricValue(
+      "txtQin",
+      current.inflow_m3s,
+      {
+        digits: 2,
+        unit: "m³/s",
+      }
+    );
+
+    setMetricValue(
+      "txtQtb",
+      current.turbine_flow_m3s,
+      {
+        digits: 2,
+        unit: "m³/s",
+      }
+    );
+
+    setMetricValue(
+      "txtQsp",
+      current.spillway_flow_m3s,
+      {
+        digits: 2,
+        unit: "m³/s",
+      }
+    );
+
+    setMetricValue(
+      "txtDelta24h",
+      averages.water_level_delta_24h_m,
+      {
+        digits: 2,
+        unit: "m",
+        signed: true,
+      }
+    );
+
+    setMetricValue(
+      "txtQinAvg24",
+      averages.inflow_24h_m3s,
+      {
+        digits: 2,
+        unit: "m³/s",
+      }
+    );
+
+    setMetricValue(
+      "txtQtbAvg24",
+      averages.turbine_24h_m3s,
+      {
+        digits: 2,
+        unit: "m³/s",
+      }
+    );
+
+    setMetricValue(
+      "txtQspAvg24",
+      averages.spillway_24h_m3s,
+      {
+        digits: 2,
+        unit: "m³/s",
+      }
+    );
+
+    setMetricValue(
+      "txtQinAvg7d",
+      averages.inflow_7d_m3s,
+      {
+        digits: 2,
+        unit: "m³/s",
+      }
+    );
+
+    setMetricValue(
+      "txtVol",
+      storage.volume_million_m3,
+      {
+        digits: 2,
+        unit: "tr.m³",
+      }
+    );
+
+    setMetricValue(
+      "txtPctTotal",
+      storage.total_percent,
+      {
+        digits: 2,
+        unit: "%",
+      }
+    );
+
+    setMetricValue(
+      "txtPctUseful",
+      storage.useful_percent,
+      {
+        digits: 2,
+        unit: "%",
+      }
+    );
+
+    setMetricValue(
+      "txtVolUsefulLeft",
+      storage.useful_remaining_million_m3,
+      {
+        digits: 2,
+        unit: "tr.m³",
+      }
+    );
+
+    setMetricValue(
+      "txtVolRemain",
+      storage.empty_to_normal_million_m3,
+      {
+        digits: 2,
+        unit: "tr.m³",
+      }
+    );
+
+    setMetricValue(
+      "txtRain1h",
+      rain.rain_1h_mm,
+      {
+        digits: 1,
+        unit: "mm",
+      }
+    );
+
+    setMetricValue(
+      "txtRainDay",
+      rain.rain_day_mm,
+      {
+        digits: 1,
+        unit: "mm",
+      }
+    );
+
+    setMetricValue(
+      "txtRainD1",
+      rain.rain_d1_mm,
+      {
+        digits: 1,
+        unit: "mm",
+      }
+    );
+
+    const hydrology =
+      forecast.hydrology_frequency || {};
+
+    if (
+      Number.isFinite(
+        Number(hydrology.percent)
+      )
+    ) {
+      setMetricValue(
+        "txtHydroFrequency",
+        hydrology.percent,
+        {
+          digits: 0,
+          unit: "%",
+        }
+      );
+    } else {
+      setTextSafe(
+        "txtHydroFrequency",
+        "Chưa có dữ liệu"
+      );
+    }
+
+    setTextSafe(
+      "txtHydroGroup",
+      hydrology.group,
+      hydrology.note ||
+      "Chưa nối nguồn dữ liệu"
+    );
+
+    const deadLevel =
+      forecast.dead_level || {};
+
+    setTextSafe(
+      "txtDeadLevelForecast",
+      deadLevel.status,
+      "Chưa có dữ liệu"
+    );
+
+    if (
+      Number.isFinite(
+        Number(deadLevel.days)
+      )
+    ) {
+      setTextSafe(
+        "txtDeadLevelDays",
+        `${fmt0.format(deadLevel.days)} ngày`
+      );
+    } else {
+      setTextSafe(
+        "txtDeadLevelDays",
+        deadLevel.note,
+        "Chưa nối nguồn dữ liệu"
+      );
+    }
+
+    const inflowForecast =
+      forecast.inflow || {};
+
+    if ($("fcFlowRange")) {
+      $("fcFlowRange").textContent =
+        formatRange(
+          inflowForecast.q_average_m3s,
+          2
+        );
+    }
+
+    if ($("fcVol24h")) {
+      $("fcVol24h").textContent =
+        formatRange(
+          inflowForecast
+            .inflow_volume_24h_million_m3,
+          2
+        );
+    }
+
+    if ($("fcWl24h")) {
+      $("fcWl24h").textContent =
+        formatRange(
+          inflowForecast.water_level_24h_m,
+          2
+        );
+    }
+
+    if ($("fcVol7d")) {
+      $("fcVol7d").textContent =
+        formatRange(
+          inflowForecast
+            .inflow_volume_7d_million_m3,
+          2
+        );
+    }
+
+    if ($("fcWl7d")) {
+      $("fcWl7d").textContent =
+        formatRange(
+          inflowForecast.water_level_7d_m,
+          2
+        );
+    }
+
+    if ($("fcRainRange")) {
+      $("fcRainRange").textContent =
+        formatRange(
+          forecast?.rain?.daily_mm,
+          1
+        );
+    }
+
+    const coverage =
+      apiResult?.coverage || {};
+
+    console.info(
+      "Mobile overview API:",
+      {
+        latest_time:
+          latestTime,
+        freshness,
+        coverage,
+      }
+    );
+  }
+
   async function loadData(){
-    const btn=$("btnLoad"); btn.disabled=true; btn.innerText="...";
+    const btn=$("btnLoad");
+    if(btn){
+      btn.disabled=true;
+      btn.innerText="...";
+    }
+
+    /*
+      Gọi API Tổng quan song song.
+      Lỗi API không làm hỏng các tab cũ.
+    */
+    const overviewPromise = fetchMobileOverview()
+      .catch((error) => {
+        console.warn(
+          "Không tải được API Tổng quan, dùng dữ liệu cũ:",
+          error
+        );
+        return null;
+      });
+
     try{
       const dateVal=$("day").value; const [y,m,d]=dateVal.split('-'); const dSelected=new Date(Number(y),Number(m)-1,Number(d));
       const tStart=dateVal+"T00:00:00Z"; const tEnd=dateVal+"T23:59:59Z";
@@ -466,16 +1410,38 @@
       let rainCur = 0; if(state.lastObs){ rainCur = getRain(state.lastObs); }
       state.rainAtHour = rainCur; state.rain24hSum = state.rain24hRaw.reduce((s,r)=>s+getRain(r),0);
 
-      renderOverview(resFcFuture.data, resRainFcFuture.data);
+      /*
+        Render dữ liệu cũ trước để giữ khả năng fallback.
+        Sau đó API Tổng quan sẽ ghi đè các chỉ số bằng dữ liệu chuẩn hóa.
+      */
+      renderOverview(
+        resFcFuture.data,
+        resRainFcFuture.data
+      );
+
+      const mobileOverview =
+        await overviewPromise;
+
+      if (mobileOverview) {
+        renderMobileOverview(
+          mobileOverview
+        );
+      }
+
       renderChart();
       
       if($('tab-data').classList.contains('active')) loadTableData();
       if($('tab-forecast').classList.contains('active')) loadForecasts();
-      if($('tab-notif').classList.contains('active')) loadAIBulletins(); 
+      if($('tab-more').classList.contains('active') && $('more-bulletins').classList.contains('active')) loadAIBulletins(); 
       
       toast("Đã cập nhật dữ liệu");
     } catch(e){ console.error(e); toast("Lỗi kết nối"); }
-    finally{ btn.disabled=false; btn.innerText="Tải lại"; }
+    finally{
+      if(btn){
+        btn.disabled=false;
+        btn.innerText="Tải lại";
+      }
+    }
   }
 
   function getLatestUniqueData(arr,k){ if(!arr)return[]; const m=new Map(); [...arr].sort((a,b)=>new Date(b.created_at||b.time)-new Date(a.created_at||a.time)).forEach(i=>{if(!m.has(i[k]))m.set(i[k],i)}); return Array.from(m.values()).sort((a,b)=>new Date(a[k])-new Date(b[k])); }
@@ -499,15 +1465,50 @@
     const setD=(id,v)=>{ const d=wl-v; const el=$(id); if(el) el.innerText=`${d>0?"+":""}${fmt2.format(d)}`; };
     setD('diff_KiemTra',RES_CONST.WL_MAX_CHECK); setD('diff_MNDBT',RES_CONST.WL_NORMAL); setD('diff_DonLu',dlLimit); setD('diff_DonLuMin',RES_CONST.WL_FLOOD_MIN); setD('diff_Chet',RES_CONST.WL_DEAD);
     const tag=$("floodStatus"); if(tag){ if(wl>=RES_CONST.WL_FLOOD){ tag.innerText="CẢNH BÁO LŨ"; tag.style.color="rgb(var(--c-tb))"; tag.style.background="rgba(239,68,68,0.15)"; } else { tag.innerText="BÌNH THƯỜNG"; tag.style.color="rgb(var(--c-green))"; tag.style.background="rgba(16,185,129,0.15)"; } }
-    $("txtQin").textContent=fmt2.format(l.inflow); $("txtQtb").textContent=fmt2.format(l.turbine_flow); $("txtQsp").textContent=fmt2.format(l.spillway_flow);
-    $("txtRain1h").textContent=fmt1.format(state.rainAtHour); $("txtRainDay").textContent=fmt1.format(state.rain24hSum);
+    $("txtQin").innerHTML=`${fmt2.format(l.inflow)} <small>m³/s</small>`;
+    $("txtQtb").innerHTML=`${fmt2.format(l.turbine_flow)} <small>m³/s</small>`;
+    $("txtQsp").innerHTML=`${fmt2.format(l.spillway_flow)} <small>m³/s</small>`;
+    $("txtRain1h").innerHTML=`${fmt1.format(state.rainAtHour)} <small>mm</small>`;
+    $("txtRainDay").innerHTML=`${fmt1.format(state.rain24hSum)} <small>mm</small>`;
     const dM1=new Date($("day").value); dM1.setDate(dM1.getDate()-1); const sM1=getYearMD(dM1.toISOString());
     const rD1=state.rainObs7D.reduce((s,r)=>{ return (getYearMD(r.time)===sM1)?s+getRain(r):s; },0);
-    $("txtRainD1").textContent=fmt1.format(rD1);
+    $("txtRainD1").innerHTML=`${fmt1.format(rD1)} <small>mm</small>`;
+
+    const avg = (arr, key) => {
+      const vals = (arr || []).map(r => Number(r?.[key])).filter(Number.isFinite);
+      return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+    };
+    const qin24 = avg(state.latest24h, "inflow");
+    const qtb24 = avg(state.latest24h, "turbine_flow");
+    const qsp24 = avg(state.latest24h, "spillway_flow");
+    const qin7d = avg(state.hourly7D_Obs, "inflow");
+    const first24 = state.latest24h?.[0];
+    const delta24 = first24 && Number.isFinite(Number(first24.water_level))
+      ? Number(l.water_level) - Number(first24.water_level)
+      : null;
+
+    if($("txtQinAvg24")) $("txtQinAvg24").innerHTML = qin24===null ? "--" : `${fmt2.format(qin24)} <small>m³/s</small>`;
+    if($("txtQtbAvg24")) $("txtQtbAvg24").innerHTML = qtb24===null ? "--" : `${fmt2.format(qtb24)} <small>m³/s</small>`;
+    if($("txtQspAvg24")) $("txtQspAvg24").innerHTML = qsp24===null ? "--" : `${fmt2.format(qsp24)} <small>m³/s</small>`;
+    if($("txtQinAvg7d")) $("txtQinAvg7d").innerHTML = qin7d===null ? "--" : `${fmt2.format(qin7d)} <small>m³/s</small>`;
+    if($("txtDelta24h")) $("txtDelta24h").innerHTML = delta24===null ? "--" : `${delta24>=0?"+":""}${fmt2.format(delta24)} <small>m</small>`;
+
+    const ageMin = Math.max(0, Math.floor((Date.now() - new Date(l.time).getTime()) / 60000));
+    const ageEl = $("txtDataAge");
+    if(ageEl){
+      ageEl.textContent = ageMin < 1 ? "Vừa cập nhật" : `Cập nhật ${ageMin} phút trước`;
+      ageEl.style.color = ageMin <= 15 ? "#34d399" : ageMin <= 60 ? "#fbbf24" : "#fb7185";
+    }
+
     let vCur=0; if(state.storage&&(state.storage.volume||state.storage.current_volume)) vCur=Number(state.storage.volume||state.storage.current_volume); else if(wl>340) vCur=RES_CONST.VOL_DEAD+((wl-340)/40)*(RES_CONST.VOL_MAX-RES_CONST.VOL_DEAD);
-    $("txtVol").textContent=fmt2.format(vCur);
-    const vUse=Math.max(0,vCur-RES_CONST.VOL_DEAD); $("txtVolUsefulLeft").textContent=fmt2.format(vUse); $("txtPctUseful").textContent=fmt2.format((vUse/(RES_CONST.VOL_MAX-RES_CONST.VOL_DEAD))*100)+"%";
-    const vRem=Math.max(0,RES_CONST.VOL_MAX-vCur); $("txtVolRemain").textContent=fmt2.format(vRem); $("txtPctTotal").textContent=fmt2.format((vCur/RES_CONST.VOL_MAX)*100)+"%";
+    $("txtVol").innerHTML=`${fmt2.format(vCur)} <small>tr.m³</small>`;
+    const vUse=Math.max(0,vCur-RES_CONST.VOL_DEAD); $("txtVolUsefulLeft").innerHTML=`${fmt2.format(vUse)} <small>tr.m³</small>`; $("txtPctUseful").textContent=fmt2.format((vUse/(RES_CONST.VOL_MAX-RES_CONST.VOL_DEAD))*100)+"%";
+    const vRem=Math.max(0,RES_CONST.VOL_MAX-vCur); $("txtVolRemain").innerHTML=`${fmt2.format(vRem)} <small>tr.m³</small>`; $("txtPctTotal").textContent=fmt2.format((vCur/RES_CONST.VOL_MAX)*100)+"%";
+    const hydroFrequency = Number(state.storage?.hydrology_frequency_percent ?? state.storage?.frequency_percent);
+    if($("txtHydroFrequency")) $("txtHydroFrequency").textContent = Number.isFinite(hydroFrequency) ? `${fmt0.format(hydroFrequency)}%` : "--";
+    if($("txtHydroGroup")) $("txtHydroGroup").textContent = state.storage?.hydrology_group || state.storage?.frequency_group || "Chưa có dữ liệu";
+    if($("txtDeadLevelForecast")) $("txtDeadLevelForecast").textContent = state.storage?.dead_level_status || "Chưa có dữ liệu";
+    if($("txtDeadLevelDays")) $("txtDeadLevelDays").textContent = Number.isFinite(Number(state.storage?.dead_level_days)) ? `${state.storage.dead_level_days} ngày` : "Chưa có dữ liệu";
     
     // [LOGIC DỰ BÁO]
     if(fcFlow&&fcFlow.length){
@@ -640,21 +1641,47 @@
     
     if(name==='data') loadTableData();
     if(name==='forecast') loadForecasts();
-    if(name==='notif') loadAIBulletins(); 
+    if(name==='more') closeMorePanel(); 
     if(name==='chart'&&chart) chart.resize();
   }
 
+  function setDataHours(hours, button){
+    dataHours = [24,48,72].includes(Number(hours)) ? Number(hours) : 24;
+    document.querySelectorAll(".duration-btn").forEach(btn=>btn.classList.toggle("active", btn===button));
+    if($("dataTableTitle")) $("dataTableTitle").textContent = `${dataHours} giờ gần nhất`;
+    loadTableData();
+  }
+
   async function loadTableData(){
-    const tb=$("tableBody"); tb.innerHTML=`<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Đang lấy 24h số liệu gần nhất...</td></tr>`;
+    const tb=$("tableBody");
+    tb.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);">Đang lấy ${dataHours}h số liệu gần nhất...</td></tr>`;
     try{
-      const d=state.latest24h; if(!d.length){tb.innerHTML=`<tr><td colspan="6" style="text-align:center; padding:20px;">Không có dữ liệu</td></tr>`;return;}
+      const {data,error}=await sb.from("reservoir_hourly_data")
+        .select("*")
+        .order("time",{ascending:false})
+        .limit(dataHours);
+      if(error) throw error;
+      const rows=data||[];
+      if(!rows.length){
+        tb.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px;">Không có dữ liệu</td></tr>`;
+        if($("dataTableMeta")) $("dataTableMeta").textContent=`0/${dataHours} giờ dữ liệu.`;
+        return;
+      }
       tb.innerHTML="";
-      [...d].reverse().forEach(row=>{
-        const rVal=getRain(row); const tr=document.createElement("tr");
+      rows.forEach(row=>{
+        const rVal=getRain(row);
+        const tr=document.createElement("tr");
         tr.innerHTML=`<td>${formatTableTime(row.time)}</td><td style="color:rgb(var(--c-wl))">${fmt2.format(row.water_level)}</td><td style="color:rgb(var(--c-in))">${fmt2.format(row.inflow)}</td><td style="color:rgb(var(--c-tb))">${fmt2.format(row.turbine_flow)}</td><td style="color:rgb(var(--c-sp))">${fmt2.format(row.spillway_flow)}</td><td style="color:${rVal>0?'rgb(var(--c-green))':'#64748b'}">${rVal>0?fmt1.format(rVal):'-'}</td>`;
         tb.appendChild(tr);
       });
-    }catch(e){console.error(e);}
+      if($("dataTableMeta")){
+        const newest=rows[0]?.time ? formatToVNTime(rows[0].time) : "--";
+        $("dataTableMeta").textContent=`${rows.length}/${dataHours} giờ dữ liệu • Mới nhất: ${newest}`;
+      }
+    }catch(e){
+      console.error(e);
+      tb.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px;color:#ef4444;">Lỗi tải dữ liệu: ${e.message}</td></tr>`;
+    }
   }
 
   async function loadForecasts() {
@@ -736,8 +1763,264 @@
     }
   }
 
+
+
+  const contentViewerState = {
+    title: "",
+    url: "",
+    externalUrl: "",
+    type: "",
+    windyLayer: "rain"
+  };
+
+  function buildWindyEmbedUrl(layer="rain"){
+    const allowed=["rain","radar","wind","clouds","satellite","temp","thunder"];
+    const overlay=allowed.includes(layer)?layer:"rain";
+    return "https://embed.windy.com/embed2.html"
+      + "?lat=15.7997829"
+      + "&lon=107.6171715"
+      + "&detailLat=15.7997829"
+      + "&detailLon=107.6171715"
+      + "&zoom=8"
+      + "&level=surface"
+      + `&overlay=${encodeURIComponent(overlay)}`
+      + "&product=ecmwf"
+      + "&menu="
+      + "&message=true"
+      + "&marker=true"
+      + "&calendar=now"
+      + "&pressure="
+      + "&type=map"
+      + "&location=coordinates"
+      + "&detail=true"
+      + "&metricWind=km%2Fh"
+      + "&metricTemp=%C2%B0C"
+      + "&radarRange=-1";
+  }
+
+  function openWindyViewer(layer="rain"){
+    contentViewerState.windyLayer=layer;
+    openContentViewer(
+      "Bản đồ thời tiết Windy",
+      buildWindyEmbedUrl(layer),
+      "https://www.windy.com/?15.7997829,107.6171715,8",
+      "windy"
+    );
+    updateWindyLayerButtons();
+  }
+
+  function setWindyLayer(layer){
+    contentViewerState.windyLayer=layer;
+    contentViewerState.url=buildWindyEmbedUrl(layer);
+    const frame=$("viewerFrame");
+    const loading=$("viewerLoading");
+    if(loading) loading.style.display="flex";
+    frame.src=contentViewerState.url;
+    updateWindyLayerButtons();
+  }
+
+  function updateWindyLayerButtons(){
+    document.querySelectorAll("[data-windy-layer]").forEach(btn=>{
+      btn.classList.toggle("active",btn.dataset.windyLayer===contentViewerState.windyLayer);
+    });
+  }
+
+  function openContentViewer(title,url,externalUrl,type="map"){
+    const viewer=$("contentViewer");
+    const frame=$("viewerFrame");
+    const loading=$("viewerLoading");
+    contentViewerState.title=title||"Trình xem";
+    contentViewerState.url=url||"about:blank";
+    contentViewerState.externalUrl=externalUrl||url||"#";
+    contentViewerState.type=type;
+
+    $("viewerTitle").textContent=contentViewerState.title;
+    $("viewerExternalLink").href=contentViewerState.externalUrl;
+    $("windyLayerBar").style.display=type==="windy"?"flex":"none";
+    loading.style.display="flex";
+    frame.onload=()=>{ loading.style.display="none"; };
+    frame.onerror=()=>{ loading.textContent="Không thể tải nội dung. Hãy dùng nút Mở ngoài."; };
+    frame.src=contentViewerState.url;
+    viewer.classList.add("active");
+    viewer.setAttribute("aria-hidden","false");
+    viewer.scrollTop=0;
+  }
+
+  function closeContentViewer(){
+    const viewer=$("contentViewer");
+    const frame=$("viewerFrame");
+    viewer.classList.remove("active");
+    viewer.setAttribute("aria-hidden","true");
+    frame.onload=null;
+    frame.onerror=null;
+    frame.src="about:blank";
+    $("viewerLoading").style.display="flex";
+    $("viewerLoading").textContent="Đang tải nội dung...";
+    $("windyLayerBar").style.display="none";
+  }
+
+  function reloadContentViewer(){
+    if(!contentViewerState.url) return;
+    const loading=$("viewerLoading");
+    loading.style.display="flex";
+    $("viewerFrame").src="about:blank";
+    setTimeout(()=>{ $("viewerFrame").src=contentViewerState.url; },80);
+  }
+
+  window.addEventListener("popstate",()=>{
+    if($("contentViewer")?.classList.contains("active")) closeContentViewer();
+  });
+
+  function openMorePanel(name){
+    $("more-home").style.display="none";
+    document.querySelectorAll(".more-panel").forEach(p=>p.classList.remove("active"));
+    const panel=$(`more-${name}`);
+    if(panel) panel.classList.add("active");
+    if(name==="downstream") loadDownstreamMobile();
+    if(name==="openmeteo") loadRainMobile("openmeteo");
+    if(name==="openweather") loadRainMobile("openweather");
+    if(name==="reservoirs") loadRelatedReservoirs();
+    if(name==="bulletins") loadAIBulletins();
+  }
+
+  function closeMorePanel(){
+    if($("more-home")) $("more-home").style.display="block";
+    document.querySelectorAll(".more-panel").forEach(p=>p.classList.remove("active"));
+  }
+
+  async function loadDownstreamMobile(){
+    const status=$("moreDownstreamStatus");
+    const body=$("moreDownstreamBody");
+    status.textContent="Đang tải dữ liệu hạ du...";
+    try{
+      const [latestRes,historyRes]=await Promise.all([
+        fetch("/api/downstream-forecast?mode=observed-latest",{cache:"no-store"}),
+        fetch("/api/downstream-forecast?mode=observed-history&hours=72",{cache:"no-store"})
+      ]);
+      const latest=await latestRes.json();
+      const history=await historyRes.json();
+      if(!latestRes.ok || !latest?.ok) throw new Error(latest?.error||`HTTP ${latestRes.status}`);
+      const row=latest.data||{};
+      state.downstreamLatest=row;
+      state.downstreamHistory=Array.isArray(history?.data)?history.data:[];
+      $("moreHoiKhach").textContent=`${fmt2.format(Number(row.hoi_khach_m||0))} m`;
+      $("moreAiNghia").textContent=`${fmt2.format(Number(row.ai_nghia_m||0))} m`;
+      status.textContent=`Cập nhật: ${formatToVNTime(row.obs_hour||row.obs_time)} • Nguồn: ${row.source||"--"}`;
+      body.innerHTML="";
+      [...state.downstreamHistory].reverse().slice(0,72).forEach(r=>{
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${formatTableTime(r.obs_hour||r.obs_time)}</td><td>${r.hoi_khach_m==null?"-":fmt2.format(r.hoi_khach_m)}</td><td>${r.ai_nghia_m==null?"-":fmt2.format(r.ai_nghia_m)}</td>`;
+        body.appendChild(tr);
+      });
+      if(!state.downstreamHistory.length) body.innerHTML=`<tr><td colspan="3">Không có lịch sử</td></tr>`;
+    }catch(e){
+      console.error(e);
+      status.textContent=`Không tải được dữ liệu hạ du: ${e.message}`;
+      body.innerHTML=`<tr><td colspan="3" style="color:#ef4444;">Lỗi tải dữ liệu</td></tr>`;
+    }
+  }
+
+  function flattenRainRows(payload){
+    const candidates=[payload?.data,payload?.stations,payload?.rows,payload?.result?.data,payload?.result?.stations];
+    return candidates.find(Array.isArray)||[];
+  }
+
+  async function loadRainMobile(source){
+    const isMeteo=source==="openmeteo";
+    const target=$(isMeteo?"moreOpenMeteoContent":"moreOpenWeatherContent");
+    const endpoint=isMeteo?"/api/openmeteo-rain":"/api/openweather-rain";
+    target.innerHTML="Đang tải dữ liệu...";
+    try{
+      const res=await fetch(endpoint,{cache:"no-store"});
+      const payload=await res.json();
+      if(!res.ok || payload?.ok===false) throw new Error(payload?.error||`HTTP ${res.status}`);
+      const rows=flattenRainRows(payload);
+      if(!rows.length){
+        target.innerHTML=`API đã phản hồi nhưng chưa có danh sách trạm. <br><small>Nguồn: ${endpoint}</small>`;
+        return;
+      }
+      const cards=rows.slice(0,12).map(r=>{
+        const name=r.name||r.station_name||r.station||r.location||"Trạm";
+        const r24=Number(r.rain_24h_mm??r.rain24_mm??r.total_24h??r.rain24h??0);
+        const r48=Number(r.rain_48h_mm??r.rain48_mm??r.total_48h??r.rain48h??0);
+        const r72=Number(r.rain_72h_mm??r.rain72_mm??r.total_72h??r.rain72h??0);
+        return `<div class="metric-card purple"><span class="metric-label">${name}</span><span class="metric-value">${fmt1.format(r24)} <small>mm/24h</small></span><span class="metric-sub">48h: ${fmt1.format(r48)} mm • 72h: ${fmt1.format(r72)} mm</span></div>`;
+      }).join("");
+      target.innerHTML=`<div class="metric-grid">${cards}</div><div class="data-meta">Nguồn: ${endpoint} • ${rows.length} trạm</div>`;
+    }catch(e){
+      console.error(e);
+      target.innerHTML=`<span style="color:#ef4444;">Không tải được dữ liệu: ${e.message}</span><br><small>Nguồn dự kiến: ${endpoint}</small>`;
+    }
+  }
+
+  async function loadRelatedReservoirs(){
+    const status=$("relatedReservoirsStatus");
+    status.textContent="Đang thử tải dữ liệu các hồ liên quan...";
+    try{
+      const res=await fetch("/api/related-reservoirs",{cache:"no-store"});
+      const payload=await res.json();
+      if(!res.ok || payload?.ok===false) throw new Error(payload?.error||`HTTP ${res.status}`);
+      const rows=Array.isArray(payload.data)?payload.data:[];
+      const find=(keys)=>rows.find(r=>keys.includes(String(r.code||r.name||"").toLowerCase()));
+      const set=(id,row)=>{
+        if(!row) return;
+        const wl=Number(row.water_level_m??row.water_level);
+        const q=Number(row.inflow_m3s??row.inflow);
+        $(id).textContent=`${Number.isFinite(wl)?fmt2.format(wl)+" m":"--"}${Number.isFinite(q)?" • Q "+fmt1.format(q):""}`;
+      };
+      set("relSongBung4",find(["songbung4","sông bung 4","song bung 4"]));
+      set("relDakMi4",find(["dakmi4","đăk mi 4","dak mi 4"]));
+      set("relSongTranh2",find(["songtranh2","sông tranh 2","song tranh 2"]));
+      status.textContent=`Đã tải ${rows.length} hồ • ${payload.updated_at?formatToVNTime(payload.updated_at):"không có thời gian cập nhật"}`;
+    }catch(e){
+      status.textContent=`API các hồ liên quan chưa sẵn sàng: ${e.message}`;
+    }
+  }
+
+  function addChatMessage(role,text){
+    const log=$("mobileChatLog");
+    const div=document.createElement("div");
+    div.className=`chat-msg ${role}`;
+    div.textContent=text;
+    log.appendChild(div);
+    log.scrollTop=log.scrollHeight;
+  }
+
+  function buildQuickAnswer(question){
+    const q=String(question||"").toLowerCase();
+    const l=state.lastObs;
+    if(!l) return "Ứng dụng chưa tải được số liệu hồ. Hãy cập nhật lại dữ liệu trước.";
+    if(q.includes("mực nước hồ")) return `Mực nước hồ gần nhất là ${fmt2.format(l.water_level)} m, lúc ${formatToVNTime(l.time)}.`;
+    if(q.includes("tăng")||q.includes("giảm")||q.includes("xu thế q")){
+      const arr=state.latest24h||[];
+      if(arr.length<2) return "Chưa đủ dữ liệu để xác định xu thế Q về.";
+      const delta=Number(arr[arr.length-1].inflow)-Number(arr[0].inflow);
+      return `Trong chuỗi 24 giờ hiện có, Q về ${delta>=0?"tăng":"giảm"} khoảng ${fmt2.format(Math.abs(delta))} m³/s; giá trị gần nhất ${fmt2.format(l.inflow)} m³/s.`;
+    }
+    if(q.includes("mưa")) return `Mưa giờ gần nhất ${fmt1.format(state.rainAtHour)} mm; tổng mưa ngày đang tính ${fmt1.format(state.rain24hSum)} mm.`;
+    if(q.includes("hạ du")){
+      const d=state.downstreamLatest;
+      if(!d) return "Chưa tải dữ liệu hạ du. Vào mục Mực nước hạ du và bấm Cập nhật.";
+      return `Hội Khách ${fmt2.format(Number(d.hoi_khach_m||0))} m; Ái Nghĩa ${fmt2.format(Number(d.ai_nghia_m||0))} m, cập nhật ${formatToVNTime(d.obs_hour||d.obs_time)}.`;
+    }
+    return `Số liệu gần nhất: MNH ${fmt2.format(l.water_level)} m; Q về ${fmt2.format(l.inflow)} m³/s; Q máy ${fmt2.format(l.turbine_flow)} m³/s; Q xả ${fmt2.format(l.spillway_flow)} m³/s.`;
+  }
+
+  function askQuickAI(question){
+    addChatMessage("user",question);
+    setTimeout(()=>addChatMessage("ai",buildQuickAnswer(question)),120);
+  }
+
+  function sendMobileChat(){
+    const input=$("mobileChatInput");
+    const question=input.value.trim();
+    if(!question) return;
+    input.value="";
+    askQuickAI(question);
+  }
+
   async function generateAI() {
-      const btn = document.querySelector('#tab-notif button');
+      const btn = document.querySelector('#more-bulletins button');
       btn.innerText = "Đang suy nghĩ..."; btn.disabled = true;
       try {
           const { data, error } = await sb.rpc('generate_ai_operational_insight_v4');
