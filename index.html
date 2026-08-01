@@ -1232,6 +1232,78 @@
       z-index:700;
     }
 
+
+    /* ======================================================
+       V13 - TẦN SUẤT THỦY VĂN & DỰ BÁO CHẠM MN CHẾT
+    ====================================================== */
+
+    #deadLevelCard.dead-rising{
+      border-color:rgba(16,185,129,.34);
+      background:
+        linear-gradient(
+          180deg,
+          rgba(16,185,129,.11),
+          rgba(255,255,255,.025)
+        );
+    }
+
+    #deadLevelCard.dead-rising #txtDeadLevelForecast{
+      color:rgb(var(--c-green));
+    }
+
+    #deadLevelCard.dead-stable{
+      border-color:rgba(34,211,238,.34);
+      background:
+        linear-gradient(
+          180deg,
+          rgba(34,211,238,.10),
+          rgba(255,255,255,.025)
+        );
+    }
+
+    #deadLevelCard.dead-stable #txtDeadLevelForecast{
+      color:rgb(var(--c-wl));
+    }
+
+    #deadLevelCard.dead-decreasing{
+      border-color:rgba(245,158,11,.34);
+      background:
+        linear-gradient(
+          180deg,
+          rgba(245,158,11,.10),
+          rgba(255,255,255,.025)
+        );
+    }
+
+    #deadLevelCard.dead-decreasing #txtDeadLevelForecast{
+      color:rgb(var(--c-tb));
+    }
+
+    #deadLevelCard.dead-danger{
+      border-color:rgba(239,68,68,.38);
+      background:
+        linear-gradient(
+          180deg,
+          rgba(239,68,68,.12),
+          rgba(255,255,255,.025)
+        );
+    }
+
+    #deadLevelCard.dead-danger #txtDeadLevelForecast{
+      color:rgb(var(--c-sp));
+    }
+
+    #deadLevelCard.dead-missing #txtDeadLevelForecast{
+      color:#c084fc;
+    }
+
+    #txtHydroGroup,
+    #txtDeadLevelDays{
+      white-space:normal;
+      line-height:1.25;
+      text-align:center;
+    }
+
 </style>
   <link
     rel="stylesheet"
@@ -1328,7 +1400,7 @@
           <div class="metric-card green"><span class="metric-label">% hữu ích</span><span class="metric-value" id="txtPctUseful">--%</span></div>
           <div class="metric-card"><span class="metric-label">DT hữu ích còn lại</span><span class="metric-value" id="txtVolUsefulLeft">-- <small>tr.m³</small></span></div>
           <div class="metric-card"><span class="metric-label">DT trống đến MNDBT</span><span class="metric-value" id="txtVolRemain">-- <small>tr.m³</small></span></div>
-          <div class="metric-card purple"><span class="metric-label">Dự báo MN chết</span><span class="metric-value" id="txtDeadLevelForecast">--</span><span class="metric-sub" id="txtDeadLevelDays">Chưa có dữ liệu</span></div>
+          <div class="metric-card purple" id="deadLevelCard"><span class="metric-label">Dự báo chạm MN chết</span><span class="metric-value" id="txtDeadLevelForecast">--</span><span class="metric-sub" id="txtDeadLevelDays">Chưa có dữ liệu</span></div>
         </div>
       </section>
 
@@ -2477,7 +2549,7 @@
 
     setMetricValue(
       "txtRainD1",
-      rain.rain_d1_mm,
+      rain.rain_d1_mm ?? rain.rain_previous_day_mm,
       {
         digits: 1,
         unit: "mm",
@@ -2487,14 +2559,15 @@
     const hydrology =
       forecast.hydrology_frequency || {};
 
+    const hydroPercent =
+      Number(hydrology.percent);
+
     if (
-      Number.isFinite(
-        Number(hydrology.percent)
-      )
+      Number.isFinite(hydroPercent)
     ) {
       setMetricValue(
         "txtHydroFrequency",
-        hydrology.percent,
+        hydroPercent,
         {
           digits: 0,
           unit: "%",
@@ -2503,41 +2576,129 @@
     } else {
       setTextSafe(
         "txtHydroFrequency",
-        "Chưa có dữ liệu"
+        "-- %"
       );
     }
 
+    /*
+      Dòng phụ ưu tiên tên nhóm.
+      Nếu API chưa xác định được nhóm thì hiển thị ghi chú.
+    */
     setTextSafe(
       "txtHydroGroup",
-      hydrology.group,
-      hydrology.note ||
-      "Chưa nối nguồn dữ liệu"
+      hydrology.group ||
+      hydrology.note,
+      "Chưa có dữ liệu tần suất"
     );
 
     const deadLevel =
       forecast.dead_level || {};
 
-    setTextSafe(
-      "txtDeadLevelForecast",
-      deadLevel.status,
-      "Chưa có dữ liệu"
-    );
+    const deadCard =
+      $("deadLevelCard");
 
-    if (
-      Number.isFinite(
-        Number(deadLevel.days)
-      )
-    ) {
-      setTextSafe(
-        "txtDeadLevelDays",
-        `${fmt0.format(deadLevel.days)} ngày`
+    if (deadCard) {
+      deadCard.classList.remove(
+        "dead-rising",
+        "dead-stable",
+        "dead-decreasing",
+        "dead-danger",
+        "dead-missing"
       );
-    } else {
-      setTextSafe(
-        "txtDeadLevelDays",
-        deadLevel.note,
-        "Chưa nối nguồn dữ liệu"
-      );
+    }
+
+    switch (deadLevel.code) {
+      case "rising":
+        setTextSafe(
+          "txtDeadLevelForecast",
+          "Đang tăng"
+        );
+
+        setTextSafe(
+          "txtDeadLevelDays",
+          deadLevel.note,
+          "Q về lớn hơn Q chạy máy"
+        );
+
+        deadCard?.classList.add(
+          "dead-rising"
+        );
+        break;
+
+      case "stable":
+        setTextSafe(
+          "txtDeadLevelForecast",
+          "Ổn định"
+        );
+
+        setTextSafe(
+          "txtDeadLevelDays",
+          deadLevel.note,
+          "Q về xấp xỉ Q chạy máy"
+        );
+
+        deadCard?.classList.add(
+          "dead-stable"
+        );
+        break;
+
+      case "decreasing": {
+        const days =
+          Number(deadLevel.days);
+
+        setTextSafe(
+          "txtDeadLevelForecast",
+          Number.isFinite(days)
+            ? `${fmt1.format(days)} ngày`
+            : "Đang giảm"
+        );
+
+        setTextSafe(
+          "txtDeadLevelDays",
+          deadLevel.note,
+          "Q chạy máy lớn hơn Q về"
+        );
+
+        deadCard?.classList.add(
+          "dead-decreasing"
+        );
+        break;
+      }
+
+      case "reached_dead_level":
+        setTextSafe(
+          "txtDeadLevelForecast",
+          "Đã chạm MN chết"
+        );
+
+        setTextSafe(
+          "txtDeadLevelDays",
+          deadLevel.note,
+          "Dung tích hữu ích còn lại bằng 0"
+        );
+
+        deadCard?.classList.add(
+          "dead-danger"
+        );
+        break;
+
+      default:
+        setTextSafe(
+          "txtDeadLevelForecast",
+          deadLevel.status,
+          "Chưa có dữ liệu"
+        );
+
+        setTextSafe(
+          "txtDeadLevelDays",
+          deadLevel.note,
+          "Thiếu dữ liệu tính toán"
+        );
+
+        deadCard?.classList.add(
+          "dead-missing"
+        );
+        break;
     }
 
     const inflowForecast =
