@@ -3,6 +3,15 @@
  *
  * API tổng hợp dữ liệu cho tab Tổng quan của PWA.
  *
+ * Giữ nguyên logic API cũ:
+ * - Dữ liệu vận hành hồ.
+ * - Dung tích thực từ v_current_storage.
+ * - Mưa, dự báo, an toàn hồ.
+ *
+ * Chỉ bổ sung:
+ * - Tần suất thủy văn.
+ * - Dự báo thời gian chạm mực nước chết.
+ *
  * Biến môi trường cần có trên Vercel:
  * - SUPABASE_URL
  * - SUPABASE_SERVICE_ROLE_KEY
@@ -11,7 +20,9 @@
  * Authorization: Bearer <supabase_access_token>
  */
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_URL =
+  process.env.SUPABASE_URL;
+
 const SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -22,10 +33,16 @@ const RESERVOIR = {
   WL_FLOOD_MIN_M: 370.0,
   WL_DEAD_M: 340.0,
 
-  TOTAL_CAPACITY_MILLION_M3: 343.55,
-  USEFUL_CAPACITY_MILLION_M3: 266.45,
-  DEAD_CAPACITY_MILLION_M3: 77.10,
+  VOL_DEAD_MILLION_M3: 77.07,
+  VOL_MAX_MILLION_M3: 343.55,
 };
+
+const VN_TIME_ZONE =
+  "Asia/Ho_Chi_Minh";
+
+/* ======================================================
+   RESPONSE
+====================================================== */
 
 function sendJson(
   res,
@@ -63,6 +80,10 @@ function sendJson(
     .json(payload);
 }
 
+/* ======================================================
+   HELPERS
+====================================================== */
+
 function toNumber(
   value,
   fallback = null
@@ -75,7 +96,8 @@ function toNumber(
     return fallback;
   }
 
-  const number = Number(value);
+  const number =
+    Number(value);
 
   return Number.isFinite(number)
     ? number
@@ -86,24 +108,33 @@ function round(
   value,
   digits = 2
 ) {
-  const number = Number(value);
+  const number =
+    Number(value);
 
   if (!Number.isFinite(number)) {
     return null;
   }
 
-  const power = 10 ** digits;
+  const factor =
+    10 ** digits;
 
   return (
-    Math.round(number * power) /
-    power
+    Math.round(number * factor) /
+    factor
   );
 }
 
-function average(values = []) {
-  const valid = values
-    .map((value) => Number(value))
-    .filter(Number.isFinite);
+function average(
+  values = []
+) {
+  const valid =
+    values
+      .map((value) =>
+        Number(value)
+      )
+      .filter(
+        Number.isFinite
+      );
 
   if (!valid.length) {
     return null;
@@ -111,18 +142,27 @@ function average(values = []) {
 
   return (
     valid.reduce(
-      (sum, value) => sum + value,
+      (sum, value) =>
+        sum + value,
       0
-    ) / valid.length
+    ) /
+    valid.length
   );
 }
 
-function sum(values = []) {
+function sum(
+  values = []
+) {
   return values
-    .map((value) => Number(value))
-    .filter(Number.isFinite)
+    .map((value) =>
+      Number(value)
+    )
+    .filter(
+      Number.isFinite
+    )
     .reduce(
-      (total, value) => total + value,
+      (total, value) =>
+        total + value,
       0
     );
 }
@@ -131,10 +171,15 @@ function uniqueByTime(
   rows,
   field = "time"
 ) {
-  const map = new Map();
+  const map =
+    new Map();
 
-  for (const row of rows || []) {
-    const key = row?.[field];
+  for (
+    const row
+    of rows || []
+  ) {
+    const key =
+      row?.[field];
 
     if (!key) {
       continue;
@@ -146,23 +191,35 @@ function uniqueByTime(
     );
   }
 
-  return [...map.values()].sort(
+  return [
+    ...map.values(),
+  ].sort(
     (a, b) =>
-      String(a?.[field] || "")
-        .localeCompare(
-          String(b?.[field] || "")
+      String(
+        a?.[field] || ""
+      ).localeCompare(
+        String(
+          b?.[field] || ""
         )
+      )
   );
 }
 
-function getBearerToken(req) {
-  const authorization = String(
-    req.headers.authorization || ""
-  ).trim();
+/* ======================================================
+   AUTH
+====================================================== */
 
-  const match = authorization.match(
-    /^Bearer\s+(.+)$/i
-  );
+function getBearerToken(req) {
+  const authorization =
+    String(
+      req.headers.authorization ||
+      ""
+    ).trim();
+
+  const match =
+    authorization.match(
+      /^Bearer\s+(.+)$/i
+    );
 
   return match
     ? match[1].trim()
@@ -176,7 +233,9 @@ function requireEnvironment() {
     );
   }
 
-  if (!SUPABASE_SERVICE_ROLE_KEY) {
+  if (
+    !SUPABASE_SERVICE_ROLE_KEY
+  ) {
     throw new Error(
       "Thiếu SUPABASE_SERVICE_ROLE_KEY trên Vercel"
     );
@@ -190,25 +249,28 @@ async function verifySupabaseUser(
     return {
       ok: false,
       status: 401,
-      error: "Thiếu access token",
+      error:
+        "Thiếu access token",
     };
   }
 
-  const response = await fetch(
-    `${SUPABASE_URL}/auth/v1/user`,
-    {
-      method: "GET",
-      headers: {
-        apikey:
-          SUPABASE_SERVICE_ROLE_KEY,
+  const response =
+    await fetch(
+      `${SUPABASE_URL}/auth/v1/user`,
+      {
+        method: "GET",
 
-        Authorization:
-          `Bearer ${accessToken}`,
-      },
-    }
-  );
+        headers: {
+          apikey:
+            SUPABASE_SERVICE_ROLE_KEY,
 
-  const body =
+          Authorization:
+            `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+  const text =
     await response.text();
 
   if (!response.ok) {
@@ -224,7 +286,7 @@ async function verifySupabaseUser(
     return {
       ok: true,
       user:
-        JSON.parse(body),
+        JSON.parse(text),
     };
   } catch {
     return {
@@ -235,6 +297,10 @@ async function verifySupabaseUser(
     };
   }
 }
+
+/* ======================================================
+   SUPABASE REST
+====================================================== */
 
 async function supabaseSelect(
   table,
@@ -286,19 +352,19 @@ async function supabaseSelect(
       }
     );
 
-  const body =
+  const text =
     await response.text();
 
   if (!response.ok) {
     throw new Error(
       `Supabase SELECT ${table} ` +
       `${response.status}: ` +
-      body.slice(0, 600)
+      text.slice(0, 800)
     );
   }
 
   try {
-    return JSON.parse(body);
+    return JSON.parse(text);
   } catch {
     throw new Error(
       `Supabase trả dữ liệu không hợp lệ từ ${table}`
@@ -306,15 +372,20 @@ async function supabaseSelect(
   }
 }
 
+/* ======================================================
+   TIME HELPERS
+====================================================== */
+
 function parseReservoirOperationalTime(
   value
 ) {
   const text =
     String(value || "").trim();
 
-  const match = text.match(
-    /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/
-  );
+  const match =
+    text.match(
+      /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/
+    );
 
   if (!match) {
     return null;
@@ -330,10 +401,11 @@ function parseReservoirOperationalTime(
     second = "00",
   ] = match;
 
-  const date = new Date(
-    `${year}-${month}-${day}` +
-    `T${hour}:${minute}:${second}+07:00`
-  );
+  const date =
+    new Date(
+      `${year}-${month}-${day}` +
+      `T${hour}:${minute}:${second}+07:00`
+    );
 
   return Number.isNaN(
     date.getTime()
@@ -348,9 +420,10 @@ function getReservoirLiteralDateKey(
   const text =
     String(value || "").trim();
 
-  const match = text.match(
-    /^(\d{4})-(\d{2})-(\d{2})[T ]/
-  );
+  const match =
+    text.match(
+      /^(\d{4})-(\d{2})-(\d{2})[T ]/
+    );
 
   if (!match) {
     return null;
@@ -376,11 +449,14 @@ function getLocalDateKey(date) {
       "en-CA",
       {
         timeZone:
-          "Asia/Ho_Chi_Minh",
+          VN_TIME_ZONE,
+
         year:
           "numeric",
+
         month:
           "2-digit",
+
         day:
           "2-digit",
       }
@@ -389,7 +465,9 @@ function getLocalDateKey(date) {
   const result = {};
 
   for (const part of parts) {
-    if (part.type !== "literal") {
+    if (
+      part.type !== "literal"
+    ) {
       result[part.type] =
         part.value;
     }
@@ -402,32 +480,17 @@ function getLocalDateKey(date) {
   );
 }
 
-function getPreviousDateKey(date) {
-  if (
-    !(date instanceof Date) ||
-    Number.isNaN(date.getTime())
-  ) {
-    return null;
-  }
-
-  const previous =
-    new Date(
-      date.getTime() -
-      24 * 60 * 60 * 1000
-    );
-
-  return getLocalDateKey(
-    previous
-  );
-}
-
-function getDataFreshness(updatedAt) {
+function getDataFreshness(
+  updatedAt
+) {
   if (!updatedAt) {
     return {
       status:
         "unknown",
+
       label:
         "Chưa xác định",
+
       age_minutes:
         null,
     };
@@ -445,8 +508,10 @@ function getDataFreshness(updatedAt) {
     return {
       status:
         "unknown",
+
       label:
         "Thời gian không hợp lệ",
+
       age_minutes:
         null,
     };
@@ -468,8 +533,10 @@ function getDataFreshness(updatedAt) {
     return {
       status:
         "fresh",
+
       label:
         "Vừa cập nhật",
+
       age_minutes:
         ageMinutes,
     };
@@ -479,8 +546,10 @@ function getDataFreshness(updatedAt) {
     return {
       status:
         "warning",
+
       label:
         "Dữ liệu đang chậm",
+
       age_minutes:
         ageMinutes,
     };
@@ -489,12 +558,18 @@ function getDataFreshness(updatedAt) {
   return {
     status:
       "stale",
+
     label:
       "Dữ liệu cũ",
+
     age_minutes:
       ageMinutes,
   };
 }
+
+/* ======================================================
+   RAIN
+====================================================== */
 
 function getRainValue(row) {
   const candidates = [
@@ -504,7 +579,10 @@ function getRainValue(row) {
     row?.rain_mm,
   ];
 
-  for (const value of candidates) {
+  for (
+    const value
+    of candidates
+  ) {
     const number =
       toNumber(value);
 
@@ -518,84 +596,90 @@ function getRainValue(row) {
   return 0;
 }
 
-function calculateVolumeFromLevel(
-  waterLevel
-) {
-  const level =
-    Number(waterLevel);
+/* ======================================================
+   STORAGE
+====================================================== */
 
-  if (!Number.isFinite(level)) {
+function getStorageValue(
+  row
+) {
+  if (!row) {
     return null;
   }
 
-  /*
-   * Nội suy tuyến tính tạm thời giữa MN chết và MNDBT.
-   * Có thể thay bằng bảng quan hệ Z-V thực tế khi đã có.
-   */
-  const ratio =
-    (
-      level -
-      RESERVOIR.WL_DEAD_M
-    ) /
-    (
-      RESERVOIR.WL_NORMAL_M -
-      RESERVOIR.WL_DEAD_M
-    );
+  const candidates = [
+    row.volume,
+    row.current_volume,
+    row.storage_million_m3,
+    row.volume_million_m3,
+    row.storage,
+    row.v,
+  ];
 
-  const boundedRatio =
-    Math.min(
-      1,
-      Math.max(
-        0,
-        ratio
-      )
-    );
+  for (
+    const value
+    of candidates
+  ) {
+    const number =
+      toNumber(value);
 
-  return (
-    RESERVOIR
-      .DEAD_CAPACITY_MILLION_M3 +
-    boundedRatio *
-    RESERVOIR
-      .USEFUL_CAPACITY_MILLION_M3
-  );
+    if (
+      Number.isFinite(number)
+    ) {
+      return number;
+    }
+  }
+
+  return null;
 }
 
-function calculateReservoirSummary(
-  waterLevel
+function calculateStorageSummary(
+  storageMillionM3
 ) {
-  const volume =
-    calculateVolumeFromLevel(
-      waterLevel
+  const storage =
+    toNumber(
+      storageMillionM3
     );
 
-  if (!Number.isFinite(volume)) {
+  if (
+    !Number.isFinite(storage)
+  ) {
     return {
       volume_million_m3:
         null,
+
       total_percent:
         null,
+
       useful_percent:
         null,
+
       useful_remaining_million_m3:
         null,
+
       empty_to_normal_million_m3:
         null,
     };
   }
 
+  const usefulCapacity =
+    RESERVOIR
+      .VOL_MAX_MILLION_M3 -
+    RESERVOIR
+      .VOL_DEAD_MILLION_M3;
+
   const usefulStored =
     Math.max(
       0,
-      volume -
+      storage -
       RESERVOIR
-        .DEAD_CAPACITY_MILLION_M3
+        .VOL_DEAD_MILLION_M3
     );
 
   const usefulRemaining =
     Math.max(
       0,
-      RESERVOIR
-        .USEFUL_CAPACITY_MILLION_M3 -
+      usefulCapacity -
       usefulStored
     );
 
@@ -603,19 +687,22 @@ function calculateReservoirSummary(
     Math.max(
       0,
       RESERVOIR
-        .TOTAL_CAPACITY_MILLION_M3 -
-      volume
+        .VOL_MAX_MILLION_M3 -
+      storage
     );
 
   return {
     volume_million_m3:
-      round(volume, 2),
+      round(
+        storage,
+        2
+      ),
 
     total_percent:
       round(
-        volume /
+        storage /
         RESERVOIR
-          .TOTAL_CAPACITY_MILLION_M3 *
+          .VOL_MAX_MILLION_M3 *
         100,
         2
       ),
@@ -623,8 +710,7 @@ function calculateReservoirSummary(
     useful_percent:
       round(
         usefulStored /
-        RESERVOIR
-          .USEFUL_CAPACITY_MILLION_M3 *
+        usefulCapacity *
         100,
         2
       ),
@@ -643,6 +729,10 @@ function calculateReservoirSummary(
   };
 }
 
+/* ======================================================
+   SAFETY
+====================================================== */
+
 function calculateSafetySummary(
   waterLevel
 ) {
@@ -653,6 +743,7 @@ function calculateSafetySummary(
     return {
       status:
         "Chưa có dữ liệu",
+
       code:
         "unknown",
     };
@@ -670,6 +761,7 @@ function calculateSafetySummary(
   ) {
     status =
       "Vượt MN kiểm tra";
+
     code =
       "danger";
   } else if (
@@ -678,6 +770,7 @@ function calculateSafetySummary(
   ) {
     status =
       "Trên MNDBT";
+
     code =
       "warning";
   } else if (
@@ -686,6 +779,7 @@ function calculateSafetySummary(
   ) {
     status =
       "Vùng cao trước lũ";
+
     code =
       "watch";
   }
@@ -695,7 +789,10 @@ function calculateSafetySummary(
     code,
 
     current_water_level_m:
-      round(level, 2),
+      round(
+        level,
+        2
+      ),
 
     check_level_m:
       RESERVOIR.WL_CHECK_M,
@@ -749,21 +846,30 @@ function calculateSafetySummary(
   };
 }
 
+/* ======================================================
+   FORECAST SUMMARY
+====================================================== */
+
 function calculateForecastSummary({
   currentWaterLevel,
   forecastRows,
 }) {
   if (
-    !Array.isArray(forecastRows) ||
+    !Array.isArray(
+      forecastRows
+    ) ||
     !forecastRows.length
   ) {
     return {
       available:
         false,
+
       max_inflow_m3s:
         null,
+
       average_inflow_m3s:
         null,
+
       latest_forecast_time:
         null,
     };
@@ -779,16 +885,21 @@ function calculateForecastSummary({
             row.inflow
           )
       )
-      .filter(Number.isFinite);
+      .filter(
+        Number.isFinite
+      );
 
   if (!inflows.length) {
     return {
       available:
         false,
+
       max_inflow_m3s:
         null,
+
       average_inflow_m3s:
         null,
+
       latest_forecast_time:
         null,
     };
@@ -811,7 +922,9 @@ function calculateForecastSummary({
 
     max_inflow_m3s:
       round(
-        Math.max(...inflows),
+        Math.max(
+          ...inflows
+        ),
         2
       ),
 
@@ -826,6 +939,10 @@ function calculateForecastSummary({
       null,
   };
 }
+
+/* ======================================================
+   HYDROLOGY FREQUENCY
+====================================================== */
 
 function getReservoirMonthKey(
   value
@@ -1112,12 +1229,16 @@ async function calculateHydrologyFrequency({
   };
 }
 
+/* ======================================================
+   DEAD LEVEL FORECAST
+====================================================== */
+
 function calculateDeadLevelForecast({
   usefulRemainingMillionM3,
   averageInflow24h,
   averageTurbine24h,
 }) {
-  const remainingVolume =
+  const usefulVolume =
     toNumber(
       usefulRemainingMillionM3
     );
@@ -1134,7 +1255,7 @@ function calculateDeadLevelForecast({
 
   if (
     !Number.isFinite(
-      remainingVolume
+      usefulVolume
     ) ||
     !Number.isFinite(
       inflow24h
@@ -1154,11 +1275,11 @@ function calculateDeadLevelForecast({
         null,
 
       note:
-        "Thiếu dung tích còn lại hoặc Q trung bình 24h",
+        "Thiếu dung tích hữu ích hoặc Q trung bình 24h",
 
-      useful_remaining_million_m3:
+      useful_volume_million_m3:
         round(
-          remainingVolume,
+          usefulVolume,
           2
         ),
 
@@ -1179,7 +1300,7 @@ function calculateDeadLevelForecast({
     };
   }
 
-  if (remainingVolume <= 0) {
+  if (usefulVolume <= 0) {
     return {
       status:
         "Đã chạm MN chết",
@@ -1191,11 +1312,11 @@ function calculateDeadLevelForecast({
         0,
 
       note:
-        "Dung tích hữu ích còn lại bằng 0",
+        "Dung tích hữu ích hiện có bằng 0",
 
-      useful_remaining_million_m3:
+      useful_volume_million_m3:
         round(
-          remainingVolume,
+          usefulVolume,
           2
         ),
 
@@ -1242,9 +1363,9 @@ function calculateDeadLevelForecast({
       note:
         "Q về xấp xỉ Q chạy máy",
 
-      useful_remaining_million_m3:
+      useful_volume_million_m3:
         round(
-          remainingVolume,
+          usefulVolume,
           2
         ),
 
@@ -1288,9 +1409,9 @@ function calculateDeadLevelForecast({
           )} m³/s`
         ),
 
-      useful_remaining_million_m3:
+      useful_volume_million_m3:
         round(
-          remainingVolume,
+          usefulVolume,
           2
         ),
 
@@ -1316,7 +1437,7 @@ function calculateDeadLevelForecast({
 
   const days =
     (
-      remainingVolume *
+      usefulVolume *
       1_000_000
     ) /
     (
@@ -1346,9 +1467,9 @@ function calculateDeadLevelForecast({
         )} m³/s`
       ),
 
-    useful_remaining_million_m3:
+    useful_volume_million_m3:
       round(
-        remainingVolume,
+        usefulVolume,
         2
       ),
 
@@ -1372,11 +1493,17 @@ function calculateDeadLevelForecast({
   };
 }
 
+/* ======================================================
+   HANDLER
+====================================================== */
+
 export default async function handler(
   req,
   res
 ) {
-  if (req.method === "OPTIONS") {
+  if (
+    req.method === "OPTIONS"
+  ) {
     return sendJson(
       res,
       200,
@@ -1386,7 +1513,9 @@ export default async function handler(
     );
   }
 
-  if (req.method !== "GET") {
+  if (
+    req.method !== "GET"
+  ) {
     return sendJson(
       res,
       405,
@@ -1418,20 +1547,69 @@ export default async function handler(
       );
     }
 
-    const reservoirRowsRaw =
-      await supabaseSelect(
-        "reservoir_hourly_data",
-        {
-          select:
-            "*",
+    /*
+     * GIỮ NGUYÊN CÁC NGUỒN DỮ LIỆU CŨ.
+     */
+    const [
+      reservoirRowsRaw,
+      storageRows,
+      inflowForecastRowsRaw,
+      rainfallForecastRowsRaw,
+    ] =
+      await Promise.all([
+        supabaseSelect(
+          "reservoir_hourly_data",
+          {
+            select:
+              "*",
 
-          order:
-            "time.desc",
+            order:
+              "time.desc",
 
-          limit:
-            300,
-        }
-      );
+            limit:
+              500,
+          }
+        ),
+
+        supabaseSelect(
+          "v_current_storage",
+          {
+            select:
+              "*",
+
+            limit:
+              10,
+          }
+        ),
+
+        supabaseSelect(
+          "inflow_forecast",
+          {
+            select:
+              "*",
+
+            order:
+              "forecast_time.asc",
+
+            limit:
+              500,
+          }
+        ),
+
+        supabaseSelect(
+          "rainfall_forecast",
+          {
+            select:
+              "*",
+
+            order:
+              "forecast_time.asc",
+
+            limit:
+              500,
+          }
+        ).catch(() => []),
+      ]);
 
     const reservoirRows =
       uniqueByTime(
@@ -1458,43 +1636,6 @@ export default async function handler(
       );
     }
 
-    const latestMonthInfo =
-      getReservoirMonthKey(
-        latest.time
-      );
-
-    const latestMonthRowsRaw =
-      latestMonthInfo
-        ? await supabaseSelect(
-            "reservoir_hourly_data",
-            {
-              select:
-                "time,inflow",
-
-              time:
-                `gte.${latestMonthInfo.startIso}`,
-
-              order:
-                "time.asc",
-
-              limit:
-                1000,
-            }
-          )
-        : [];
-
-    const latestMonthRows =
-      uniqueByTime(
-        latestMonthRowsRaw,
-        "time"
-      ).filter(
-        (row) =>
-          getReservoirMonthKey(
-            row.time
-          )?.key ===
-          latestMonthInfo?.key
-      );
-
     const latestTime =
       parseReservoirOperationalTime(
         latest.time
@@ -1506,6 +1647,10 @@ export default async function handler(
       );
     }
 
+    /*
+     * Dữ liệu 24 giờ và 7 ngày,
+     * giữ nguyên cách lọc theo dữ liệu mới nhất.
+     */
     const rows24h =
       reservoirRows.filter(
         (row) => {
@@ -1591,9 +1736,24 @@ export default async function handler(
           )
         : null;
 
-    const reservoirSummary =
-      calculateReservoirSummary(
-        waterLevel
+    /*
+     * GIỮ NGUYÊN DUNG TÍCH THẬT
+     * TỪ v_current_storage.
+     */
+    const currentStorageRow =
+      Array.isArray(storageRows) &&
+      storageRows.length
+        ? storageRows[0]
+        : null;
+
+    const currentStorage =
+      getStorageValue(
+        currentStorageRow
+      );
+
+    const storageSummary =
+      calculateStorageSummary(
+        currentStorage
       );
 
     const safetySummary =
@@ -1601,6 +1761,9 @@ export default async function handler(
         waterLevel
       );
 
+    /*
+     * Mưa vận hành cũ.
+     */
     const currentDay =
       getReservoirLiteralDateKey(
         latest.time
@@ -1653,28 +1816,9 @@ export default async function handler(
         latest
       );
 
-    const forecastRows =
-      await supabaseSelect(
-        "inflow_forecast",
-        {
-          select:
-            "*",
-
-          order:
-            "forecast_time.asc",
-
-          limit:
-            500,
-        }
-      );
-
-    const inflowForecastRows =
-      Array.isArray(
-        forecastRows
-      )
-        ? forecastRows
-        : [];
-
+    /*
+     * Trung bình cũ.
+     */
     const averageInflow24h =
       average(
         rows24h.map(
@@ -1707,6 +1851,47 @@ export default async function handler(
         )
       );
 
+    /*
+     * BỔ SUNG: dữ liệu từ đầu tháng
+     * chỉ để tính tần suất thủy văn.
+     */
+    const latestMonthInfo =
+      getReservoirMonthKey(
+        latest.time
+      );
+
+    const latestMonthRowsRaw =
+      latestMonthInfo
+        ? await supabaseSelect(
+            "reservoir_hourly_data",
+            {
+              select:
+                "time,inflow",
+
+              time:
+                `gte.${latestMonthInfo.startIso}`,
+
+              order:
+                "time.asc",
+
+              limit:
+                2000,
+            }
+          )
+        : [];
+
+    const latestMonthRows =
+      uniqueByTime(
+        latestMonthRowsRaw,
+        "time"
+      ).filter(
+        (row) =>
+          getReservoirMonthKey(
+            row.time
+          )?.key ===
+          latestMonthInfo?.key
+      );
+
     const hydrologyFrequency =
       await calculateHydrologyFrequency({
         latestTime:
@@ -1715,11 +1900,30 @@ export default async function handler(
         latestMonthRows,
       });
 
+    /*
+     * BỔ SUNG: dự báo chạm MN chết.
+     *
+     * Dùng dung tích hữu ích hiện có,
+     * không dùng dung tích trống.
+     */
+    const usefulVolumeCurrent =
+      (
+        Number.isFinite(
+          currentStorage
+        )
+          ? Math.max(
+              0,
+              currentStorage -
+              RESERVOIR
+                .VOL_DEAD_MILLION_M3
+            )
+          : null
+      );
+
     const deadLevelForecast =
       calculateDeadLevelForecast({
         usefulRemainingMillionM3:
-          reservoirSummary
-            .useful_remaining_million_m3,
+          usefulVolumeCurrent,
 
         averageInflow24h:
           averageInflow24h,
@@ -1737,6 +1941,20 @@ export default async function handler(
         spillwayFlow,
         0
       );
+
+    const inflowForecastRows =
+      Array.isArray(
+        inflowForecastRowsRaw
+      )
+        ? inflowForecastRowsRaw
+        : [];
+
+    const rainfallForecastRows =
+      Array.isArray(
+        rainfallForecastRowsRaw
+      )
+        ? rainfallForecastRowsRaw
+        : [];
 
     const forecastSummary =
       calculateForecastSummary({
@@ -1784,7 +2002,7 @@ export default async function handler(
             "reservoir_local_literal",
 
           time_zone:
-            "Asia/Ho_Chi_Minh",
+            VN_TIME_ZONE,
 
           freshness,
         },
@@ -1883,13 +2101,37 @@ export default async function handler(
             ),
         },
 
-        reservoir:
-          reservoirSummary,
+        /*
+         * GIỮ NGUYÊN STORAGE TỪ
+         * v_current_storage.
+         */
+        reservoir: {
+          ...storageSummary,
+
+          storage_source:
+            Number.isFinite(
+              currentStorage
+            )
+              ? "v_current_storage"
+              : null,
+        },
 
         forecast: {
           inflow:
             forecastSummary,
 
+          rainfall: {
+            available:
+              rainfallForecastRows.length >
+              0,
+
+            rows:
+              rainfallForecastRows,
+          },
+
+          /*
+           * Hai phần mới.
+           */
           hydrology_frequency:
             hydrologyFrequency,
 
@@ -1909,6 +2151,16 @@ export default async function handler(
 
           inflow_forecast_rows:
             inflowForecastRows.length,
+
+          rainfall_forecast_rows:
+            rainfallForecastRows.length,
+
+          storage_rows:
+            Array.isArray(
+              storageRows
+            )
+              ? storageRows.length
+              : 0,
         },
       },
 
