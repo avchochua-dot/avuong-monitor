@@ -1,5 +1,6 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const CRON_SECRET = process.env.CRON_SECRET;
 
 function json(res, status, data, cache = "no-store") {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -149,6 +150,121 @@ function buildObsTimeFromDateHour(req, body) {
   const hh = String(h).padStart(2, "0");
 
   return `${obsDate}T${hh}:00:00+07:00`;
+}
+
+/* ======================================================
+   AUTH HELPERS
+====================================================== */
+
+function getBearerToken(req) {
+  const authorization = String(
+    req?.headers?.authorization || ""
+  ).trim();
+
+  const match = authorization.match(
+    /^Bearer\s+(.+)$/i
+  );
+
+  return match
+    ? match[1].trim()
+    : "";
+}
+
+function isCronRequest(req) {
+  const token = getBearerToken(req);
+
+  return Boolean(
+    CRON_SECRET &&
+    token &&
+    token === CRON_SECRET
+  );
+}
+
+async function verifySupabaseUser(accessToken) {
+  if (!accessToken) {
+    return {
+      ok: false,
+      status: 401,
+      error: "Thiếu access token",
+    };
+  }
+
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    return {
+      ok: false,
+      status: 500,
+      error:
+        "Thiếu SUPABASE_URL hoặc SUPABASE_SERVICE_ROLE_KEY",
+    };
+  }
+
+  const response = await fetch(
+    `${SUPABASE_URL}/auth/v1/user`,
+    {
+      method: "GET",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: 401,
+      error:
+        "Phiên đăng nhập không hợp lệ hoặc đã hết hạn",
+    };
+  }
+
+  let user = null;
+
+  try {
+    user = await response.json();
+  } catch {
+    return {
+      ok: false,
+      status: 401,
+      error:
+        "Không đọc được thông tin người dùng",
+    };
+  }
+
+  return {
+    ok: true,
+    status: 200,
+    user,
+  };
+}
+
+async function authorizeSyncRequest(req) {
+  if (isCronRequest(req)) {
+    return {
+      ok: true,
+      trigger: "supabase-cron",
+      user: null,
+    };
+  }
+
+  const auth = await verifySupabaseUser(
+    getBearerToken(req)
+  );
+
+  if (!auth.ok) {
+    return {
+      ok: false,
+      status: auth.status,
+      error: auth.error,
+    };
+  }
+
+  return {
+    ok: true,
+    trigger: "manual",
+    user: auth.user,
+  };
 }
 
 /* ======================================================
@@ -496,14 +612,6 @@ async function fetchExistingObservedRows(startIso, endIso) {
   return supabaseSelect(path);
 }
 
-/*
-  Tạo kế hoạch đồng bộ dữ liệu.
-
-  Quan trọng:
-  - Không đưa trường id vào payload upsert.
-  - Supabase cập nhật dựa trên on_conflict=obs_hour.
-  - Tất cả object trong toUpsert có cùng một tập key.
-*/
 function buildSyncPlan(mergedRows, existingRows) {
   const existingMap = new Map(
     (existingRows || []).map((row) => [
@@ -549,9 +657,6 @@ function buildSyncPlan(mergedRows, existingRows) {
       continue;
     }
 
-    /*
-      Không ghi đè dữ liệu do người vận hành nhập tay.
-    */
     if (
       String(existed.source || "").toLowerCase() === "manual"
     ) {
@@ -568,12 +673,6 @@ function buildSyncPlan(mergedRows, existingRows) {
       old_source: existed.source || "unknown",
     });
 
-    /*
-      Không truyền id tại đây.
-
-      Supabase xác định bản ghi cần cập nhật bằng:
-      on_conflict=obs_hour
-    */
     toUpsert.push(payload);
   }
 
@@ -585,11 +684,6 @@ function buildSyncPlan(mergedRows, existingRows) {
   };
 }
 
-/*
-  Chuẩn hóa tất cả dòng thành cùng một cấu trúc.
-  Điều này ngăn lỗi PGRST102:
-  All object keys must match.
-*/
 function normalizeObservedUpsertRow(row) {
   if (!row || !row.obs_hour) {
     throw new Error("Payload sync thiếu obs_hour");
@@ -628,10 +722,6 @@ function normalizeObservedUpsertRow(row) {
   };
 }
 
-/*
-  Kiểm tra trước khi gửi Supabase để nếu có lỗi key
-  thì backend báo rõ vị trí thay vì PostgREST trả PGRST102.
-*/
 function validateSameObjectKeys(rows) {
   if (!Array.isArray(rows)) {
     throw new Error("Payload upsert phải là một mảng");
@@ -1589,6 +1679,30 @@ async function handleSyncTtb(req, res) {
     ok: true,
     mode: "sync-ttb",
     stage: "done",
+
+    trigger:
+      req.syncTrigger || "manual",
+
+    requested_by:
+      req.syncUser?.email ||
+      req.syncUser?.id ||
+      null,
+
+    generated_at:
+      new Date().toISOString(),
+
+    latest_time:
+      mergedRows[
+        mergedRows.length - 1
+      ]?.obs_hour || null,
+
+    fetched:
+      (hoiKhach?.count || 0) +
+      (aiNghia?.count || 0),
+
+    saved:
+      upsertedCount,
+
     hours,
 
     period: {
@@ -2241,10 +2355,6 @@ export default async function handler(req, res) {
       });
     }
 
-    /*
-      Chỉ trả boolean kiểm tra biến môi trường.
-      Không trả service role key ra frontend.
-    */
     if (req.query.debug === "env") {
       return json(res, 200, {
         ok: true,
@@ -2254,6 +2364,9 @@ export default async function handler(req, res) {
 
         has_SUPABASE_SERVICE_ROLE_KEY:
           !!SUPABASE_KEY,
+
+        has_CRON_SECRET:
+          !!CRON_SECRET,
       });
     }
 
@@ -2338,6 +2451,29 @@ export default async function handler(req, res) {
             "GET hoặc POST",
         });
       }
+
+      const authorization =
+        await authorizeSyncRequest(req);
+
+      if (!authorization.ok) {
+        return json(
+          res,
+          authorization.status || 401,
+          {
+            ok: false,
+            mode,
+            error:
+              authorization.error ||
+              "Không có quyền đồng bộ dữ liệu",
+          }
+        );
+      }
+
+      req.syncTrigger =
+        authorization.trigger;
+
+      req.syncUser =
+        authorization.user || null;
 
       return handleSyncTtb(req, res);
     }
