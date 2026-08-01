@@ -217,52 +217,177 @@
       display:grid;
       grid-template-columns:repeat(3,minmax(0,1fr));
       gap:6px;
-      margin:0 0 10px;
+      margin:0 0 8px;
     }
     .reservoir-btn{
       width:100%!important;
-      min-height:44px;
-      padding:8px 5px!important;
+      min-height:40px;
+      padding:7px 4px!important;
       border-radius:11px!important;
-      border:1px solid rgba(255,255,255,.08)!important;
-      background:rgba(255,255,255,.035)!important;
+      background:rgba(255,255,255,.025)!important;
       color:#94a3b8!important;
       font-size:10px!important;
       font-weight:800!important;
       line-height:1.15!important;
+      transition:.18s ease;
     }
-    .reservoir-btn.active{
-      color:#bfdbfe!important;
-      border-color:rgba(59,130,246,.42)!important;
+    .reservoir-btn[data-related-reservoir="SONG_BUNG_4"]{
+      border:1px solid rgba(59,130,246,.28)!important;
+    }
+    .reservoir-btn[data-related-reservoir="DAK_MI_4"]{
+      border:1px solid rgba(245,158,11,.28)!important;
+    }
+    .reservoir-btn[data-related-reservoir="SONG_TRANH_2"]{
+      border:1px solid rgba(139,92,246,.30)!important;
+    }
+    .reservoir-btn[data-related-reservoir="SONG_BUNG_4"].active{
+      color:#93c5fd!important;
+      border-color:rgba(59,130,246,.58)!important;
+      background:rgba(59,130,246,.20)!important;
+      box-shadow:0 0 18px rgba(59,130,246,.12);
+    }
+    .reservoir-btn[data-related-reservoir="DAK_MI_4"].active{
+      color:#fbbf24!important;
+      border-color:rgba(245,158,11,.58)!important;
+      background:rgba(245,158,11,.18)!important;
+      box-shadow:0 0 18px rgba(245,158,11,.10);
+    }
+    .reservoir-btn[data-related-reservoir="SONG_TRANH_2"].active{
+      color:#c4b5fd!important;
+      border-color:rgba(139,92,246,.62)!important;
+      background:rgba(139,92,246,.20)!important;
+      box-shadow:0 0 18px rgba(139,92,246,.12);
+    }
+
+    #more-reservoirs .duration-switch{
+      padding:3px;
+      margin-bottom:8px;
+      border-radius:12px;
+    }
+    #more-reservoirs .duration-btn{
+      min-height:34px;
+      padding:6px 3px!important;
+      border-radius:9px!important;
+      font-size:11px!important;
+    }
+    #more-reservoirs[data-reservoir-theme="SONG_BUNG_4"] .duration-btn.active{
       background:rgba(59,130,246,.22)!important;
+      border-color:rgba(59,130,246,.42)!important;
+      color:#93c5fd!important;
     }
-    .related-summary{
+    #more-reservoirs[data-reservoir-theme="DAK_MI_4"] .duration-btn.active{
+      background:rgba(245,158,11,.18)!important;
+      border-color:rgba(245,158,11,.42)!important;
+      color:#fbbf24!important;
+    }
+    #more-reservoirs[data-reservoir-theme="SONG_TRANH_2"] .duration-btn.active{
+      background:rgba(139,92,246,.20)!important;
+      border-color:rgba(139,92,246,.45)!important;
+      color:#c4b5fd!important;
+    }
+
+    .related-current{
       display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:8px;
-      margin-bottom:10px;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:7px;
+      padding:8px;
+      margin-bottom:8px;
+      border-radius:14px;
+      background:rgba(255,255,255,.025);
+      border:1px solid rgba(255,255,255,.07);
     }
-    .related-summary .mobile-kpi:first-child{
-      grid-column:1/-1;
+    .related-kpi{
+      min-height:70px;
+      padding:9px 5px;
+      border-radius:11px;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.06);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      min-width:0;
     }
+    .related-kpi span{
+      display:block;
+      margin-bottom:5px;
+      font-size:8.5px;
+      font-weight:800;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+      color:#94a3b8;
+      line-height:1.2;
+    }
+    .related-kpi b{
+      display:block;
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      font-family:var(--font-mono);
+      font-size:16px;
+      line-height:1.1;
+    }
+    .related-kpi.mnh b{color:#22d3ee}
+    .related-kpi.qin b{color:#60a5fa}
+    .related-kpi.qmachine b{color:#f59e0b}
+    .related-kpi.qspill b{color:#fb7185}
+    .related-kpi.vugia b{color:#34d399}
+    .related-kpi.thubon b{color:#c084fc}
+
     .monitoring-table-wrap{
-      overflow:auto;
-      max-height:390px;
+      width:100%;
+      overflow-x:hidden;
+      overflow-y:visible;
+      max-height:none;
       border:1px solid rgba(255,255,255,.08);
       border-radius:14px;
       background:#0f1426;
     }
     .monitoring-table-wrap table{
-      min-width:520px;
+      width:100%;
+      min-width:0!important;
+      table-layout:fixed;
+      border-collapse:collapse;
+    }
+    .monitoring-table-wrap th,
+    .monitoring-table-wrap td{
+      padding:9px 3px;
+      font-size:11px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      text-align:center;
+    }
+    .monitoring-table-wrap th:first-child,
+    .monitoring-table-wrap td:first-child{
+      width:26%;
+      text-align:left;
+      padding-left:8px;
+    }
+    .monitoring-table-wrap th:not(:first-child),
+    .monitoring-table-wrap td:not(:first-child){
+      width:18.5%;
     }
     .monitoring-table-wrap th{
       position:sticky;
       top:0;
       z-index:3;
+      background:#182038;
+      color:#e2e8f0;
+      font-size:9px;
+      letter-spacing:.02em;
     }
-    .monitoring-table-wrap td:first-child{
-      z-index:2;
-    }
+    .monitoring-table-wrap th:nth-child(2),
+    .monitoring-table-wrap td:nth-child(2){color:#22d3ee}
+    .monitoring-table-wrap th:nth-child(3),
+    .monitoring-table-wrap td:nth-child(3){color:#60a5fa}
+    .monitoring-table-wrap th:nth-child(4),
+    .monitoring-table-wrap td:nth-child(4){color:#f59e0b}
+    .monitoring-table-wrap th:nth-child(5),
+    .monitoring-table-wrap td:nth-child(5){color:#fb7185}
+
 
     .more-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
     .more-card {
@@ -694,7 +819,7 @@
         <div class="data-meta">Có thể phóng to, kéo bản đồ và mở ngoài bằng Google Maps.</div>
       </div>
 
-      <div id="more-reservoirs" class="more-panel card">
+      <div id="more-reservoirs" class="more-panel card" data-reservoir-theme="SONG_BUNG_4">
         <button class="panel-back" onclick="closeMorePanel()">← Quay lại</button>
 
         <div class="cardHead">
@@ -715,7 +840,6 @@
           >
             Sông Bung 4
           </button>
-
           <button
             class="reservoir-btn"
             data-related-reservoir="DAK_MI_4"
@@ -723,7 +847,6 @@
           >
             Đăk Mi 4
           </button>
-
           <button
             class="reservoir-btn"
             data-related-reservoir="SONG_TRANH_2"
@@ -739,19 +862,35 @@
           <button class="duration-btn" data-monitoring-hours="72" onclick="setMonitoringHours(72,this)">72h</button>
         </div>
 
-        <div class="related-summary">
-          <div class="mobile-kpi">
-            <span id="relatedSelectedName">Sông Bung 4</span>
+        <div class="related-current">
+          <div class="related-kpi mnh">
+            <span>MNH hiện tại</span>
             <b id="relatedSelectedLevel">-- m</b>
           </div>
-          <div class="mobile-kpi">
+          <div class="related-kpi qin">
             <span>Q về</span>
-            <b id="relatedSelectedInflow">-- m³/s</b>
+            <b id="relatedSelectedInflow">--</b>
           </div>
-          <div class="mobile-kpi">
-            <span>Q máy / Q xả</span>
-            <b id="relatedSelectedOutflow">-- / -- m³/s</b>
+          <div class="related-kpi qmachine">
+            <span>Q máy</span>
+            <b id="relatedSelectedTurbine">--</b>
           </div>
+          <div class="related-kpi qspill">
+            <span>Q xả</span>
+            <b id="relatedSelectedSpillway">--</b>
+          </div>
+          <div class="related-kpi vugia">
+            <span>Q về Vu Gia</span>
+            <b id="relVuGiaFlow">--</b>
+          </div>
+          <div class="related-kpi thubon">
+            <span>Q về Thu Bồn</span>
+            <b id="relThuBonFlow">--</b>
+          </div>
+        </div>
+
+        <div class="data-meta" id="relatedReservoirsStatus">
+          Chưa tải dữ liệu.
         </div>
 
         <div class="monitoring-table-wrap">
@@ -771,21 +910,6 @@
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <div class="mobile-kpi-row" style="margin-top:10px;">
-          <div class="mobile-kpi">
-            <span>Q về Vu Gia</span>
-            <b id="relVuGiaFlow">-- m³/s</b>
-          </div>
-          <div class="mobile-kpi">
-            <span>Q về Thu Bồn</span>
-            <b id="relThuBonFlow">-- m³/s</b>
-          </div>
-        </div>
-
-        <div class="data-meta" id="relatedReservoirsStatus">
-          Chưa tải dữ liệu.
         </div>
       </div>
 
@@ -2442,6 +2566,14 @@
     state.selectedRelatedReservoir =
       code;
 
+    const panel =
+      $("more-reservoirs");
+
+    if (panel) {
+      panel.dataset.reservoirTheme =
+        code;
+    }
+
     document
       .querySelectorAll(
         "[data-related-reservoir]"
@@ -2526,6 +2658,14 @@
         state.selectedRelatedReservoir
       );
 
+    const panel =
+      $("more-reservoirs");
+
+    if (panel) {
+      panel.dataset.reservoirTheme =
+        state.selectedRelatedReservoir;
+    }
+
     document
       .querySelectorAll(
         "[data-related-reservoir]"
@@ -2537,10 +2677,6 @@
             state.selectedRelatedReservoir
         );
       });
-
-    $("relatedSelectedName").textContent =
-      selected?.name ||
-      "Hồ liên quan";
 
     const latest =
       selected?.latest || null;
@@ -2560,21 +2696,26 @@
             formatMonitoringValue(
               latest.inflow_m3s
             )
-          } m³/s`
-        : "-- m³/s";
+          }`
+        : "--";
 
-    $("relatedSelectedOutflow").textContent =
+    $("relatedSelectedTurbine").textContent =
       latest
         ? `${
             formatMonitoringValue(
               latest.turbine_flow_m3s
             )
-          } / ${
+          }`
+        : "--";
+
+    $("relatedSelectedSpillway").textContent =
+      latest
+        ? `${
             formatMonitoringValue(
               latest.spillway_flow_m3s
             )
-          } m³/s`
-        : "-- / -- m³/s";
+          }`
+        : "--";
 
     const history =
       Array.isArray(
@@ -2660,8 +2801,8 @@
       )
         ? `${fmt2.format(
             basinLatest.vu_gia_m3s
-          )} m³/s`
-        : "-- m³/s";
+          )}`
+        : "--";
 
     $("relThuBonFlow").textContent =
       Number.isFinite(
@@ -2671,8 +2812,8 @@
       )
         ? `${fmt2.format(
             basinLatest.thu_bon_m3s
-          )} m³/s`
-        : "-- m³/s";
+          )}`
+        : "--";
 
     const pcttDiagnostic =
       payload?.diagnostics?.pctt || {};
@@ -2685,12 +2826,11 @@
     }
 
     status.textContent =
-      `Cập nhật: ${
+      `${selected?.name || "Hồ"} • Cập nhật: ${
         latest?.time
           ? formatToVNTime(latest.time)
           : "--"
-      } • Nguồn: PCTT Đà Nẵng • ` +
-      `${availableCount}/${state.monitoringHours} giờ có dữ liệu`;
+      } • ${availableCount}/${state.monitoringHours} giờ có dữ liệu`;
   }
 
   async function loadRelatedReservoirs(
