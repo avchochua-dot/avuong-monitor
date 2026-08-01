@@ -1042,6 +1042,196 @@
       }
     }
 
+
+    /* ======================================================
+       LEAFLET FALLBACK CSS
+       Giữ tile, pane, marker và control đúng vị trí ngay cả
+       khi leaflet.css từ CDN tải chậm hoặc bị PWA cache bỏ sót.
+    ====================================================== */
+
+    .leaflet-container{
+      position:relative;
+      overflow:hidden;
+      -webkit-tap-highlight-color:transparent;
+      background:#0f172a;
+      outline:0;
+    }
+
+    .leaflet-pane,
+    .leaflet-tile,
+    .leaflet-marker-icon,
+    .leaflet-marker-shadow,
+    .leaflet-tile-container,
+    .leaflet-pane > svg,
+    .leaflet-pane > canvas,
+    .leaflet-zoom-box,
+    .leaflet-image-layer,
+    .leaflet-layer{
+      position:absolute;
+      left:0;
+      top:0;
+    }
+
+    .leaflet-container .leaflet-control-container{
+      position:relative;
+      z-index:800;
+    }
+
+    .leaflet-top,
+    .leaflet-bottom{
+      position:absolute;
+      z-index:1000;
+      pointer-events:none;
+    }
+
+    .leaflet-top{
+      top:0;
+    }
+
+    .leaflet-right{
+      right:0;
+    }
+
+    .leaflet-bottom{
+      bottom:0;
+    }
+
+    .leaflet-left{
+      left:0;
+    }
+
+    .leaflet-control{
+      position:relative;
+      z-index:800;
+      pointer-events:auto;
+      float:left;
+      clear:both;
+    }
+
+    .leaflet-right .leaflet-control{
+      float:right;
+    }
+
+    .leaflet-top .leaflet-control{
+      margin-top:10px;
+    }
+
+    .leaflet-bottom .leaflet-control{
+      margin-bottom:10px;
+    }
+
+    .leaflet-left .leaflet-control{
+      margin-left:10px;
+    }
+
+    .leaflet-right .leaflet-control{
+      margin-right:10px;
+    }
+
+    .leaflet-container img,
+    .leaflet-container .leaflet-tile,
+    .leaflet-container .leaflet-marker-icon,
+    .leaflet-container .leaflet-marker-shadow{
+      max-width:none!important;
+      max-height:none!important;
+      width:auto;
+      padding:0;
+    }
+
+    .leaflet-tile{
+      width:256px;
+      height:256px;
+      user-select:none;
+      -webkit-user-drag:none;
+    }
+
+    .leaflet-map-pane{
+      z-index:200;
+    }
+
+    .leaflet-tile-pane{
+      z-index:200;
+    }
+
+    .leaflet-overlay-pane{
+      z-index:400;
+    }
+
+    .leaflet-shadow-pane{
+      z-index:500;
+    }
+
+    .leaflet-marker-pane{
+      z-index:600;
+    }
+
+    .leaflet-tooltip-pane{
+      z-index:650;
+    }
+
+    .leaflet-popup-pane{
+      z-index:700;
+    }
+
+    .leaflet-zoom-animated{
+      transform-origin:0 0;
+    }
+
+    .leaflet-control-zoom{
+      border-radius:8px;
+      overflow:hidden;
+      box-shadow:0 4px 14px rgba(15,23,42,.28);
+    }
+
+    .leaflet-control-zoom a{
+      width:30px;
+      height:30px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#ffffff;
+      color:#0f172a;
+      text-decoration:none;
+      font-size:20px;
+      font-weight:800;
+      border-bottom:1px solid #cbd5e1;
+    }
+
+    .leaflet-control-zoom a:last-child{
+      border-bottom:0;
+    }
+
+    .rain-mobile-map,
+    .rain-mobile-map.leaflet-container{
+      position:relative!important;
+      display:block!important;
+      width:100%!important;
+      height:280px!important;
+      min-height:280px!important;
+      overflow:hidden!important;
+    }
+
+    .rain-mobile-map .leaflet-map-pane,
+    .rain-mobile-map .leaflet-tile-pane,
+    .rain-mobile-map .leaflet-overlay-pane,
+    .rain-mobile-map .leaflet-shadow-pane,
+    .rain-mobile-map .leaflet-marker-pane,
+    .rain-mobile-map .leaflet-tooltip-pane,
+    .rain-mobile-map .leaflet-popup-pane{
+      position:absolute!important;
+      left:0!important;
+      top:0!important;
+    }
+
+    .rain-mobile-map .leaflet-marker-pane{
+      z-index:650!important;
+    }
+
+    .mobile-rain-marker{
+      position:relative;
+      z-index:700;
+    }
+
 </style>
   <link
     rel="stylesheet"
@@ -1302,7 +1492,16 @@
 
       <div id="more-downstream" class="more-panel card">
         <button class="panel-back" onclick="closeMorePanel()">← Quay lại</button>
-        <div class="cardHead"><b>Mực nước hạ du</b><button onclick="loadDownstreamMobile()" style="width:auto;padding:6px 10px;font-size:11px;">Cập nhật</button></div>
+        <div class="cardHead">
+          <b>Mực nước hạ du</b>
+          <button
+            id="btnRefreshDownstream"
+            onclick="syncAndLoadDownstream()"
+            style="width:auto;padding:6px 10px;font-size:11px;"
+          >
+            Cập nhật
+          </button>
+        </div>
         <div class="duration-switch" aria-label="Chọn thời hạn số liệu hạ du">
           <button class="duration-btn active" data-monitoring-hours="24" onclick="setMonitoringHours(24,this)">24h</button>
           <button class="duration-btn" data-monitoring-hours="48" onclick="setMonitoringHours(48,this)">48h</button>
@@ -3076,29 +3275,134 @@
       });
   }
 
+  function normalizeDownstreamLevel(
+    value,
+    station
+  ) {
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      return null;
+    }
+
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) {
+      return null;
+    }
+
+    /*
+      Loại các mã lỗi/số âm bất hợp lý từ nguồn TTB.
+      Giới hạn trên để tránh dữ liệu parser sai cột.
+    */
+    const maximum =
+      station === "hoi_khach"
+        ? 30
+        : 20;
+
+    if (
+      number < 0 ||
+      number > maximum
+    ) {
+      return null;
+    }
+
+    return number;
+  }
+
+  function formatDownstreamStatusTime(value) {
+    const tableText =
+      formatTableTime(value);
+
+    if (
+      !tableText ||
+      tableText === "-"
+    ) {
+      return "--";
+    }
+
+    const yearMatch =
+      String(value || "")
+        .match(/^(\d{4})-/);
+
+    return yearMatch
+      ? `${tableText}/${yearMatch[1]}`
+      : tableText;
+  }
+
   function renderDownstreamMonitoring(payload) {
-    const status = $("moreDownstreamStatus");
-    const body = $("moreDownstreamBody");
+    const status =
+      $("moreDownstreamStatus");
+
+    const body =
+      $("moreDownstreamBody");
 
     const downstream =
       payload?.downstream || {};
 
-    const latest =
-      downstream.latest || null;
-
-    const history =
+    const rawHistory =
       Array.isArray(downstream.history)
         ? downstream.history
         : [];
 
-    state.downstreamLatest = latest;
-    state.downstreamHistory = history;
+    const history =
+      rawHistory.map((row) => ({
+        ...row,
+
+        hoi_khach_m:
+          normalizeDownstreamLevel(
+            row.hoi_khach_m,
+            "hoi_khach"
+          ),
+
+        ai_nghia_m:
+          normalizeDownstreamLevel(
+            row.ai_nghia_m,
+            "ai_nghia"
+          ),
+      }));
+
+    const rawLatest =
+      downstream.latest || null;
+
+    const latest =
+      rawLatest
+        ? {
+            ...rawLatest,
+
+            hoi_khach_m:
+              normalizeDownstreamLevel(
+                rawLatest.hoi_khach_m,
+                "hoi_khach"
+              ),
+
+            ai_nghia_m:
+              normalizeDownstreamLevel(
+                rawLatest.ai_nghia_m,
+                "ai_nghia"
+              ),
+          }
+        : null;
+
+    state.downstreamLatest =
+      latest;
+
+    state.downstreamHistory =
+      history;
 
     if (!latest) {
-      $("moreHoiKhach").textContent = "-- m";
-      $("moreAiNghia").textContent = "-- m";
+      $("moreHoiKhach").textContent =
+        "-- m";
+
+      $("moreAiNghia").textContent =
+        "-- m";
+
       status.textContent =
-        payload?.diagnostics?.downstream?.error ||
+        payload?.diagnostics
+          ?.downstream
+          ?.error ||
         "Không có dữ liệu hạ du trong khoảng đã chọn.";
 
       body.innerHTML =
@@ -3107,28 +3411,26 @@
       return;
     }
 
-    const hoiKhach =
-      Number(latest.hoi_khach_m);
-
-    const aiNghia =
-      Number(latest.ai_nghia_m);
-
     $("moreHoiKhach").textContent =
-      Number.isFinite(hoiKhach)
-        ? `${fmt2.format(hoiKhach)} m`
-        : "-- m";
+      latest.hoi_khach_m === null
+        ? "-- m"
+        : `${fmt2.format(
+            latest.hoi_khach_m
+          )} m`;
 
     $("moreAiNghia").textContent =
-      Number.isFinite(aiNghia)
-        ? `${fmt2.format(aiNghia)} m`
-        : "-- m";
+      latest.ai_nghia_m === null
+        ? "-- m"
+        : `${fmt2.format(
+            latest.ai_nghia_m
+          )} m`;
 
     const latestTime =
       latest.obs_hour ||
       latest.obs_time;
 
     status.textContent =
-      `Cập nhật: ${formatToVNTime(latestTime)} • ` +
+      `Cập nhật: ${formatDownstreamStatusTime(latestTime)} • ` +
       `Nguồn: ${latest.source || "--"} • ` +
       `${history.length}/${state.monitoringHours} mốc giờ`;
 
@@ -3142,17 +3444,22 @@
 
         tr.innerHTML =
           `<td>${formatTableTime(
-            row.obs_hour || row.obs_time
+            row.obs_hour ||
+            row.obs_time
           )}</td>` +
           `<td style="color:rgb(var(--c-in));">${
-            row.hoi_khach_m == null
+            row.hoi_khach_m === null
               ? "-"
-              : fmt2.format(row.hoi_khach_m)
+              : fmt2.format(
+                  row.hoi_khach_m
+                )
           }</td>` +
           `<td style="color:rgb(var(--c-green));">${
-            row.ai_nghia_m == null
+            row.ai_nghia_m === null
               ? "-"
-              : fmt2.format(row.ai_nghia_m)
+              : fmt2.format(
+                  row.ai_nghia_m
+                )
           }</td>`;
 
         body.appendChild(tr);
@@ -3201,6 +3508,118 @@
         `<tr><td colspan="3" style="color:#ef4444;">Lỗi tải dữ liệu</td></tr>`;
     }
   }
+
+  async function syncAndLoadDownstream() {
+    const button =
+      $("btnRefreshDownstream");
+
+    const status =
+      $("moreDownstreamStatus");
+
+    const body =
+      $("moreDownstreamBody");
+
+    const originalText =
+      button?.textContent ||
+      "Cập nhật";
+
+    try {
+      if (button) {
+        button.disabled = true;
+        button.textContent =
+          "Đang đồng bộ...";
+      }
+
+      status.textContent =
+        "Đang lấy số liệu mới từ API TTB...";
+
+      body.innerHTML =
+        `<tr><td colspan="3">Đang đồng bộ dữ liệu...</td></tr>`;
+
+      const {
+        data: { session },
+      } = await sb.auth.getSession();
+
+      if (!session?.access_token) {
+        throw new Error(
+          "Phiên đăng nhập đã hết hạn"
+        );
+      }
+
+      const syncResponse =
+        await fetch(
+          "/api/downstream-forecast?mode=sync-ttb&hours=72",
+          {
+            method: "GET",
+
+            headers: {
+              Accept:
+                "application/json",
+
+              Authorization:
+                `Bearer ${session.access_token}`,
+            },
+
+            cache:
+              "no-store",
+          }
+        );
+
+      let syncResult = null;
+
+      try {
+        syncResult =
+          await syncResponse.json();
+      } catch {
+        throw new Error(
+          `API đồng bộ TTB trả dữ liệu không đúng JSON, HTTP ${syncResponse.status}`
+        );
+      }
+
+      if (
+        !syncResponse.ok ||
+        syncResult?.ok === false
+      ) {
+        throw new Error(
+          syncResult?.error ||
+          `Đồng bộ TTB thất bại, HTTP ${syncResponse.status}`
+        );
+      }
+
+      /*
+        Xóa cache dùng chung để lần đọc sau lấy dữ liệu mới.
+      */
+      state.mobileMonitoring = null;
+      state.mobileMonitoringLoadedAt = 0;
+
+      status.textContent =
+        "Đồng bộ thành công, đang tải lại dữ liệu...";
+
+      await loadDownstreamMobile(true);
+
+      toast(
+        "Đã cập nhật dữ liệu hạ du"
+      );
+    } catch (error) {
+      console.error(
+        "Lỗi đồng bộ dữ liệu hạ du:",
+        error
+      );
+
+      status.textContent =
+        `Không cập nhật được: ${error.message}`;
+
+      body.innerHTML =
+        `<tr><td colspan="3" style="color:#ef4444;">Không cập nhật được dữ liệu</td></tr>`;
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent =
+          originalText;
+      }
+    }
+  }
+
 
   const mobileRainState = {
     openmeteo: {
@@ -3479,9 +3898,38 @@
     observer.observe(element);
   }
 
+  function ensureLeafletLayoutReady() {
+    const probe =
+      document.createElement("div");
+
+    probe.className =
+      "leaflet-pane";
+
+    probe.style.visibility =
+      "hidden";
+
+    document.body.appendChild(
+      probe
+    );
+
+    const position =
+      getComputedStyle(probe)
+        .position;
+
+    probe.remove();
+
+    return position === "absolute";
+  }
+
   function renderRainMap(source) {
     const state =
       mobileRainState[source];
+
+    if (!ensureLeafletLayoutReady()) {
+      console.warn(
+        "Leaflet layout CSS chưa sẵn sàng."
+      );
+    }
 
     initRainMap(source);
 
