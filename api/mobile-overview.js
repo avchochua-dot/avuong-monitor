@@ -12,7 +12,6 @@
  */
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-
 const SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -23,15 +22,10 @@ const RESERVOIR = {
   WL_FLOOD_MIN_M: 370.0,
   WL_DEAD_M: 340.0,
 
-  VOL_DEAD_MILLION_M3: 77.07,
-  VOL_MAX_MILLION_M3: 343.55,
+  TOTAL_CAPACITY_MILLION_M3: 343.55,
+  USEFUL_CAPACITY_MILLION_M3: 266.45,
+  DEAD_CAPACITY_MILLION_M3: 77.10,
 };
-
-const VN_TIME_ZONE = "Asia/Ho_Chi_Minh";
-
-/* ======================================================
-   RESPONSE
-====================================================== */
 
 function sendJson(
   res,
@@ -64,18 +58,19 @@ function sendJson(
     cacheControl
   );
 
-  return res.status(status).json(payload);
+  return res
+    .status(status)
+    .json(payload);
 }
 
-/* ======================================================
-   BASIC HELPERS
-====================================================== */
-
-function toNumber(value, fallback = null) {
+function toNumber(
+  value,
+  fallback = null
+) {
   if (
     value === null ||
     value === undefined ||
-    value === ""
+    String(value).trim() === ""
   ) {
     return fallback;
   }
@@ -87,7 +82,10 @@ function toNumber(value, fallback = null) {
     : fallback;
 }
 
-function round(value, digits = 2) {
+function round(
+  value,
+  digits = 2
+) {
   const number = Number(value);
 
   if (!Number.isFinite(number)) {
@@ -102,7 +100,7 @@ function round(value, digits = 2) {
   );
 }
 
-function average(values) {
+function average(values = []) {
   const valid = values
     .map((value) => Number(value))
     .filter(Number.isFinite);
@@ -119,7 +117,7 @@ function average(values) {
   );
 }
 
-function sum(values) {
+function sum(values = []) {
   return values
     .map((value) => Number(value))
     .filter(Number.isFinite)
@@ -129,9 +127,33 @@ function sum(values) {
     );
 }
 
-/* ======================================================
-   AUTH
-====================================================== */
+function uniqueByTime(
+  rows,
+  field = "time"
+) {
+  const map = new Map();
+
+  for (const row of rows || []) {
+    const key = row?.[field];
+
+    if (!key) {
+      continue;
+    }
+
+    map.set(
+      String(key),
+      row
+    );
+  }
+
+  return [...map.values()].sort(
+    (a, b) =>
+      String(a?.[field] || "")
+        .localeCompare(
+          String(b?.[field] || "")
+        )
+  );
+}
 
 function getBearerToken(req) {
   const authorization = String(
@@ -147,7 +169,7 @@ function getBearerToken(req) {
     : "";
 }
 
-function requireServerEnvironment() {
+function requireEnvironment() {
   if (!SUPABASE_URL) {
     throw new Error(
       "Thiếu SUPABASE_URL trên Vercel"
@@ -176,7 +198,6 @@ async function verifySupabaseUser(
     `${SUPABASE_URL}/auth/v1/user`,
     {
       method: "GET",
-
       headers: {
         apikey:
           SUPABASE_SERVICE_ROLE_KEY,
@@ -187,51 +208,39 @@ async function verifySupabaseUser(
     }
   );
 
-  const bodyText =
+  const body =
     await response.text();
 
   if (!response.ok) {
     return {
       ok: false,
       status: 401,
-
       error:
         "Phiên đăng nhập không hợp lệ hoặc đã hết hạn",
-
-      detail:
-        bodyText.slice(0, 300),
     };
   }
 
-  let user = null;
-
   try {
-    user = JSON.parse(bodyText);
+    return {
+      ok: true,
+      user:
+        JSON.parse(body),
+    };
   } catch {
     return {
       ok: false,
       status: 401,
-
       error:
         "Không đọc được thông tin người dùng",
     };
   }
-
-  return {
-    ok: true,
-    user,
-  };
 }
-
-/* ======================================================
-   SUPABASE REST
-====================================================== */
 
 async function supabaseSelect(
   table,
   params = {}
 ) {
-  const search =
+  const query =
     new URLSearchParams();
 
   for (
@@ -243,7 +252,7 @@ async function supabaseSelect(
       value !== undefined &&
       value !== ""
     ) {
-      search.append(
+      query.append(
         key,
         String(value)
       );
@@ -253,42 +262,43 @@ async function supabaseSelect(
   const url =
     `${SUPABASE_URL}/rest/v1/${table}` +
     (
-      search.toString()
-        ? `?${search.toString()}`
+      query.toString()
+        ? `?${query.toString()}`
         : ""
     );
 
-  const response = await fetch(
-    url,
-    {
-      method: "GET",
+  const response =
+    await fetch(
+      url,
+      {
+        method: "GET",
 
-      headers: {
-        apikey:
-          SUPABASE_SERVICE_ROLE_KEY,
+        headers: {
+          apikey:
+            SUPABASE_SERVICE_ROLE_KEY,
 
-        Authorization:
-          `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          Authorization:
+            `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
 
-        Accept:
-          "application/json",
-      },
-    }
-  );
+          Accept:
+            "application/json",
+        },
+      }
+    );
 
-  const bodyText =
+  const body =
     await response.text();
 
   if (!response.ok) {
     throw new Error(
       `Supabase SELECT ${table} ` +
       `${response.status}: ` +
-      bodyText.slice(0, 500)
+      body.slice(0, 600)
     );
   }
 
   try {
-    return JSON.parse(bodyText);
+    return JSON.parse(body);
   } catch {
     throw new Error(
       `Supabase trả dữ liệu không hợp lệ từ ${table}`
@@ -296,281 +306,149 @@ async function supabaseSelect(
   }
 }
 
-/* ======================================================
-   DATA HELPERS
-====================================================== */
-
-function uniqueByTime(
-  rows,
-  timeKey
+function parseReservoirOperationalTime(
+  value
 ) {
-  const map = new Map();
+  const text =
+    String(value || "").trim();
 
-  [...(rows || [])]
-    .sort((a, b) => {
-      const timeDiff =
-        new Date(
-          b?.[timeKey] || 0
-        ).getTime() -
-        new Date(
-          a?.[timeKey] || 0
-        ).getTime();
+  const match = text.match(
+    /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/
+  );
 
-      if (timeDiff !== 0) {
-        return timeDiff;
-      }
+  if (!match) {
+    return null;
+  }
 
-      return (
-        new Date(
-          b?.created_at || 0
-        ).getTime() -
-        new Date(
-          a?.created_at || 0
-        ).getTime()
-      );
-    })
-    .forEach((row) => {
-      const key =
-        row?.[timeKey];
+  const [
+    ,
+    year,
+    month,
+    day,
+    hour,
+    minute,
+    second = "00",
+  ] = match;
 
-      if (
-        key &&
-        !map.has(key)
-      ) {
-        map.set(
-          key,
-          row
-        );
-      }
-    });
+  const date = new Date(
+    `${year}-${month}-${day}` +
+    `T${hour}:${minute}:${second}+07:00`
+  );
 
-  return [
-    ...map.values(),
-  ].sort(
-    (a, b) =>
-      new Date(
-        a?.[timeKey] || 0
-      ).getTime() -
-      new Date(
-        b?.[timeKey] || 0
-      ).getTime()
+  return Number.isNaN(
+    date.getTime()
+  )
+    ? null
+    : date;
+}
+
+function getReservoirLiteralDateKey(
+  value
+) {
+  const text =
+    String(value || "").trim();
+
+  const match = text.match(
+    /^(\d{4})-(\d{2})-(\d{2})[T ]/
+  );
+
+  if (!match) {
+    return null;
+  }
+
+  return (
+    `${match[1]}-` +
+    `${match[2]}-` +
+    `${match[3]}`
   );
 }
 
 function getLocalDateKey(date) {
+  if (
+    !(date instanceof Date) ||
+    Number.isNaN(date.getTime())
+  ) {
+    return null;
+  }
+
   const parts =
     new Intl.DateTimeFormat(
       "en-CA",
       {
         timeZone:
-          VN_TIME_ZONE,
-
+          "Asia/Ho_Chi_Minh",
         year:
           "numeric",
-
         month:
           "2-digit",
-
         day:
           "2-digit",
       }
     ).formatToParts(date);
 
-  const values = {};
+  const result = {};
 
   for (const part of parts) {
-    if (
-      part.type !== "literal"
-    ) {
-      values[part.type] =
+    if (part.type !== "literal") {
+      result[part.type] =
         part.value;
     }
   }
 
   return (
-    `${values.year}-` +
-    `${values.month}-` +
-    `${values.day}`
+    `${result.year}-` +
+    `${result.month}-` +
+    `${result.day}`
   );
 }
 
 function getPreviousDateKey(date) {
-  const shifted = new Date(
-    date.getTime() -
-    24 * 60 * 60 * 1000
-  );
+  if (
+    !(date instanceof Date) ||
+    Number.isNaN(date.getTime())
+  ) {
+    return null;
+  }
+
+  const previous =
+    new Date(
+      date.getTime() -
+      24 * 60 * 60 * 1000
+    );
 
   return getLocalDateKey(
-    shifted
+    previous
   );
 }
 
-function getRainValue(row) {
-  return toNumber(
-    row?.rainfallreal ??
-    row?.rainfall_real ??
-    row?.rainfall_mm ??
-    row?.rain_mm,
-    0
-  );
-}
-
-/* ======================================================
-   STORAGE
-====================================================== */
-
-function getCurrentStorage(
-  storageRow,
-  waterLevel
-) {
-  const direct = toNumber(
-    storageRow?.volume ??
-    storageRow?.current_volume ??
-    storageRow?.storage_million_m3,
-    null
-  );
-
-  if (direct !== null) {
-    return direct;
-  }
-
-  if (
-    !Number.isFinite(
-      waterLevel
-    )
-  ) {
-    return null;
-  }
-
-  if (
-    waterLevel <=
-    RESERVOIR.WL_DEAD_M
-  ) {
-    return (
-      RESERVOIR
-        .VOL_DEAD_MILLION_M3
-    );
-  }
-
-  if (
-    waterLevel >=
-    RESERVOIR.WL_NORMAL_M
-  ) {
-    return (
-      RESERVOIR
-        .VOL_MAX_MILLION_M3
-    );
-  }
-
-  const ratio =
-    (
-      waterLevel -
-      RESERVOIR.WL_DEAD_M
-    ) /
-    (
-      RESERVOIR.WL_NORMAL_M -
-      RESERVOIR.WL_DEAD_M
-    );
-
-  return (
-    RESERVOIR
-      .VOL_DEAD_MILLION_M3 +
-    ratio *
-    (
-      RESERVOIR
-        .VOL_MAX_MILLION_M3 -
-      RESERVOIR
-        .VOL_DEAD_MILLION_M3
-    )
-  );
-}
-
-function volumeToWaterLevel(
-  volume
-) {
-  if (
-    !Number.isFinite(volume)
-  ) {
-    return null;
-  }
-
-  if (
-    volume <=
-    RESERVOIR
-      .VOL_DEAD_MILLION_M3
-  ) {
-    return (
-      RESERVOIR.WL_DEAD_M
-    );
-  }
-
-  if (
-    volume >=
-    RESERVOIR
-      .VOL_MAX_MILLION_M3
-  ) {
-    return (
-      RESERVOIR.WL_NORMAL_M
-    );
-  }
-
-  return (
-    RESERVOIR.WL_DEAD_M +
-    (
-      volume -
-      RESERVOIR
-        .VOL_DEAD_MILLION_M3
-    ) *
-    (
-      RESERVOIR.WL_NORMAL_M -
-      RESERVOIR.WL_DEAD_M
-    ) /
-    (
-      RESERVOIR
-        .VOL_MAX_MILLION_M3 -
-      RESERVOIR
-        .VOL_DEAD_MILLION_M3
-    )
-  );
-}
-
-/* ======================================================
-   DATA STATUS
-====================================================== */
-
-function getDataFreshness(
-  updatedAt
-) {
+function getDataFreshness(updatedAt) {
   if (!updatedAt) {
     return {
       status:
         "unknown",
-
+      label:
+        "Chưa xác định",
       age_minutes:
         null,
-
-      message:
-        "Không xác định thời gian cập nhật",
     };
   }
 
-  const time =
-    new Date(
+  const operationalDate =
+    parseReservoirOperationalTime(
       updatedAt
-    ).getTime();
+    );
 
-  if (
-    !Number.isFinite(time)
-  ) {
+  const time =
+    operationalDate?.getTime();
+
+  if (!Number.isFinite(time)) {
     return {
       status:
         "unknown",
-
+      label:
+        "Thời gian không hợp lệ",
       age_minutes:
         null,
-
-      message:
-        "Thời gian cập nhật không hợp lệ",
     };
   }
 
@@ -581,543 +459,924 @@ function getDataFreshness(
         (
           Date.now() -
           time
-        ) / 60000
+        ) /
+        60000
       )
     );
 
-  if (
-    ageMinutes <= 15
-  ) {
+  if (ageMinutes <= 90) {
     return {
       status:
         "fresh",
-
+      label:
+        "Vừa cập nhật",
       age_minutes:
         ageMinutes,
-
-      message:
-        "Dữ liệu mới",
     };
   }
 
-  if (
-    ageMinutes <= 60
-  ) {
+  if (ageMinutes <= 360) {
     return {
       status:
         "warning",
-
+      label:
+        "Dữ liệu đang chậm",
       age_minutes:
         ageMinutes,
-
-      message:
-        `Dữ liệu đã cũ ${ageMinutes} phút`,
     };
   }
 
   return {
     status:
       "stale",
-
+    label:
+      "Dữ liệu cũ",
     age_minutes:
       ageMinutes,
-
-    message:
-      `Dữ liệu đã cũ ${ageMinutes} phút`,
   };
 }
 
-function getSafetyStatus(
-  waterLevel,
-  freshness
+function getRainValue(row) {
+  const candidates = [
+    row?.rain_1h,
+    row?.rainfall,
+    row?.rain,
+    row?.rain_mm,
+  ];
+
+  for (const value of candidates) {
+    const number =
+      toNumber(value);
+
+    if (
+      Number.isFinite(number)
+    ) {
+      return number;
+    }
+  }
+
+  return 0;
+}
+
+function calculateVolumeFromLevel(
+  waterLevel
 ) {
-  if (
-    !Number.isFinite(
-      waterLevel
-    )
-  ) {
-    return {
-      code:
-        "unknown",
+  const level =
+    Number(waterLevel);
 
-      label:
-        "CHƯA CÓ DỮ LIỆU",
-    };
+  if (!Number.isFinite(level)) {
+    return null;
   }
 
-  if (
-    freshness?.status ===
-    "stale"
-  ) {
-    return {
-      code:
-        "stale",
+  /*
+   * Nội suy tuyến tính tạm thời giữa MN chết và MNDBT.
+   * Có thể thay bằng bảng quan hệ Z-V thực tế khi đã có.
+   */
+  const ratio =
+    (
+      level -
+      RESERVOIR.WL_DEAD_M
+    ) /
+    (
+      RESERVOIR.WL_NORMAL_M -
+      RESERVOIR.WL_DEAD_M
+    );
 
-      label:
-        "DỮ LIỆU QUÁ HẠN",
-    };
-  }
+  const boundedRatio =
+    Math.min(
+      1,
+      Math.max(
+        0,
+        ratio
+      )
+    );
 
-  if (
-    waterLevel >=
-    RESERVOIR.WL_CHECK_M
-  ) {
-    return {
-      code:
-        "danger",
-
-      label:
-        "NGUY HIỂM",
-    };
-  }
-
-  if (
-    waterLevel >=
-    RESERVOIR.WL_FLOOD_MAX_M
-  ) {
-    return {
-      code:
-        "warning",
-
-      label:
-        "CẢNH BÁO",
-    };
-  }
-
-  return {
-    code:
-      "normal",
-
-    label:
-      "BÌNH THƯỜNG",
-  };
-}
-
-/* ======================================================
-   INFLOW FORECAST
-====================================================== */
-
-function getForecastValue(row) {
-  return toNumber(
-    row?.inflow_m3s ??
-    row?.q_in_m3s ??
-    row?.q_routed_m3s,
-    null
+  return (
+    RESERVOIR
+      .DEAD_CAPACITY_MILLION_M3 +
+    boundedRatio *
+    RESERVOIR
+      .USEFUL_CAPACITY_MILLION_M3
   );
 }
 
-function calculateForecastSummary({
-  forecastRows,
-  currentStorage,
-  currentOutflow,
-}) {
-  const grouped =
-    new Map();
-
-  for (
-    const row
-    of forecastRows || []
-  ) {
-    const source =
-      String(
-        row?.source ||
-        "unknown"
-      );
-
-    if (
-      !grouped.has(source)
-    ) {
-      grouped.set(
-        source,
-        []
-      );
-    }
-
-    grouped
-      .get(source)
-      .push(row);
-  }
-
-  let qAverageMin =
-    Infinity;
-
-  let qAverageMax =
-    -Infinity;
-
-  let volume24Min =
-    Infinity;
-
-  let volume24Max =
-    -Infinity;
-
-  let waterLevel24Min =
-    Infinity;
-
-  let waterLevel24Max =
-    -Infinity;
-
-  let volume7dMin =
-    Infinity;
-
-  let volume7dMax =
-    -Infinity;
-
-  let waterLevel7dMin =
-    Infinity;
-
-  let waterLevel7dMax =
-    -Infinity;
-
-  for (
-    const rows
-    of grouped.values()
-  ) {
-    const normalized =
-      uniqueByTime(
-        rows,
-        "forecast_time"
-      )
-        .map((row) => ({
-          time:
-            row.forecast_time,
-
-          value:
-            getForecastValue(
-              row
-            ),
-        }))
-        .filter((row) =>
-          Number.isFinite(
-            row.value
-          )
-        );
-
-    if (
-      !normalized.length
-    ) {
-      continue;
-    }
-
-    const flows =
-      normalized.map(
-        (row) => row.value
-      );
-
-    const averageFlow =
-      average(flows);
-
-    qAverageMin =
-      Math.min(
-        qAverageMin,
-        averageFlow
-      );
-
-    qAverageMax =
-      Math.max(
-        qAverageMax,
-        averageFlow
-      );
-
-    const first24 =
-      flows.slice(
-        0,
-        24
-      );
-
-    const volumeIn24 =
-      sum(first24) *
-      3600 /
-      1_000_000;
-
-    const finalVolume24 =
-      Number.isFinite(
-        currentStorage
-      )
-        ? Math.max(
-            RESERVOIR
-              .VOL_DEAD_MILLION_M3,
-
-            Math.min(
-              RESERVOIR
-                .VOL_MAX_MILLION_M3,
-
-              currentStorage +
-              volumeIn24 -
-              currentOutflow *
-              first24.length *
-              3600 /
-              1_000_000
-            )
-          )
-        : null;
-
-    const waterLevel24 =
-      volumeToWaterLevel(
-        finalVolume24
-      );
-
-    volume24Min =
-      Math.min(
-        volume24Min,
-        volumeIn24
-      );
-
-    volume24Max =
-      Math.max(
-        volume24Max,
-        volumeIn24
-      );
-
-    if (
-      Number.isFinite(
-        waterLevel24
-      )
-    ) {
-      waterLevel24Min =
-        Math.min(
-          waterLevel24Min,
-          waterLevel24
-        );
-
-      waterLevel24Max =
-        Math.max(
-          waterLevel24Max,
-          waterLevel24
-        );
-    }
-
-    const volumeIn7d =
-      sum(flows) *
-      3600 /
-      1_000_000;
-
-    const finalVolume7d =
-      Number.isFinite(
-        currentStorage
-      )
-        ? Math.max(
-            RESERVOIR
-              .VOL_DEAD_MILLION_M3,
-
-            Math.min(
-              RESERVOIR
-                .VOL_MAX_MILLION_M3,
-
-              currentStorage +
-              volumeIn7d -
-              currentOutflow *
-              flows.length *
-              3600 /
-              1_000_000
-            )
-          )
-        : null;
-
-    const waterLevel7d =
-      volumeToWaterLevel(
-        finalVolume7d
-      );
-
-    volume7dMin =
-      Math.min(
-        volume7dMin,
-        volumeIn7d
-      );
-
-    volume7dMax =
-      Math.max(
-        volume7dMax,
-        volumeIn7d
-      );
-
-    if (
-      Number.isFinite(
-        waterLevel7d
-      )
-    ) {
-      waterLevel7dMin =
-        Math.min(
-          waterLevel7dMin,
-          waterLevel7d
-        );
-
-      waterLevel7dMax =
-        Math.max(
-          waterLevel7dMax,
-          waterLevel7d
-        );
-    }
-  }
-
-  function finiteOrNull(
-    value
-  ) {
-    return Number.isFinite(
-      value
-    )
-      ? round(value, 2)
-      : null;
-  }
-
-  return {
-    source_count:
-      grouped.size,
-
-    q_average_m3s: {
-      min:
-        finiteOrNull(
-          qAverageMin
-        ),
-
-      max:
-        finiteOrNull(
-          qAverageMax
-        ),
-    },
-
-    inflow_volume_24h_million_m3: {
-      min:
-        finiteOrNull(
-          volume24Min
-        ),
-
-      max:
-        finiteOrNull(
-          volume24Max
-        ),
-    },
-
-    water_level_24h_m: {
-      min:
-        finiteOrNull(
-          waterLevel24Min
-        ),
-
-      max:
-        finiteOrNull(
-          waterLevel24Max
-        ),
-    },
-
-    inflow_volume_7d_million_m3: {
-      min:
-        finiteOrNull(
-          volume7dMin
-        ),
-
-      max:
-        finiteOrNull(
-          volume7dMax
-        ),
-    },
-
-    water_level_7d_m: {
-      min:
-        finiteOrNull(
-          waterLevel7dMin
-        ),
-
-      max:
-        finiteOrNull(
-          waterLevel7dMax
-        ),
-    },
-  };
-}
-
-/* ======================================================
-   RAIN FORECAST
-====================================================== */
-
-function calculateRainForecastSummary(
-  rows
+function calculateReservoirSummary(
+  waterLevel
 ) {
-  const bySourceAndDay =
-    new Map();
-
-  for (
-    const row
-    of rows || []
-  ) {
-    const time =
-      row?.forecast_time;
-
-    if (!time) {
-      continue;
-    }
-
-    const day =
-      getLocalDateKey(
-        new Date(time)
-      );
-
-    const source =
-      String(
-        row?.source ||
-        "unknown"
-      );
-
-    const key =
-      `${source}|${day}`;
-
-    bySourceAndDay.set(
-      key,
-
-      (
-        bySourceAndDay.get(
-          key
-        ) || 0
-      ) +
-      toNumber(
-        row?.rainfall_mm,
-        0
-      )
+  const volume =
+    calculateVolumeFromLevel(
+      waterLevel
     );
+
+  if (!Number.isFinite(volume)) {
+    return {
+      volume_million_m3:
+        null,
+      total_percent:
+        null,
+      useful_percent:
+        null,
+      useful_remaining_million_m3:
+        null,
+      empty_to_normal_million_m3:
+        null,
+    };
   }
 
-  const values =
-    [
-      ...bySourceAndDay.values(),
-    ].filter(
-      Number.isFinite
+  const usefulStored =
+    Math.max(
+      0,
+      volume -
+      RESERVOIR
+        .DEAD_CAPACITY_MILLION_M3
+    );
+
+  const usefulRemaining =
+    Math.max(
+      0,
+      RESERVOIR
+        .USEFUL_CAPACITY_MILLION_M3 -
+      usefulStored
+    );
+
+  const emptyToNormal =
+    Math.max(
+      0,
+      RESERVOIR
+        .TOTAL_CAPACITY_MILLION_M3 -
+      volume
     );
 
   return {
-    daily_mm: {
-      min:
-        values.length
-          ? round(
-              Math.min(
-                ...values
-              ),
-              1
-            )
-          : null,
+    volume_million_m3:
+      round(volume, 2),
 
-      max:
-        values.length
-          ? round(
-              Math.max(
-                ...values
-              ),
-              1
-            )
-          : null,
-    },
+    total_percent:
+      round(
+        volume /
+        RESERVOIR
+          .TOTAL_CAPACITY_MILLION_M3 *
+        100,
+        2
+      ),
+
+    useful_percent:
+      round(
+        usefulStored /
+        RESERVOIR
+          .USEFUL_CAPACITY_MILLION_M3 *
+        100,
+        2
+      ),
+
+    useful_remaining_million_m3:
+      round(
+        usefulRemaining,
+        2
+      ),
+
+    empty_to_normal_million_m3:
+      round(
+        emptyToNormal,
+        2
+      ),
   };
 }
 
-/* ======================================================
-   API HANDLER
-====================================================== */
+function calculateSafetySummary(
+  waterLevel
+) {
+  const level =
+    Number(waterLevel);
+
+  if (!Number.isFinite(level)) {
+    return {
+      status:
+        "Chưa có dữ liệu",
+      code:
+        "unknown",
+    };
+  }
+
+  let status =
+    "Bình thường";
+
+  let code =
+    "normal";
+
+  if (
+    level >=
+    RESERVOIR.WL_CHECK_M
+  ) {
+    status =
+      "Vượt MN kiểm tra";
+    code =
+      "danger";
+  } else if (
+    level >=
+    RESERVOIR.WL_NORMAL_M
+  ) {
+    status =
+      "Trên MNDBT";
+    code =
+      "warning";
+  } else if (
+    level >=
+    RESERVOIR.WL_FLOOD_MAX_M
+  ) {
+    status =
+      "Vùng cao trước lũ";
+    code =
+      "watch";
+  }
+
+  return {
+    status,
+    code,
+
+    current_water_level_m:
+      round(level, 2),
+
+    check_level_m:
+      RESERVOIR.WL_CHECK_M,
+
+    normal_level_m:
+      RESERVOIR.WL_NORMAL_M,
+
+    flood_max_level_m:
+      RESERVOIR.WL_FLOOD_MAX_M,
+
+    flood_min_level_m:
+      RESERVOIR.WL_FLOOD_MIN_M,
+
+    dead_level_m:
+      RESERVOIR.WL_DEAD_M,
+
+    distance_to_check_m:
+      round(
+        RESERVOIR.WL_CHECK_M -
+        level,
+        2
+      ),
+
+    distance_to_normal_m:
+      round(
+        RESERVOIR.WL_NORMAL_M -
+        level,
+        2
+      ),
+
+    distance_to_flood_max_m:
+      round(
+        RESERVOIR.WL_FLOOD_MAX_M -
+        level,
+        2
+      ),
+
+    distance_to_flood_min_m:
+      round(
+        RESERVOIR.WL_FLOOD_MIN_M -
+        level,
+        2
+      ),
+
+    distance_above_dead_m:
+      round(
+        level -
+        RESERVOIR.WL_DEAD_M,
+        2
+      ),
+  };
+}
+
+function calculateForecastSummary({
+  currentWaterLevel,
+  forecastRows,
+}) {
+  if (
+    !Array.isArray(forecastRows) ||
+    !forecastRows.length
+  ) {
+    return {
+      available:
+        false,
+      max_inflow_m3s:
+        null,
+      average_inflow_m3s:
+        null,
+      latest_forecast_time:
+        null,
+    };
+  }
+
+  const inflows =
+    forecastRows
+      .map(
+        (row) =>
+          toNumber(
+            row.inflow_m3s ??
+            row.q_in_m3s ??
+            row.inflow
+          )
+      )
+      .filter(Number.isFinite);
+
+  if (!inflows.length) {
+    return {
+      available:
+        false,
+      max_inflow_m3s:
+        null,
+      average_inflow_m3s:
+        null,
+      latest_forecast_time:
+        null,
+    };
+  }
+
+  const latest =
+    forecastRows[
+      forecastRows.length - 1
+    ];
+
+  return {
+    available:
+      true,
+
+    current_water_level_m:
+      round(
+        currentWaterLevel,
+        2
+      ),
+
+    max_inflow_m3s:
+      round(
+        Math.max(...inflows),
+        2
+      ),
+
+    average_inflow_m3s:
+      round(
+        average(inflows),
+        2
+      ),
+
+    latest_forecast_time:
+      latest?.forecast_time ||
+      null,
+  };
+}
+
+function getReservoirMonthKey(
+  value
+) {
+  const text =
+    String(value || "").trim();
+
+  const match =
+    text.match(
+      /^(\d{4})-(\d{2})-\d{2}[T ]/
+    );
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    year:
+      Number(match[1]),
+
+    month:
+      Number(match[2]),
+
+    key:
+      `${match[1]}-${match[2]}`,
+
+    startIso:
+      `${match[1]}-${match[2]}-01T00:00:00.000Z`,
+  };
+}
+
+function classifyHydrologyFrequency(
+  percent
+) {
+  const value =
+    Number(percent);
+
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+
+  if (value <= 10) {
+    return "Rất nhiều nước";
+  }
+
+  if (value <= 25) {
+    return "Nhiều nước";
+  }
+
+  if (value <= 50) {
+    return "Nhóm trung bình";
+  }
+
+  if (value <= 75) {
+    return "Ít nước";
+  }
+
+  return "Rất ít nước";
+}
+
+async function calculateHydrologyFrequency({
+  latestTime,
+  latestMonthRows,
+}) {
+  const monthInfo =
+    getReservoirMonthKey(
+      latestTime
+    );
+
+  if (!monthInfo) {
+    return {
+      percent:
+        null,
+
+      group:
+        null,
+
+      note:
+        "Không xác định được tháng vận hành",
+
+      month:
+        null,
+
+      average_inflow_m3s:
+        null,
+
+      reference_inflow_m3s:
+        null,
+
+      sample_count:
+        0,
+    };
+  }
+
+  const monthRows =
+    Array.isArray(
+      latestMonthRows
+    )
+      ? latestMonthRows
+      : [];
+
+  const monthlyAverage =
+    average(
+      monthRows.map(
+        (row) =>
+          row.inflow
+      )
+    );
+
+  if (
+    !Number.isFinite(
+      monthlyAverage
+    )
+  ) {
+    return {
+      percent:
+        null,
+
+      group:
+        null,
+
+      note:
+        `Chưa đủ dữ liệu Q về tháng ${monthInfo.month}`,
+
+      month:
+        monthInfo.month,
+
+      average_inflow_m3s:
+        null,
+
+      reference_inflow_m3s:
+        null,
+
+      sample_count:
+        monthRows.length,
+    };
+  }
+
+  const frequencyRows =
+    await supabaseSelect(
+      "monthly_inflow_frequency",
+      {
+        select:
+          "id,frequency_percent,month,inflow_value",
+
+        month:
+          `eq.${monthInfo.month}`,
+
+        order:
+          "frequency_percent.asc",
+
+        limit:
+          500,
+      }
+    );
+
+  if (
+    !Array.isArray(
+      frequencyRows
+    ) ||
+    !frequencyRows.length
+  ) {
+    return {
+      percent:
+        null,
+
+      group:
+        null,
+
+      note:
+        `Không có dữ liệu tần suất tháng ${monthInfo.month}`,
+
+      month:
+        monthInfo.month,
+
+      average_inflow_m3s:
+        round(
+          monthlyAverage,
+          2
+        ),
+
+      reference_inflow_m3s:
+        null,
+
+      sample_count:
+        monthRows.length,
+    };
+  }
+
+  let nearest =
+    frequencyRows[0];
+
+  for (
+    const row
+    of frequencyRows
+  ) {
+    const currentValue =
+      toNumber(
+        row.inflow_value
+      );
+
+    const nearestValue =
+      toNumber(
+        nearest.inflow_value
+      );
+
+    if (
+      !Number.isFinite(
+        currentValue
+      )
+    ) {
+      continue;
+    }
+
+    if (
+      !Number.isFinite(
+        nearestValue
+      ) ||
+      Math.abs(
+        currentValue -
+        monthlyAverage
+      ) <
+      Math.abs(
+        nearestValue -
+        monthlyAverage
+      )
+    ) {
+      nearest =
+        row;
+    }
+  }
+
+  const percent =
+    toNumber(
+      nearest.frequency_percent
+    );
+
+  const referenceInflow =
+    toNumber(
+      nearest.inflow_value
+    );
+
+  return {
+    percent:
+      round(
+        percent,
+        2
+      ),
+
+    group:
+      classifyHydrologyFrequency(
+        percent
+      ),
+
+    note:
+      Number.isFinite(percent)
+        ? (
+            `Q về TB tháng ${monthInfo.month}: ` +
+            `${round(monthlyAverage, 2)} m³/s; ` +
+            `gần P=${round(percent, 2)}%`
+          )
+        : (
+            `Không xác định được tần suất tháng ` +
+            `${monthInfo.month}`
+          ),
+
+    month:
+      monthInfo.month,
+
+    average_inflow_m3s:
+      round(
+        monthlyAverage,
+        2
+      ),
+
+    reference_inflow_m3s:
+      round(
+        referenceInflow,
+        2
+      ),
+
+    sample_count:
+      monthRows.length,
+  };
+}
+
+function calculateDeadLevelForecast({
+  usefulRemainingMillionM3,
+  averageInflow24h,
+  averageTurbine24h,
+}) {
+  const remainingVolume =
+    toNumber(
+      usefulRemainingMillionM3
+    );
+
+  const inflow24h =
+    toNumber(
+      averageInflow24h
+    );
+
+  const turbine24h =
+    toNumber(
+      averageTurbine24h
+    );
+
+  if (
+    !Number.isFinite(
+      remainingVolume
+    ) ||
+    !Number.isFinite(
+      inflow24h
+    ) ||
+    !Number.isFinite(
+      turbine24h
+    )
+  ) {
+    return {
+      status:
+        "Chưa có dữ liệu",
+
+      code:
+        "missing_data",
+
+      days:
+        null,
+
+      note:
+        "Thiếu dung tích còn lại hoặc Q trung bình 24h",
+
+      useful_remaining_million_m3:
+        round(
+          remainingVolume,
+          2
+        ),
+
+      inflow_24h_m3s:
+        round(
+          inflow24h,
+          2
+        ),
+
+      turbine_24h_m3s:
+        round(
+          turbine24h,
+          2
+        ),
+
+      net_depletion_m3s:
+        null,
+    };
+  }
+
+  if (remainingVolume <= 0) {
+    return {
+      status:
+        "Đã chạm MN chết",
+
+      code:
+        "reached_dead_level",
+
+      days:
+        0,
+
+      note:
+        "Dung tích hữu ích còn lại bằng 0",
+
+      useful_remaining_million_m3:
+        round(
+          remainingVolume,
+          2
+        ),
+
+      inflow_24h_m3s:
+        round(
+          inflow24h,
+          2
+        ),
+
+      turbine_24h_m3s:
+        round(
+          turbine24h,
+          2
+        ),
+
+      net_depletion_m3s:
+        round(
+          turbine24h -
+          inflow24h,
+          2
+        ),
+    };
+  }
+
+  const netDepletion =
+    turbine24h -
+    inflow24h;
+
+  if (
+    Math.abs(
+      netDepletion
+    ) < 0.05
+  ) {
+    return {
+      status:
+        "Mực nước ổn định",
+
+      code:
+        "stable",
+
+      days:
+        null,
+
+      note:
+        "Q về xấp xỉ Q chạy máy",
+
+      useful_remaining_million_m3:
+        round(
+          remainingVolume,
+          2
+        ),
+
+      inflow_24h_m3s:
+        round(
+          inflow24h,
+          2
+        ),
+
+      turbine_24h_m3s:
+        round(
+          turbine24h,
+          2
+        ),
+
+      net_depletion_m3s:
+        round(
+          netDepletion,
+          2
+        ),
+    };
+  }
+
+  if (netDepletion < 0) {
+    return {
+      status:
+        "Mực nước đang tăng",
+
+      code:
+        "rising",
+
+      days:
+        null,
+
+      note:
+        (
+          `Q về lớn hơn Q chạy máy ` +
+          `${round(
+            Math.abs(netDepletion),
+            2
+          )} m³/s`
+        ),
+
+      useful_remaining_million_m3:
+        round(
+          remainingVolume,
+          2
+        ),
+
+      inflow_24h_m3s:
+        round(
+          inflow24h,
+          2
+        ),
+
+      turbine_24h_m3s:
+        round(
+          turbine24h,
+          2
+        ),
+
+      net_depletion_m3s:
+        round(
+          netDepletion,
+          2
+        ),
+    };
+  }
+
+  const days =
+    (
+      remainingVolume *
+      1_000_000
+    ) /
+    (
+      netDepletion *
+      86_400
+    );
+
+  return {
+    status:
+      "Đang giảm về MN chết",
+
+    code:
+      "decreasing",
+
+    days:
+      round(
+        days,
+        1
+      ),
+
+    note:
+      (
+        `Giảm ròng ` +
+        `${round(
+          netDepletion,
+          2
+        )} m³/s`
+      ),
+
+    useful_remaining_million_m3:
+      round(
+        remainingVolume,
+        2
+      ),
+
+    inflow_24h_m3s:
+      round(
+        inflow24h,
+        2
+      ),
+
+    turbine_24h_m3s:
+      round(
+        turbine24h,
+        2
+      ),
+
+    net_depletion_m3s:
+      round(
+        netDepletion,
+        2
+      ),
+  };
+}
 
 export default async function handler(
   req,
   res
 ) {
-  if (
-    req.method === "OPTIONS"
-  ) {
+  if (req.method === "OPTIONS") {
     return sendJson(
       res,
       200,
@@ -1127,9 +1386,7 @@ export default async function handler(
     );
   }
 
-  if (
-    req.method !== "GET"
-  ) {
+  if (req.method !== "GET") {
     return sendJson(
       res,
       405,
@@ -1142,14 +1399,11 @@ export default async function handler(
   }
 
   try {
-    requireServerEnvironment();
-
-    const accessToken =
-      getBearerToken(req);
+    requireEnvironment();
 
     const auth =
       await verifySupabaseUser(
-        accessToken
+        getBearerToken(req)
       );
 
     if (!auth.ok) {
@@ -1164,96 +1418,20 @@ export default async function handler(
       );
     }
 
-    const now =
-      new Date();
-
-    const start8d =
-      new Date(
-        now.getTime() -
-        8 *
-        24 *
-        60 *
-        60 *
-        1000
-      );
-
-    const [
-      reservoirRowsRaw,
-      storageRows,
-      inflowForecastRows,
-      rainfallForecastRows,
-    ] = await Promise.all([
-      supabaseSelect(
+    const reservoirRowsRaw =
+      await supabaseSelect(
         "reservoir_hourly_data",
         {
-          select: "*",
-
-          time:
-            `gte.${start8d.toISOString()}`,
-
-          order:
-            "time.asc",
-
-          limit:
-            500,
-        }
-      ),
-
-      supabaseSelect(
-        "v_current_storage",
-        {
-          select: "*",
+          select:
+            "*",
 
           order:
             "time.desc",
 
           limit:
-            1,
+            300,
         }
-      ),
-
-      supabaseSelect(
-        "inflow_forecast",
-        {
-          select:
-            "forecast_time," +
-            "source," +
-            "inflow_m3s," +
-            "q_in_m3s," +
-            "q_routed_m3s," +
-            "created_at",
-
-          forecast_time:
-            `gte.${now.toISOString()}`,
-
-          order:
-            "forecast_time.asc",
-
-          limit:
-            5000,
-        }
-      ),
-
-      supabaseSelect(
-        "rainfall_forecast",
-        {
-          select:
-            "forecast_time," +
-            "source," +
-            "rainfall_mm," +
-            "created_at",
-
-          forecast_time:
-            `gte.${now.toISOString()}`,
-
-          order:
-            "forecast_time.asc",
-
-          limit:
-            5000,
-        }
-      ),
-    ]);
+      );
 
     const reservoirRows =
       uniqueByTime(
@@ -1262,9 +1440,11 @@ export default async function handler(
       );
 
     const latest =
-      reservoirRows[
-        reservoirRows.length - 1
-      ] || null;
+      reservoirRows.length
+        ? reservoirRows[
+            reservoirRows.length - 1
+          ]
+        : null;
 
     if (!latest) {
       return sendJson(
@@ -1272,44 +1452,105 @@ export default async function handler(
         404,
         {
           ok: false,
-
           error:
             "Không có dữ liệu trong reservoir_hourly_data",
         }
       );
     }
 
-    const latestTime =
-      new Date(
+    const latestMonthInfo =
+      getReservoirMonthKey(
         latest.time
       );
 
+    const latestMonthRowsRaw =
+      latestMonthInfo
+        ? await supabaseSelect(
+            "reservoir_hourly_data",
+            {
+              select:
+                "time,inflow",
+
+              time:
+                `gte.${latestMonthInfo.startIso}`,
+
+              order:
+                "time.asc",
+
+              limit:
+                1000,
+            }
+          )
+        : [];
+
+    const latestMonthRows =
+      uniqueByTime(
+        latestMonthRowsRaw,
+        "time"
+      ).filter(
+        (row) =>
+          getReservoirMonthKey(
+            row.time
+          )?.key ===
+          latestMonthInfo?.key
+      );
+
+    const latestTime =
+      parseReservoirOperationalTime(
+        latest.time
+      );
+
+    if (!latestTime) {
+      throw new Error(
+        `Thời gian hồ không hợp lệ: ${latest.time}`
+      );
+    }
+
     const rows24h =
       reservoirRows.filter(
-        (row) =>
-          new Date(
-            row.time
-          ).getTime() >=
-          latestTime.getTime() -
-          24 *
-          60 *
-          60 *
-          1000
+        (row) => {
+          const rowTime =
+            parseReservoirOperationalTime(
+              row.time
+            );
+
+          return (
+            rowTime &&
+            rowTime.getTime() >=
+              latestTime.getTime() -
+              24 *
+              60 *
+              60 *
+              1000
+          );
+        }
       );
 
     const rows7d =
       reservoirRows.filter(
-        (row) =>
-          new Date(
-            row.time
-          ).getTime() >=
-          latestTime.getTime() -
-          7 *
-          24 *
-          60 *
-          60 *
-          1000
+        (row) => {
+          const rowTime =
+            parseReservoirOperationalTime(
+              row.time
+            );
+
+          return (
+            rowTime &&
+            rowTime.getTime() >=
+              latestTime.getTime() -
+              7 *
+              24 *
+              60 *
+              60 *
+              1000
+          );
+        }
       );
+
+    const oldest24h =
+      rows24h.length
+        ? rows24h[0]
+        : latest;
 
     const waterLevel =
       toNumber(
@@ -1323,7 +1564,8 @@ export default async function handler(
 
     const turbineFlow =
       toNumber(
-        latest.turbine_flow
+        latest.turbine_flow,
+        0
       );
 
     const spillwayFlow =
@@ -1332,93 +1574,50 @@ export default async function handler(
         0
       );
 
-    const storage =
-      getCurrentStorage(
-        storageRows?.[0] ||
-        null,
-
-        waterLevel
-      );
-
-    const usefulCapacity =
-      RESERVOIR
-        .VOL_MAX_MILLION_M3 -
-      RESERVOIR
-        .VOL_DEAD_MILLION_M3;
-
-    const usefulVolume =
-      Number.isFinite(
-        storage
-      )
-        ? Math.max(
-            0,
-
-            storage -
-            RESERVOIR
-              .VOL_DEAD_MILLION_M3
-          )
-        : null;
-
-    const emptyToNormal =
-      Number.isFinite(
-        storage
-      )
-        ? Math.max(
-            0,
-
-            RESERVOIR
-              .VOL_MAX_MILLION_M3 -
-            storage
-          )
-        : null;
-
-    const pctTotal =
-      Number.isFinite(
-        storage
-      )
-        ? storage /
-          RESERVOIR
-            .VOL_MAX_MILLION_M3 *
-          100
-        : null;
-
-    const pctUseful =
-      Number.isFinite(
-        usefulVolume
-      )
-        ? usefulVolume /
-          usefulCapacity *
-          100
-        : null;
-
-    const earliest24 =
-      rows24h.length > 1
-        ? rows24h[0]
-        : null;
-
     const delta24h =
       Number.isFinite(
         waterLevel
       ) &&
       Number.isFinite(
         toNumber(
-          earliest24?.water_level
+          oldest24h?.water_level
         )
       )
-        ? waterLevel -
-          Number(
-            earliest24.water_level
+        ? (
+            waterLevel -
+            toNumber(
+              oldest24h.water_level
+            )
           )
         : null;
 
+    const reservoirSummary =
+      calculateReservoirSummary(
+        waterLevel
+      );
+
+    const safetySummary =
+      calculateSafetySummary(
+        waterLevel
+      );
+
     const currentDay =
-      getLocalDateKey(
-        latestTime
+      getReservoirLiteralDateKey(
+        latest.time
+      );
+
+    const previousDayDate =
+      new Date(
+        latestTime.getTime() -
+        24 *
+        60 *
+        60 *
+        1000
       );
 
     const previousDay =
-      getPreviousDateKey(
-        latestTime
+      getLocalDateKey(
+        previousDayDate
       );
 
     const rainDay =
@@ -1426,12 +1625,9 @@ export default async function handler(
         reservoirRows
           .filter(
             (row) =>
-              getLocalDateKey(
-                new Date(
-                  row.time
-                )
-              ) ===
-              currentDay
+              getReservoirLiteralDateKey(
+                row.time
+              ) === currentDay
           )
           .map(
             getRainValue
@@ -1443,28 +1639,94 @@ export default async function handler(
         reservoirRows
           .filter(
             (row) =>
-              getLocalDateKey(
-                new Date(
-                  row.time
-                )
-              ) ===
-              previousDay
+              getReservoirLiteralDateKey(
+                row.time
+              ) === previousDay
           )
           .map(
             getRainValue
           )
       );
 
-    const freshness =
-      getDataFreshness(
-        latest.time
+    const rain1h =
+      getRainValue(
+        latest
       );
 
-    const safety =
-      getSafetyStatus(
-        waterLevel,
-        freshness
+    const forecastRows =
+      await supabaseSelect(
+        "inflow_forecast",
+        {
+          select:
+            "*",
+
+          order:
+            "forecast_time.asc",
+
+          limit:
+            500,
+        }
       );
+
+    const inflowForecastRows =
+      Array.isArray(
+        forecastRows
+      )
+        ? forecastRows
+        : [];
+
+    const averageInflow24h =
+      average(
+        rows24h.map(
+          (row) =>
+            row.inflow
+        )
+      );
+
+    const averageTurbine24h =
+      average(
+        rows24h.map(
+          (row) =>
+            row.turbine_flow
+        )
+      );
+
+    const averageSpillway24h =
+      average(
+        rows24h.map(
+          (row) =>
+            row.spillway_flow
+        )
+      );
+
+    const averageInflow7d =
+      average(
+        rows7d.map(
+          (row) =>
+            row.inflow
+        )
+      );
+
+    const hydrologyFrequency =
+      await calculateHydrologyFrequency({
+        latestTime:
+          latest.time,
+
+        latestMonthRows,
+      });
+
+    const deadLevelForecast =
+      calculateDeadLevelForecast({
+        usefulRemainingMillionM3:
+          reservoirSummary
+            .useful_remaining_million_m3,
+
+        averageInflow24h:
+          averageInflow24h,
+
+        averageTurbine24h:
+          averageTurbine24h,
+      });
 
     const currentOutflow =
       toNumber(
@@ -1478,25 +1740,24 @@ export default async function handler(
 
     const forecastSummary =
       calculateForecastSummary({
+        currentWaterLevel:
+          waterLevel,
+
         forecastRows:
           inflowForecastRows,
-
-        currentStorage:
-          storage,
-
-        currentOutflow,
       });
 
-    const rainForecastSummary =
-      calculateRainForecastSummary(
-        rainfallForecastRows
+    const freshness =
+      getDataFreshness(
+        latest.time
       );
 
     return sendJson(
       res,
       200,
       {
-        ok: true,
+        ok:
+          true,
 
         mode:
           "mobile-overview",
@@ -1519,84 +1780,22 @@ export default async function handler(
           latest_time:
             latest.time,
 
+          time_mode:
+            "reservoir_local_literal",
+
+          time_zone:
+            "Asia/Ho_Chi_Minh",
+
           freshness,
         },
 
-        safety: {
-          ...safety,
-
-          water_level_m:
-            round(
-              waterLevel,
-              2
-            ),
-
-          thresholds: {
-            check_m:
-              RESERVOIR
-                .WL_CHECK_M,
-
-            normal_m:
-              RESERVOIR
-                .WL_NORMAL_M,
-
-            flood_max_m:
-              RESERVOIR
-                .WL_FLOOD_MAX_M,
-
-            flood_min_m:
-              RESERVOIR
-                .WL_FLOOD_MIN_M,
-
-            dead_m:
-              RESERVOIR
-                .WL_DEAD_M,
-          },
-
-          differences_m: {
-            to_check:
-              round(
-                waterLevel -
-                RESERVOIR
-                  .WL_CHECK_M,
-                2
-              ),
-
-            to_normal:
-              round(
-                waterLevel -
-                RESERVOIR
-                  .WL_NORMAL_M,
-                2
-              ),
-
-            to_flood_max:
-              round(
-                waterLevel -
-                RESERVOIR
-                  .WL_FLOOD_MAX_M,
-                2
-              ),
-
-            to_flood_min:
-              round(
-                waterLevel -
-                RESERVOIR
-                  .WL_FLOOD_MIN_M,
-                2
-              ),
-
-            above_dead:
-              round(
-                waterLevel -
-                RESERVOIR
-                  .WL_DEAD_M,
-                2
-              ),
-          },
-        },
+        safety:
+          safetySummary,
 
         current: {
+          time:
+            latest.time,
+
           water_level_m:
             round(
               waterLevel,
@@ -1621,59 +1820,41 @@ export default async function handler(
               2
             ),
 
-          rain_1h_mm:
+          total_outflow_m3s:
             round(
-              getRainValue(
-                latest
-              ),
-              1
+              currentOutflow,
+              2
             ),
         },
 
         averages: {
           inflow_24h_m3s:
             round(
-              average(
-                rows24h.map(
-                  (row) =>
-                    row.inflow
-                )
-              ),
+              averageInflow24h,
               2
             ),
 
           turbine_24h_m3s:
             round(
-              average(
-                rows24h.map(
-                  (row) =>
-                    row.turbine_flow
-                )
-              ),
+              averageTurbine24h,
               2
             ),
 
           spillway_24h_m3s:
             round(
-              average(
-                rows24h.map(
-                  (row) =>
-                    row.spillway_flow
-                )
-              ),
+              averageSpillway24h,
               2
             ),
 
           inflow_7d_m3s:
             round(
-              average(
-                rows7d.map(
-                  (row) =>
-                    row.inflow
-                )
-              ),
+              averageInflow7d,
               2
             ),
+
+          inflow_month_to_date_m3s:
+            hydrologyFrequency
+              .average_inflow_m3s,
 
           water_level_delta_24h_m:
             round(
@@ -1682,50 +1863,10 @@ export default async function handler(
             ),
         },
 
-        storage: {
-          volume_million_m3:
-            round(
-              storage,
-              2
-            ),
-
-          total_percent:
-            round(
-              pctTotal,
-              2
-            ),
-
-          useful_percent:
-            round(
-              pctUseful,
-              2
-            ),
-
-          useful_remaining_million_m3:
-            round(
-              usefulVolume,
-              2
-            ),
-
-          empty_to_normal_million_m3:
-            round(
-              emptyToNormal,
-              2
-            ),
-        },
-
-        rain: {
-          current_day:
-            currentDay,
-
-          previous_day:
-            previousDay,
-
+        rainfall: {
           rain_1h_mm:
             round(
-              getRainValue(
-                latest
-              ),
+              rain1h,
               1
             ),
 
@@ -1735,41 +1876,25 @@ export default async function handler(
               1
             ),
 
-          rain_d1_mm:
+          rain_previous_day_mm:
             round(
               rainD1,
               1
             ),
         },
 
+        reservoir:
+          reservoirSummary,
+
         forecast: {
           inflow:
             forecastSummary,
 
-          rain:
-            rainForecastSummary,
+          hydrology_frequency:
+            hydrologyFrequency,
 
-          hydrology_frequency: {
-            percent:
-              null,
-
-            group:
-              null,
-
-            note:
-              "Chưa nối nguồn dữ liệu tần suất thủy văn",
-          },
-
-          dead_level: {
-            status:
-              null,
-
-            days:
-              null,
-
-            note:
-              "Chưa nối nguồn dữ liệu dự báo MN chết",
-          },
+          dead_level:
+            deadLevelForecast,
         },
 
         coverage: {
@@ -1779,15 +1904,15 @@ export default async function handler(
           reservoir_rows_7d:
             rows7d.length,
 
+          reservoir_rows_month_to_date:
+            latestMonthRows.length,
+
           inflow_forecast_rows:
             inflowForecastRows.length,
-
-          rainfall_forecast_rows:
-            rainfallForecastRows.length,
         },
       },
 
-      "private, max-age=0, s-maxage=60, stale-while-revalidate=120"
+      "private, max-age=0, s-maxage=60, stale-while-revalidate=180"
     );
   } catch (error) {
     console.error(
@@ -1799,7 +1924,8 @@ export default async function handler(
       res,
       500,
       {
-        ok: false,
+        ok:
+          false,
 
         mode:
           "mobile-overview",
