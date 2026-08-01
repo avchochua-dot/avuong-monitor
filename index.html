@@ -818,45 +818,39 @@
 
 
     /* ======================================================
-       PWA V10 - MỞ RỘNG: CARD DỄ NHẬN BIẾT + MAP FIX
+       V10 SAFE - CHỈ CHỈNH TAB MỞ RỘNG VÀ BẢN ĐỒ MƯA
+       Không thay đổi bottom navigation hoặc cấu trúc tab.
     ====================================================== */
 
-    .more-menu-grid{
+    #more-home .more-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:10px;
     }
 
-    .more-menu-card{
+    #more-home .more-card{
       position:relative;
-      min-height:176px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:flex-start;
-      text-align:center;
-      gap:8px;
-      padding:18px 12px 14px;
+      min-height:172px;
+      padding:16px 12px 14px;
       border-radius:18px;
-      border:1px solid rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.09);
       background:
         linear-gradient(
           180deg,
           rgba(255,255,255,.045),
           rgba(255,255,255,.018)
         );
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+      gap:8px;
+      text-align:center;
       overflow:hidden;
-      transition:
-        transform .18s ease,
-        border-color .18s ease,
-        background .18s ease;
+      color:var(--text-main);
     }
 
-    .more-menu-card:active{
-      transform:scale(.985);
-    }
-
-    .more-menu-card::before{
+    #more-home .more-card::before{
       content:"";
       position:absolute;
       inset:0;
@@ -864,143 +858,143 @@
       background:
         radial-gradient(
           circle at 50% 0%,
-          var(--card-glow, rgba(59,130,246,.14)),
-          transparent 55%
+          var(--more-glow,rgba(59,130,246,.15)),
+          transparent 56%
         );
-      opacity:.9;
     }
 
-    .more-menu-card > *{
+    #more-home .more-card > *{
       position:relative;
       z-index:1;
     }
 
-    .more-menu-icon{
-      width:56px;
-      height:56px;
+    #more-home .more-card .more-icon{
+      width:54px;
+      height:54px;
+      border-radius:18px;
       display:grid;
       place-items:center;
-      border-radius:18px;
-      font-size:29px;
-      border:1px solid var(--card-border, rgba(59,130,246,.35));
-      background:var(--card-bg, rgba(59,130,246,.14));
-      box-shadow:
-        0 10px 24px var(--card-shadow, rgba(59,130,246,.16));
+      flex:0 0 auto;
+      font-size:27px;
+      border:1px solid var(--more-border,rgba(59,130,246,.34));
+      background:var(--more-bg,rgba(59,130,246,.14));
+      box-shadow:0 9px 22px var(--more-shadow,rgba(59,130,246,.15));
+      margin:0 auto;
     }
 
-    .more-menu-title{
-      color:#f8fafc;
-      font-size:15px;
-      line-height:1.24;
-      font-weight:900;
+    #more-home .more-card b{
       min-height:38px;
       display:flex;
       align-items:center;
       justify-content:center;
+      color:#f8fafc;
+      font-size:14px;
+      line-height:1.25;
+      font-weight:900;
+      text-align:center;
     }
 
-    .more-menu-desc{
-      color:#9aa8be;
-      font-size:11px;
-      line-height:1.38;
-      min-height:46px;
+    #more-home .more-card small{
+      min-height:44px;
       display:flex;
       align-items:flex-start;
       justify-content:center;
+      color:#a5b1c5;
+      font-size:10.5px;
+      line-height:1.4;
       text-align:center;
       padding:0 2px;
     }
 
-    .more-menu-badge{
+    #more-home .more-badge{
       position:absolute;
-      top:10px;
-      right:10px;
-      min-width:34px;
-      min-height:22px;
+      top:9px;
+      right:9px;
+      min-height:21px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
       padding:3px 7px;
       border-radius:999px;
-      border:1px solid var(--card-border, rgba(59,130,246,.35));
-      background:rgba(15,23,42,.76);
-      color:var(--card-accent, #60a5fa);
+      border:1px solid var(--more-border,rgba(59,130,246,.34));
+      background:rgba(15,23,42,.82);
+      color:var(--more-accent,#60a5fa);
       font-size:8px;
+      line-height:1;
       font-weight:1000;
-      letter-spacing:.2px;
       text-transform:uppercase;
     }
 
-    .more-menu-card[data-theme="reservoir"]{
-      --card-accent:#2dd4bf;
-      --card-border:rgba(45,212,191,.36);
-      --card-bg:rgba(45,212,191,.14);
-      --card-shadow:rgba(45,212,191,.16);
-      --card-glow:rgba(45,212,191,.16);
+    #more-home .more-card.theme-reservoir{
+      --more-accent:#2dd4bf;
+      --more-border:rgba(45,212,191,.38);
+      --more-bg:rgba(45,212,191,.14);
+      --more-shadow:rgba(45,212,191,.16);
+      --more-glow:rgba(45,212,191,.17);
     }
 
-    .more-menu-card[data-theme="downstream"]{
-      --card-accent:#38bdf8;
-      --card-border:rgba(56,189,248,.36);
-      --card-bg:rgba(56,189,248,.14);
-      --card-shadow:rgba(56,189,248,.16);
-      --card-glow:rgba(56,189,248,.16);
+    #more-home .more-card.theme-downstream{
+      --more-accent:#38bdf8;
+      --more-border:rgba(56,189,248,.38);
+      --more-bg:rgba(56,189,248,.14);
+      --more-shadow:rgba(56,189,248,.16);
+      --more-glow:rgba(56,189,248,.17);
     }
 
-    .more-menu-card[data-theme="meteo"]{
-      --card-accent:#60a5fa;
-      --card-border:rgba(96,165,250,.36);
-      --card-bg:rgba(96,165,250,.14);
-      --card-shadow:rgba(96,165,250,.16);
-      --card-glow:rgba(96,165,250,.16);
+    #more-home .more-card.theme-meteo{
+      --more-accent:#60a5fa;
+      --more-border:rgba(96,165,250,.38);
+      --more-bg:rgba(96,165,250,.14);
+      --more-shadow:rgba(96,165,250,.16);
+      --more-glow:rgba(96,165,250,.17);
     }
 
-    .more-menu-card[data-theme="weather"]{
-      --card-accent:#34d399;
-      --card-border:rgba(52,211,153,.36);
-      --card-bg:rgba(52,211,153,.14);
-      --card-shadow:rgba(52,211,153,.16);
-      --card-glow:rgba(52,211,153,.16);
+    #more-home .more-card.theme-weather{
+      --more-accent:#34d399;
+      --more-border:rgba(52,211,153,.38);
+      --more-bg:rgba(52,211,153,.14);
+      --more-shadow:rgba(52,211,153,.16);
+      --more-glow:rgba(52,211,153,.17);
     }
 
-    .more-menu-card[data-theme="windy"]{
-      --card-accent:#818cf8;
-      --card-border:rgba(129,140,248,.36);
-      --card-bg:rgba(129,140,248,.14);
-      --card-shadow:rgba(129,140,248,.16);
-      --card-glow:rgba(129,140,248,.16);
+    #more-home .more-card.theme-windy{
+      --more-accent:#818cf8;
+      --more-border:rgba(129,140,248,.38);
+      --more-bg:rgba(129,140,248,.14);
+      --more-shadow:rgba(129,140,248,.16);
+      --more-glow:rgba(129,140,248,.17);
     }
 
-    .more-menu-card[data-theme="flood"]{
-      --card-accent:#fb923c;
-      --card-border:rgba(251,146,60,.36);
-      --card-bg:rgba(251,146,60,.14);
-      --card-shadow:rgba(251,146,60,.16);
-      --card-glow:rgba(251,146,60,.16);
+    #more-home .more-card.theme-flood{
+      --more-accent:#fb923c;
+      --more-border:rgba(251,146,60,.38);
+      --more-bg:rgba(251,146,60,.14);
+      --more-shadow:rgba(251,146,60,.16);
+      --more-glow:rgba(251,146,60,.17);
     }
 
-    .more-menu-card[data-theme="marker"]{
-      --card-accent:#f87171;
-      --card-border:rgba(248,113,113,.36);
-      --card-bg:rgba(248,113,113,.14);
-      --card-shadow:rgba(248,113,113,.16);
-      --card-glow:rgba(248,113,113,.16);
+    #more-home .more-card.theme-marker{
+      --more-accent:#f87171;
+      --more-border:rgba(248,113,113,.38);
+      --more-bg:rgba(248,113,113,.14);
+      --more-shadow:rgba(248,113,113,.16);
+      --more-glow:rgba(248,113,113,.17);
     }
 
-    .more-menu-card[data-theme="chat"]{
-      --card-accent:#c084fc;
-      --card-border:rgba(192,132,252,.36);
-      --card-bg:rgba(192,132,252,.14);
-      --card-shadow:rgba(192,132,252,.16);
-      --card-glow:rgba(192,132,252,.16);
+    #more-home .more-card.theme-chat{
+      --more-accent:#c084fc;
+      --more-border:rgba(192,132,252,.38);
+      --more-bg:rgba(192,132,252,.14);
+      --more-shadow:rgba(192,132,252,.16);
+      --more-glow:rgba(192,132,252,.17);
     }
 
-    .more-menu-card[data-theme="ai"]{
-      --card-accent:#f472b6;
-      --card-border:rgba(244,114,182,.36);
-      --card-bg:rgba(244,114,182,.14);
-      --card-shadow:rgba(244,114,182,.16);
-      --card-glow:rgba(244,114,182,.16);
+    #more-home .more-card.theme-ai{
+      --more-accent:#f472b6;
+      --more-border:rgba(244,114,182,.38);
+      --more-bg:rgba(244,114,182,.14);
+      --more-shadow:rgba(244,114,182,.16);
+      --more-glow:rgba(244,114,182,.17);
     }
 
     .rain-mobile-map{
@@ -1018,17 +1012,6 @@
       min-height:280px!important;
     }
 
-    .rain-mobile-map .leaflet-map-pane,
-    .rain-mobile-map .leaflet-tile-pane,
-    .rain-mobile-map .leaflet-overlay-pane,
-    .rain-mobile-map .leaflet-shadow-pane,
-    .rain-mobile-map .leaflet-marker-pane,
-    .rain-mobile-map .leaflet-tooltip-pane,
-    .rain-mobile-map .leaflet-popup-pane{
-      position:absolute;
-      inset:0 auto auto 0;
-    }
-
     .rain-mobile-map .leaflet-marker-pane{
       z-index:650;
     }
@@ -1039,23 +1022,23 @@
     }
 
     @media (max-width:390px){
-      .more-menu-card{
-        min-height:168px;
-        padding:16px 10px 12px;
+      #more-home .more-card{
+        min-height:164px;
+        padding:15px 9px 12px;
       }
 
-      .more-menu-icon{
-        width:52px;
-        height:52px;
-        font-size:27px;
+      #more-home .more-card .more-icon{
+        width:50px;
+        height:50px;
+        font-size:25px;
       }
 
-      .more-menu-title{
-        font-size:14px;
+      #more-home .more-card b{
+        font-size:13px;
       }
 
-      .more-menu-desc{
-        font-size:10.5px;
+      #more-home .more-card small{
+        font-size:10px;
       }
     }
 
@@ -1250,134 +1233,71 @@
       <div id="more-home">
         <div class="card">
           <div class="cardHead"><b>Mở rộng</b><span class="chip">Chỉ xem</span></div>
-          <div class="more-menu-grid">
+          <div class="more-grid">
+            <button class="more-card theme-reservoir" onclick="openMorePanel('reservoirs')">
+              <span class="more-badge">3 hồ</span>
+              <span class="more-icon">🏞️</span>
+              <b>Các hồ liên quan</b>
+              <small>Sông Bung 4 • Đăk Mi 4<br>Sông Tranh 2</small>
+            </button>
 
-        <button
-          class="more-menu-card"
-          data-theme="reservoir"
-          onclick="openMorePanel('reservoirs')"
-        >
-          <span class="more-menu-badge">3 hồ</span>
-          <span class="more-menu-icon">🏞️</span>
-          <span class="more-menu-title">Các hồ liên quan</span>
-          <span class="more-menu-desc">
-            Sông Bung 4 • Đăk Mi 4<br>
-            Sông Tranh 2
-          </span>
-        </button>
+            <button class="more-card theme-downstream" onclick="openMorePanel('downstream')">
+              <span class="more-badge">24–72h</span>
+              <span class="more-icon">🌊</span>
+              <b>Mực nước hạ du</b>
+              <small>Hội Khách • Ái Nghĩa<br>Xem số liệu theo giờ</small>
+            </button>
 
-        <button
-          class="more-menu-card"
-          data-theme="downstream"
-          onclick="openMorePanel('downstream')"
-        >
-          <span class="more-menu-badge">24–72h</span>
-          <span class="more-menu-icon">🌊</span>
-          <span class="more-menu-title">Mực nước hạ du</span>
-          <span class="more-menu-desc">
-            Hội Khách • Ái Nghĩa<br>
-            Xem số liệu theo giờ
-          </span>
-        </button>
+            <button class="more-card theme-meteo" onclick="openMorePanel('openmeteo')">
+              <span class="more-badge">9 vị trí</span>
+              <span class="more-icon">🌧️</span>
+              <b>Mưa Open-Meteo</b>
+              <small>Bản đồ vị trí trạm<br>Mưa 24h / 48h / 72h</small>
+            </button>
 
-        <button
-          class="more-menu-card"
-          data-theme="meteo"
-          onclick="openMorePanel('openmeteo')"
-        >
-          <span class="more-menu-badge">9 vị trí</span>
-          <span class="more-menu-icon">🌧️</span>
-          <span class="more-menu-title">Mưa Open-Meteo</span>
-          <span class="more-menu-desc">
-            Bản đồ vị trí trạm<br>
-            Mưa 24h / 48h / 72h
-          </span>
-        </button>
+            <button class="more-card theme-weather" onclick="openMorePanel('openweather')">
+              <span class="more-badge">9 vị trí</span>
+              <span class="more-icon">🌦️</span>
+              <b>Mưa OpenWeather</b>
+              <small>Bản đồ vị trí trạm<br>Mưa 24h / 48h / 72h</small>
+            </button>
 
-        <button
-          class="more-menu-card"
-          data-theme="weather"
-          onclick="openMorePanel('openweather')"
-        >
-          <span class="more-menu-badge">9 vị trí</span>
-          <span class="more-menu-icon">🌦️</span>
-          <span class="more-menu-title">Mưa OpenWeather</span>
-          <span class="more-menu-desc">
-            Bản đồ vị trí trạm<br>
-            Mưa 24h / 48h / 72h
-          </span>
-        </button>
+            <button class="more-card theme-windy" onclick="openWindyViewer('rain')">
+              <span class="more-badge">Live</span>
+              <span class="more-icon">🌀</span>
+              <b>Bản đồ thời tiết Windy</b>
+              <small>Mưa • Radar • Gió<br>Mây • Vệ tinh • Nhiệt độ</small>
+            </button>
 
-        <button
-          class="more-menu-card"
-          data-theme="windy"
-          onclick="openContentViewer('windy')"
-        >
-          <span class="more-menu-badge">Live</span>
-          <span class="more-menu-icon">🌀</span>
-          <span class="more-menu-title">Bản đồ thời tiết Windy</span>
-          <span class="more-menu-desc">
-            Mưa • Radar • Gió<br>
-            Mây • Vệ tinh • Nhiệt độ
-          </span>
-        </button>
+            <button class="more-card theme-flood" onclick="openMorePanel('maps')">
+              <span class="more-badge">Map</span>
+              <span class="more-icon">🗺️</span>
+              <b>Bản đồ ngập lụt</b>
+              <small>Xem trực tiếp trong PWA<br>Có nút mở ngoài</small>
+            </button>
 
-        <button
-          class="more-menu-card"
-          data-theme="flood"
-          onclick="openContentViewer('flood')"
-        >
-          <span class="more-menu-badge">Map</span>
-          <span class="more-menu-icon">🗺️</span>
-          <span class="more-menu-title">Bản đồ ngập lụt</span>
-          <span class="more-menu-desc">
-            Xem trực tiếp trong PWA<br>
-            Có nút mở rộng bản đồ
-          </span>
-        </button>
+            <button class="more-card theme-marker" onclick="openMorePanel('floodmarks')">
+              <span class="more-badge">Google</span>
+              <span class="more-icon">📍</span>
+              <b>Mốc lũ hạ du</b>
+              <small>Tra cứu Google My Maps<br>Xem nhanh các mốc lũ</small>
+            </button>
 
-        <button
-          class="more-menu-card"
-          data-theme="marker"
-          onclick="openContentViewer('markers')"
-        >
-          <span class="more-menu-badge">Google</span>
-          <span class="more-menu-icon">📍</span>
-          <span class="more-menu-title">Mốc lũ hạ du</span>
-          <span class="more-menu-desc">
-            Tra cứu Google My Maps<br>
-            Xem nhanh các mốc lũ
-          </span>
-        </button>
+            <button class="more-card theme-chat" onclick="openMorePanel('chat')">
+              <span class="more-badge">AI</span>
+              <span class="more-icon">🤖</span>
+              <b>Chatbox AI</b>
+              <small>Hỏi nhanh số liệu<br>Tra cứu thông tin đang hiển thị</small>
+            </button>
 
-        <button
-          class="more-menu-card"
-          data-theme="chat"
-          onclick="openMorePanel('chat')"
-        >
-          <span class="more-menu-badge">AI</span>
-          <span class="more-menu-icon">🤖</span>
-          <span class="more-menu-title">Chatbox AI</span>
-          <span class="more-menu-desc">
-            Hỏi nhanh số liệu<br>
-            Tra cứu thông tin đang hiển thị
-          </span>
-        </button>
-
-        <button
-          class="more-menu-card"
-          data-theme="ai"
-          onclick="openMorePanel('ai')"
-        >
-          <span class="more-menu-badge">AI</span>
-          <span class="more-menu-icon">✨</span>
-          <span class="more-menu-title">Nhận định AI</span>
-          <span class="more-menu-desc">
-            Tóm tắt xu thế<br>
-            Xem nhận định gần nhất
-          </span>
-        </button>
-
+            <button class="more-card theme-ai" onclick="openMorePanel('bulletins')">
+              <span class="more-badge">AI</span>
+              <span class="more-icon">✨</span>
+              <b>Nhận định AI</b>
+              <small>Tóm tắt xu thế<br>Xem nhận định gần nhất</small>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div id="more-downstream" class="more-panel card">
@@ -3018,11 +2938,12 @@
     const panel=$(`more-${name}`);
     if(panel) panel.classList.add("active");
     if(name==="downstream") loadDownstreamMobile();
+
     if(name==="openmeteo"){
       loadRainMobile("openmeteo");
       setTimeout(
         () => refreshRainMapSize("openmeteo"),
-        300
+        320
       );
     }
 
@@ -3030,9 +2951,10 @@
       loadRainMobile("openweather");
       setTimeout(
         () => refreshRainMapSize("openweather"),
-        300
+        320
       );
     }
+
     if(name==="reservoirs") loadRelatedReservoirs();
     if(name==="bulletins") loadAIBulletins();
   }
@@ -3514,7 +3436,7 @@
         state.map.fitBounds(
           bounds,
           {
-            padding: [22, 22],
+            padding: [20, 20],
             maxZoom: 11,
             animate: false,
           }
@@ -3526,8 +3448,8 @@
       requestAnimationFrame(refresh);
     });
 
-    setTimeout(refresh, 180);
-    setTimeout(refresh, 450);
+    setTimeout(refresh, 200);
+    setTimeout(refresh, 500);
     setTimeout(refresh, 900);
   }
 
