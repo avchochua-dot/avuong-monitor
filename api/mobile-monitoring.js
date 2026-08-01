@@ -1,25 +1,18 @@
 /**
  * api/mobile-monitoring.js
  *
- * API tổng hợp:
- * 1. Mực nước hạ du Hội Khách - Ái Nghĩa từ Supabase.
- * 2. Số liệu các hồ liên quan từ API PCTT Đà Nẵng:
- *    - 1: A Vương
- *    - 2: Đăk Mi 4
- *    - 3: Sông Bung 4
- *    - 4: Sông Tranh 2
+ * Gộp dữ liệu:
+ * - Hạ du Hội Khách, Ái Nghĩa từ Supabase.
+ * - Đăk Mi 4, Sông Bung 4, Sông Tranh 2 từ XML PCTT Đà Nẵng.
  *
  * URL:
  * /api/mobile-monitoring?hours=24
  * /api/mobile-monitoring?hours=48
  * /api/mobile-monitoring?hours=72
  *
- * Environment Variables trên Vercel:
+ * Environment Variables:
  * - SUPABASE_URL
  * - SUPABASE_SERVICE_ROLE_KEY
- *
- * Frontend gửi:
- * Authorization: Bearer <supabase_access_token>
  */
 
 const SUPABASE_URL =
@@ -33,8 +26,6 @@ const PCTT_API_URL =
   "DesktopModules/PCTT/api/PCTTApi/" +
   "baocaothuydiens_thongke";
 
-const VN_OFFSET_HOURS = 7;
-
 const ALLOWED_HOURS = [
   24,
   48,
@@ -46,25 +37,25 @@ const RESERVOIR_MAPPING = [
     index: 1,
     code: "A_VUONG",
     name: "A Vương",
-    include_in_related: false,
+    include: false,
   },
   {
     index: 2,
     code: "DAK_MI_4",
     name: "Đăk Mi 4",
-    include_in_related: true,
+    include: true,
   },
   {
     index: 3,
     code: "SONG_BUNG_4",
     name: "Sông Bung 4",
-    include_in_related: true,
+    include: true,
   },
   {
     index: 4,
     code: "SONG_TRANH_2",
     name: "Sông Tranh 2",
-    include_in_related: true,
+    include: true,
   },
 ];
 
@@ -119,7 +110,7 @@ function toNumber(
   if (
     value === null ||
     value === undefined ||
-    value === ""
+    String(value).trim() === ""
   ) {
     return fallback;
   }
@@ -155,38 +146,13 @@ function round(
   );
 }
 
-function clampHours(value) {
+function normalizeHours(value) {
   const hours =
     Number(value);
 
-  if (
-    ALLOWED_HOURS.includes(hours)
-  ) {
-    return hours;
-  }
-
-  return 24;
-}
-
-function normalizeIsoTime(
-  value
-) {
-  if (!value) {
-    return null;
-  }
-
-  const date =
-    new Date(value);
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return null;
-  }
-
-  return date.toISOString();
+  return ALLOWED_HOURS.includes(hours)
+    ? hours
+    : 24;
 }
 
 /* ======================================================
@@ -254,7 +220,7 @@ async function verifySupabaseUser(
       }
     );
 
-  const bodyText =
+  const body =
     await response.text();
 
   if (!response.ok) {
@@ -264,12 +230,6 @@ async function verifySupabaseUser(
 
       error:
         "Phiên đăng nhập không hợp lệ hoặc đã hết hạn",
-
-      detail:
-        bodyText.slice(
-          0,
-          300
-        ),
     };
   }
 
@@ -277,7 +237,7 @@ async function verifySupabaseUser(
     return {
       ok: true,
       user:
-        JSON.parse(bodyText),
+        JSON.parse(body),
     };
   } catch {
     return {
@@ -298,7 +258,7 @@ async function supabaseSelect(
   table,
   params = {}
 ) {
-  const search =
+  const query =
     new URLSearchParams();
 
   for (
@@ -310,7 +270,7 @@ async function supabaseSelect(
       value !== undefined &&
       value !== ""
     ) {
-      search.append(
+      query.append(
         key,
         String(value)
       );
@@ -320,8 +280,8 @@ async function supabaseSelect(
   const url =
     `${SUPABASE_URL}/rest/v1/${table}` +
     (
-      search.toString()
-        ? `?${search.toString()}`
+      query.toString()
+        ? `?${query.toString()}`
         : ""
     );
 
@@ -344,14 +304,14 @@ async function supabaseSelect(
       }
     );
 
-  const bodyText =
+  const body =
     await response.text();
 
   if (!response.ok) {
     throw new Error(
       `Supabase SELECT ${table} ` +
       `${response.status}: ` +
-      bodyText.slice(
+      body.slice(
         0,
         500
       )
@@ -360,7 +320,7 @@ async function supabaseSelect(
 
   try {
     return JSON.parse(
-      bodyText
+      body
     );
   } catch {
     throw new Error(
@@ -373,56 +333,62 @@ async function supabaseSelect(
    DATE / TIME
 ====================================================== */
 
-function pad2(value) {
-  return String(value)
-    .padStart(
-      2,
-      "0"
-    );
-}
+function getVnParts(date) {
+  const parts =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:
+          "Asia/Ho_Chi_Minh",
 
-function toVnDateParts(date) {
-  const shifted =
-    new Date(
-      date.getTime() +
-      VN_OFFSET_HOURS *
-      60 *
-      60 *
-      1000
-    );
+        year:
+          "numeric",
 
-  return {
-    year:
-      shifted.getUTCFullYear(),
+        month:
+          "2-digit",
 
-    month:
-      shifted.getUTCMonth() + 1,
+        day:
+          "2-digit",
 
-    day:
-      shifted.getUTCDate(),
+        hour:
+          "2-digit",
 
-    hour:
-      shifted.getUTCHours(),
+        minute:
+          "2-digit",
 
-    minute:
-      shifted.getUTCMinutes(),
+        second:
+          "2-digit",
 
-    second:
-      shifted.getUTCSeconds(),
-  };
+        hour12:
+          false,
+      }
+    ).formatToParts(date);
+
+  const result = {};
+
+  for (const part of parts) {
+    if (
+      part.type !== "literal"
+    ) {
+      result[part.type] =
+        part.value;
+    }
+  }
+
+  return result;
 }
 
 function formatPCTTDateTime(date) {
   const p =
-    toVnDateParts(date);
+    getVnParts(date);
 
   return (
     `${p.year}-` +
-    `${pad2(p.month)}-` +
-    `${pad2(p.day)}` +
-    `T${pad2(p.hour)}:` +
-    `${pad2(p.minute)}:` +
-    `${pad2(p.second)}` +
+    `${p.month}-` +
+    `${p.day}` +
+    `T${p.hour}:` +
+    `${p.minute}:` +
+    `${p.second}` +
     "+07:00"
   );
 }
@@ -453,13 +419,55 @@ function buildPCTTUrl(
   );
 }
 
+function normalizePCTTTime(
+  value
+) {
+  if (!value) {
+    return null;
+  }
+
+  const date =
+    new Date(value);
+
+  return Number.isNaN(
+    date.getTime()
+  )
+    ? null
+    : date.toISOString();
+}
+
+function getVietnamHourKey(
+  value
+) {
+  const date =
+    value instanceof Date
+      ? value
+      : new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return null;
+  }
+
+  const p =
+    getVnParts(date);
+
+  return (
+    `${p.year}-` +
+    `${p.month}-` +
+    `${p.day}` +
+    `T${p.hour}:00`
+  );
+}
+
 /* ======================================================
    XML PARSER
 ====================================================== */
 
-function decodeXmlEntities(
-  value
-) {
+function decodeXmlEntities(value) {
   return String(value || "")
     .replace(
       /&lt;/g,
@@ -505,106 +513,56 @@ function getXmlTagValue(
     String(xml || "")
       .match(pattern);
 
-  if (!match) {
-    return null;
-  }
-
-  return decodeXmlEntities(
-    match[1]
-  ).trim();
+  return match
+    ? decodeXmlEntities(
+        match[1]
+      ).trim()
+    : null;
 }
 
 function parsePCTTXml(
   xmlText
 ) {
-  const xml =
-    String(xmlText || "");
+  const matches =
+    String(xmlText || "")
+      .match(
+        /<Table(?:\s[^>]*)?>[\s\S]*?<\/Table>/gi
+      ) || [];
 
-  const tableMatches =
-    xml.match(
-      /<Table(?:\s[^>]*)?>[\s\S]*?<\/Table>/gi
-    ) || [];
-
-  const rows = [];
+  const parsed = [];
 
   for (
     const tableXml
-    of tableMatches
+    of matches
   ) {
-    const timeRaw =
-      getXmlTagValue(
-        tableXml,
-        "thoigianxa"
+    const time =
+      normalizePCTTTime(
+        getXmlTagValue(
+          tableXml,
+          "thoigianxa"
+        )
       );
 
-    const timeIso =
-      normalizeIsoTime(
-        timeRaw
-      );
-
-    if (!timeIso) {
+    if (!time) {
       continue;
     }
 
-    const row = {
-      time:
-        timeIso,
-
-      raw_time:
-        timeRaw,
-
-      date_text:
-        getXmlTagValue(
-          tableXml,
-          "ngay"
-        ),
-
-      hour_text:
-        getXmlTagValue(
-          tableXml,
-          "gio"
-        ),
-
-      basin_flow: {
-        vu_gia_m3s:
-          round(
-            toNumber(
-              getXmlTagValue(
-                tableXml,
-                "qvevugia"
-              )
-            ),
-            2
-          ),
-
-        thu_bon_m3s:
-          round(
-            toNumber(
-              getXmlTagValue(
-                tableXml,
-                "qvethubon"
-              )
-            ),
-            2
-          ),
-      },
-
-      reservoirs: [],
-    };
+    const reservoirs = [];
 
     for (
-      const reservoir
+      const config
       of RESERVOIR_MAPPING
     ) {
       const index =
-        reservoir.index;
+        config.index;
 
       const waterLevel =
         toNumber(
           getXmlTagValue(
             tableXml,
             `htl${index}`
-          )
+          ),
+          null
         );
 
       const inflow =
@@ -612,54 +570,36 @@ function parsePCTTXml(
           getXmlTagValue(
             tableXml,
             `qvao${index}`
-          )
+          ),
+          null
         );
 
-      const turbineFlow =
+      const turbine =
         toNumber(
           getXmlTagValue(
             tableXml,
             `luuluongnhamay${index}`
-          )
+          ),
+          null
         );
 
-      const spillwayFlow =
+      const spillway =
         toNumber(
           getXmlTagValue(
             tableXml,
             `qxaquacua${index}`
-          )
+          ),
+          null
         );
 
-      const totalOutflow =
-        (
-          Number.isFinite(
-            turbineFlow
-          ) ||
-          Number.isFinite(
-            spillwayFlow
-          )
-        )
-          ? (
-              toNumber(
-                turbineFlow,
-                0
-              ) +
-              toNumber(
-                spillwayFlow,
-                0
-              )
-            )
-          : null;
+      reservoirs.push({
+        index,
 
-      row.reservoirs.push({
         code:
-          reservoir.code,
+          config.code,
 
         name:
-          reservoir.name,
-
-        index,
+          config.name,
 
         water_level_m:
           round(
@@ -675,41 +615,161 @@ function parsePCTTXml(
 
         turbine_flow_m3s:
           round(
-            turbineFlow,
+            turbine,
             2
           ),
 
         spillway_flow_m3s:
           round(
-            spillwayFlow,
+            spillway,
             2
           ),
 
         total_outflow_m3s:
-          round(
-            totalOutflow,
-            2
-          ),
+          (
+            turbine === null &&
+            spillway === null
+          )
+            ? null
+            : round(
+                (
+                  turbine || 0
+                ) +
+                (
+                  spillway || 0
+                ),
+                2
+              ),
       });
     }
 
-    rows.push(row);
+    parsed.push({
+      time,
+
+      hour_key:
+        getVietnamHourKey(
+          time
+        ),
+
+      basin_flow: {
+        vu_gia_m3s:
+          round(
+            toNumber(
+              getXmlTagValue(
+                tableXml,
+                "qvevugia"
+              ),
+              null
+            ),
+            2
+          ),
+
+        thu_bon_m3s:
+          round(
+            toNumber(
+              getXmlTagValue(
+                tableXml,
+                "qvethubon"
+              ),
+              null
+            ),
+            2
+          ),
+      },
+
+      reservoirs,
+    });
   }
 
-  return rows.sort(
+  /*
+    Loại trùng theo giờ Việt Nam.
+
+    Nếu API trả nhiều bản ghi
+    trong cùng một giờ,
+    giữ bản ghi xuất hiện sau cùng.
+  */
+  const byHour =
+    new Map();
+
+  for (
+    const row
+    of parsed
+  ) {
+    if (row.hour_key) {
+      byHour.set(
+        row.hour_key,
+        row
+      );
+    }
+  }
+
+  return [
+    ...byHour.values(),
+  ].sort(
     (a, b) =>
-      new Date(a.time).getTime() -
-      new Date(b.time).getTime()
+      new Date(
+        a.time
+      ).getTime() -
+      new Date(
+        b.time
+      ).getTime()
   );
+}
+
+/* ======================================================
+   HOUR FILTER
+====================================================== */
+
+function buildAllowedHourKeys(
+  endTime,
+  hours
+) {
+  const end =
+    new Date(endTime);
+
+  end.setUTCMinutes(
+    0,
+    0,
+    0
+  );
+
+  const keys = [];
+
+  for (
+    let index = 0;
+    index < hours;
+    index += 1
+  ) {
+    const slot =
+      new Date(
+        end.getTime() -
+        index *
+        60 *
+        60 *
+        1000
+      );
+
+    const key =
+      getVietnamHourKey(
+        slot
+      );
+
+    if (key) {
+      keys.push(key);
+    }
+  }
+
+  return new Set(keys);
 }
 
 /* ======================================================
    PCTT FETCH
 ====================================================== */
 
-async function fetchPCTTData(
+async function fetchPCTT(
   startTime,
-  endTime
+  endTime,
+  hours
 ) {
   const url =
     buildPCTTUrl(
@@ -722,8 +782,9 @@ async function fetchPCTTData(
 
   const timeout =
     setTimeout(
-      () =>
-        controller.abort(),
+      () => {
+        controller.abort();
+      },
       15000
     );
 
@@ -739,7 +800,7 @@ async function fetchPCTTData(
               "application/xml,text/xml,*/*",
 
             "User-Agent":
-              "avuong-pwa-monitoring/1.0",
+              "avuong-pwa-monitoring/2.0",
           },
 
           signal:
@@ -747,13 +808,14 @@ async function fetchPCTTData(
         }
       );
 
-    const bodyText =
+    const body =
       await response.text();
 
     if (!response.ok) {
       throw new Error(
-        `PCTT API HTTP ${response.status}: ` +
-        bodyText.slice(
+        `PCTT API HTTP ` +
+        `${response.status}: ` +
+        body.slice(
           0,
           500
         )
@@ -762,28 +824,48 @@ async function fetchPCTTData(
 
     const rows =
       parsePCTTXml(
-        bodyText
+        body
       );
 
-    if (!rows.length) {
-      throw new Error(
-        "PCTT API không trả về bản ghi Table hợp lệ"
+    const allowed =
+      buildAllowedHourKeys(
+        endTime,
+        hours
       );
-    }
+
+    const filtered =
+      rows.filter(
+        (row) =>
+          allowed.has(
+            row.hour_key
+          )
+      );
 
     return {
       ok: true,
       url,
-      rows,
-      count:
+
+      rows:
+        filtered,
+
+      raw_count:
         rows.length,
+
+      count:
+        filtered.length,
     };
   } catch (error) {
     return {
       ok: false,
       url,
+
       rows: [],
-      count: 0,
+
+      raw_count:
+        0,
+
+      count:
+        0,
 
       error:
         error?.name ===
@@ -791,7 +873,7 @@ async function fetchPCTTData(
           ? "PCTT API timeout sau 15 giây"
           : (
               error?.message ||
-              "Lỗi PCTT API không xác định"
+              "Lỗi PCTT không xác định"
             ),
     };
   } finally {
@@ -836,197 +918,215 @@ async function loadDownstream(
       }
     );
 
-  const filtered =
-    (rows || [])
-      .filter(
-        (row) => {
-          const time =
-            new Date(
-              row.obs_hour ||
-              row.obs_time ||
-              0
-            ).getTime();
-
-          return (
-            Number.isFinite(time) &&
-            time <=
-            endTime.getTime()
-          );
-        }
-      )
-      .map(
-        (row) => ({
-          id:
-            row.id || null,
-
-          obs_hour:
-            normalizeIsoTime(
-              row.obs_hour ||
-              row.obs_time
-            ),
-
-          obs_time:
-            normalizeIsoTime(
-              row.obs_time ||
-              row.obs_hour
-            ),
-
-          hoi_khach_m:
-            round(
-              toNumber(
-                row.hoi_khach_m
-              ),
-              2
-            ),
-
-          ai_nghia_m:
-            round(
-              toNumber(
-                row.ai_nghia_m
-              ),
-              2
-            ),
-
-          source:
-            row.source ||
-            null,
-
-          note:
-            row.note ||
-            "",
-
-          created_by:
-            row.created_by ||
-            null,
-
-          created_at:
-            row.created_at ||
-            null,
-
-          updated_at:
-            row.updated_at ||
-            null,
-        })
-      )
-      .sort(
-        (a, b) =>
-          new Date(
-            a.obs_hour
-          ).getTime() -
-          new Date(
-            b.obs_hour
-          ).getTime()
-      );
-
-  const latest =
-    filtered.length
-      ? filtered[
-          filtered.length - 1
-        ]
-      : null;
-
-  return {
-    latest,
-    history:
-      filtered,
-
-    count:
-      filtered.length,
-  };
-}
-
-/* ======================================================
-   RESERVOIR RESPONSE BUILDER
-====================================================== */
-
-function buildRelatedReservoirs(
-  pcttRows
-) {
-  const result = [];
+  const map =
+    new Map();
 
   for (
-    const config
-    of RESERVOIR_MAPPING
+    const row
+    of rows || []
   ) {
+    const timeRaw =
+      row.obs_hour ||
+      row.obs_time;
+
+    const time =
+      new Date(timeRaw);
+
     if (
-      !config.include_in_related
+      Number.isNaN(
+        time.getTime()
+      ) ||
+      time.getTime() >
+      endTime.getTime()
     ) {
       continue;
     }
 
-    const history =
-      pcttRows
-        .map(
-          (row) => {
-            const data =
-              row.reservoirs.find(
-                (item) =>
-                  item.index ===
-                  config.index
-              );
+    const key =
+      getVietnamHourKey(
+        time
+      );
 
-            if (!data) {
-              return null;
-            }
+    if (!key) {
+      continue;
+    }
 
-            return {
-              time:
-                row.time,
+    map.set(
+      key,
+      {
+        id:
+          row.id ||
+          null,
 
-              water_level_m:
-                data.water_level_m,
+        obs_hour:
+          time.toISOString(),
 
-              inflow_m3s:
-                data.inflow_m3s,
+        obs_time:
+          row.obs_time ||
+          row.obs_hour,
 
-              turbine_flow_m3s:
-                data.turbine_flow_m3s,
+        hoi_khach_m:
+          round(
+            toNumber(
+              row.hoi_khach_m,
+              null
+            ),
+            2
+          ),
 
-              spillway_flow_m3s:
-                data.spillway_flow_m3s,
+        ai_nghia_m:
+          round(
+            toNumber(
+              row.ai_nghia_m,
+              null
+            ),
+            2
+          ),
 
-              total_outflow_m3s:
-                data.total_outflow_m3s,
+        source:
+          row.source ||
+          null,
 
-              source:
-                "pctt_danang",
-            };
-          }
-        )
-        .filter(Boolean);
+        note:
+          row.note ||
+          "",
 
-    result.push({
-      code:
-        config.code,
+        created_by:
+          row.created_by ||
+          null,
 
-      name:
-        config.name,
+        created_at:
+          row.created_at ||
+          null,
 
-      latest:
-        history.length
-          ? history[
-              history.length - 1
-            ]
-          : null,
-
-      history,
-
-      count:
-        history.length,
-    });
+        updated_at:
+          row.updated_at ||
+          null,
+      }
+    );
   }
 
-  return result;
+  const history =
+    [
+      ...map.values(),
+    ].sort(
+      (a, b) =>
+        new Date(
+          a.obs_hour
+        ).getTime() -
+        new Date(
+          b.obs_hour
+        ).getTime()
+    );
+
+  return {
+    latest:
+      history.length
+        ? history[
+            history.length - 1
+          ]
+        : null,
+
+    history,
+
+    count:
+      history.length,
+  };
+}
+
+/* ======================================================
+   RELATED RESERVOIRS
+====================================================== */
+
+function buildRelatedReservoirs(
+  rows
+) {
+  return RESERVOIR_MAPPING
+    .filter(
+      (config) =>
+        config.include
+    )
+    .map(
+      (config) => {
+        const history =
+          rows
+            .map(
+              (row) => {
+                const data =
+                  row.reservoirs
+                    .find(
+                      (item) =>
+                        item.index ===
+                        config.index
+                    );
+
+                if (!data) {
+                  return null;
+                }
+
+                return {
+                  time:
+                    row.time,
+
+                  hour_key:
+                    row.hour_key,
+
+                  water_level_m:
+                    data.water_level_m,
+
+                  inflow_m3s:
+                    data.inflow_m3s,
+
+                  turbine_flow_m3s:
+                    data.turbine_flow_m3s,
+
+                  spillway_flow_m3s:
+                    data.spillway_flow_m3s,
+
+                  total_outflow_m3s:
+                    data.total_outflow_m3s,
+
+                  source:
+                    "pctt_danang",
+                };
+              }
+            )
+            .filter(Boolean);
+
+        return {
+          code:
+            config.code,
+
+          name:
+            config.name,
+
+          latest:
+            history.length
+              ? history[
+                  history.length - 1
+                ]
+              : null,
+
+          history,
+
+          count:
+            history.length,
+        };
+      }
+    );
 }
 
 function buildBasinFlow(
-  pcttRows
+  rows
 ) {
   const history =
-    pcttRows.map(
+    rows.map(
       (row) => ({
         time:
           row.time,
+
+        hour_key:
+          row.hour_key,
 
         vu_gia_m3s:
           row.basin_flow
@@ -1093,12 +1193,9 @@ export default async function handler(
   try {
     requireEnvironment();
 
-    const accessToken =
-      getBearerToken(req);
-
     const auth =
       await verifySupabaseUser(
-        accessToken
+        getBearerToken(req)
       );
 
     if (!auth.ok) {
@@ -1114,14 +1211,32 @@ export default async function handler(
     }
 
     const hours =
-      clampHours(
+      normalizeHours(
         req.query.hours
       );
 
     const endTime =
       new Date();
 
-    const startTime =
+    /*
+      Lấy dư 2 giờ ở đầu
+      để phòng API PCTT làm tròn biên.
+
+      Sau đó sẽ lọc lại chính xác
+      theo 24h / 48h / 72h.
+    */
+    const pcttStartTime =
+      new Date(
+        endTime.getTime() -
+        (
+          hours + 2
+        ) *
+        60 *
+        60 *
+        1000
+      );
+
+    const downstreamStartTime =
       new Date(
         endTime.getTime() -
         hours *
@@ -1131,95 +1246,93 @@ export default async function handler(
       );
 
     const [
-      downstreamResult,
-      pcttResult,
+      downstreamSettled,
+      pcttSettled,
     ] =
       await Promise.allSettled([
         loadDownstream(
-          startTime,
+          downstreamStartTime,
           endTime
         ),
 
-        fetchPCTTData(
-          startTime,
-          endTime
+        fetchPCTT(
+          pcttStartTime,
+          endTime,
+          hours
         ),
       ]);
 
-    let downstream = {
-      latest: null,
-      history: [],
-      count: 0,
-    };
-
-    let downstreamError =
-      null;
-
-    if (
-      downstreamResult.status ===
+    const downstream =
+      downstreamSettled.status ===
       "fulfilled"
-    ) {
-      downstream =
-        downstreamResult.value;
-    } else {
-      downstreamError =
-        downstreamResult.reason
-          ?.message ||
-        "Lỗi tải dữ liệu hạ du";
-    }
+        ? downstreamSettled.value
+        : {
+            latest:
+              null,
 
-    let pcttData = {
-      ok: false,
-      rows: [],
-      count: 0,
-      url: null,
-      error:
-        "Chưa tải được PCTT",
-    };
+            history:
+              [],
 
-    if (
-      pcttResult.status ===
+            count:
+              0,
+          };
+
+    const downstreamError =
+      downstreamSettled.status ===
+      "rejected"
+        ? (
+            downstreamSettled
+              .reason
+              ?.message ||
+            "Lỗi tải dữ liệu hạ du"
+          )
+        : null;
+
+    const pctt =
+      pcttSettled.status ===
       "fulfilled"
-    ) {
-      pcttData =
-        pcttResult.value;
-    } else {
-      pcttData = {
-        ok: false,
-        rows: [],
-        count: 0,
-        url: null,
+        ? pcttSettled.value
+        : {
+            ok:
+              false,
 
-        error:
-          pcttResult.reason
-            ?.message ||
-          "Lỗi tải PCTT",
-      };
-    }
+            rows:
+              [],
+
+            count:
+              0,
+
+            raw_count:
+              0,
+
+            url:
+              null,
+
+            error:
+              pcttSettled
+                .reason
+                ?.message ||
+              "Lỗi tải dữ liệu PCTT",
+          };
 
     const relatedReservoirs =
       buildRelatedReservoirs(
-        pcttData.rows
+        pctt.rows
       );
 
     const basinFlow =
       buildBasinFlow(
-        pcttData.rows
+        pctt.rows
       );
 
     const downstreamOk =
       downstream.count > 0;
 
     const relatedOk =
-      pcttData.ok &&
       relatedReservoirs.some(
         (item) =>
           item.count > 0
       );
-
-    const partial =
-      !downstreamOk ||
-      !relatedOk;
 
     return sendJson(
       res,
@@ -1229,7 +1342,9 @@ export default async function handler(
           downstreamOk ||
           relatedOk,
 
-        partial,
+        partial:
+          !downstreamOk ||
+          !relatedOk,
 
         mode:
           "mobile-monitoring",
@@ -1240,9 +1355,12 @@ export default async function handler(
           new Date()
             .toISOString(),
 
+        time_zone:
+          "Asia/Ho_Chi_Minh",
+
         period: {
           start:
-            startTime
+            downstreamStartTime
               .toISOString(),
 
           end:
@@ -1282,17 +1400,20 @@ export default async function handler(
 
           pctt: {
             ok:
-              pcttData.ok,
+              pctt.ok,
 
             count:
-              pcttData.count,
+              pctt.count,
+
+            raw_count:
+              pctt.raw_count,
 
             error:
-              pcttData.error ||
+              pctt.error ||
               null,
 
             url:
-              pcttData.url ||
+              pctt.url ||
               null,
           },
         },
@@ -1310,7 +1431,8 @@ export default async function handler(
       res,
       500,
       {
-        ok: false,
+        ok:
+          false,
 
         mode:
           "mobile-monitoring",
