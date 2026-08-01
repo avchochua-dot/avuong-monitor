@@ -566,7 +566,263 @@
     .map-option b{color:#e2e8f0;font-size:13px;}
     .map-option small{color:#64748b;font-size:10px;white-space:normal;}
 
-  </style>
+  
+    /* ======================================================
+       PWA V9 - HẠ DU, HỒ LIÊN QUAN, MƯA DỰ BÁO
+    ====================================================== */
+
+    .downstream-current-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+      margin:10px 0;
+    }
+
+    .downstream-current-card{
+      min-height:86px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      padding:12px;
+      border-radius:15px;
+      background:rgba(255,255,255,.035);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .downstream-current-card span{
+      color:#94a3b8;
+      font-size:10px;
+      font-weight:900;
+      text-transform:uppercase;
+      margin-bottom:8px;
+    }
+
+    .downstream-current-card b{
+      font-family:var(--font-mono);
+      font-size:27px;
+      line-height:1;
+    }
+
+    .downstream-current-card.hoi-khach{
+      border-color:rgba(59,130,246,.30);
+      background:linear-gradient(180deg,rgba(59,130,246,.10),rgba(255,255,255,.025));
+    }
+
+    .downstream-current-card.hoi-khach b{
+      color:rgb(var(--c-in));
+    }
+
+    .downstream-current-card.ai-nghia{
+      border-color:rgba(16,185,129,.30);
+      background:linear-gradient(180deg,rgba(16,185,129,.10),rgba(255,255,255,.025));
+    }
+
+    .downstream-current-card.ai-nghia b{
+      color:rgb(var(--c-green));
+    }
+
+    #moreDownstreamTable{
+      table-layout:fixed;
+      width:100%;
+      min-width:0;
+    }
+
+    #moreDownstreamTable th:nth-child(2),
+    #moreDownstreamTable td:nth-child(2){
+      color:rgb(var(--c-in));
+    }
+
+    #moreDownstreamTable th:nth-child(3),
+    #moreDownstreamTable td:nth-child(3){
+      color:rgb(var(--c-green));
+    }
+
+    .rain-mobile-shell{
+      display:grid;
+      gap:10px;
+    }
+
+    .rain-mobile-duration{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:5px;
+      padding:4px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.025);
+    }
+
+    .rain-mobile-duration button{
+      min-height:34px;
+      padding:6px 8px!important;
+      border-radius:10px!important;
+      border:1px solid transparent!important;
+      background:transparent!important;
+      color:#94a3b8!important;
+      box-shadow:none!important;
+      font-size:11px!important;
+      font-weight:900!important;
+    }
+
+    .rain-mobile-duration button.active{
+      color:#dbeafe!important;
+      border-color:rgba(59,130,246,.40)!important;
+      background:rgba(59,130,246,.22)!important;
+    }
+
+    .rain-mobile-map{
+      width:100%;
+      height:280px;
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.10);
+      background:#0f172a;
+    }
+
+    .rain-mobile-summary{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:7px;
+    }
+
+    .rain-mobile-summary-card{
+      min-height:70px;
+      padding:10px;
+      border-radius:14px;
+      background:rgba(255,255,255,.035);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .rain-mobile-summary-card span{
+      display:block;
+      color:#94a3b8;
+      font-size:9px;
+      font-weight:900;
+      text-transform:uppercase;
+      margin-bottom:7px;
+    }
+
+    .rain-mobile-summary-card b{
+      display:block;
+      color:#f8fafc;
+      font-family:var(--font-mono);
+      font-size:17px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .rain-mobile-table-wrap{
+      width:100%;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:15px;
+      background:#0f1426;
+    }
+
+    .rain-mobile-table{
+      width:100%;
+      min-width:0!important;
+      table-layout:fixed;
+      white-space:normal;
+    }
+
+    .rain-mobile-table th,
+    .rain-mobile-table td{
+      padding:8px 3px;
+      font-size:10px;
+      text-align:center;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .rain-mobile-table th:first-child,
+    .rain-mobile-table td:first-child{
+      width:34%;
+      text-align:left;
+      padding-left:8px;
+      position:static;
+      background:transparent;
+      border-right:1px solid rgba(255,255,255,.06);
+    }
+
+    .rain-mobile-table th:nth-child(2),
+    .rain-mobile-table td:nth-child(2){
+      color:#22c55e;
+    }
+
+    .rain-mobile-table th:nth-child(3),
+    .rain-mobile-table td:nth-child(3){
+      color:#f59e0b;
+    }
+
+    .rain-mobile-table th:nth-child(4),
+    .rain-mobile-table td:nth-child(4){
+      color:#3b82f6;
+    }
+
+    .rain-station-cell b{
+      display:block;
+      color:#f8fafc;
+      font-size:10px;
+    }
+
+    .rain-station-cell small{
+      display:block;
+      margin-top:2px;
+      color:#94a3b8;
+      font-size:8px;
+      line-height:1.15;
+      white-space:normal;
+    }
+
+    .rain-level-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      max-width:100%;
+      min-width:45px;
+      padding:4px 5px;
+      border-radius:999px;
+      color:#fff;
+      font-size:8px;
+      font-weight:900;
+      line-height:1.1;
+    }
+
+    .mobile-rain-marker{
+      min-width:32px;
+      height:32px;
+      padding:0 5px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:9px;
+      font-weight:1000;
+      border:2px solid rgba(255,255,255,.94);
+      box-shadow:0 8px 18px rgba(15,23,42,.30);
+      font-family:var(--font-mono);
+    }
+
+    .leaflet-popup-content{
+      font-family:var(--font-sans);
+      font-size:11px;
+      line-height:1.45;
+    }
+
+    .leaflet-control-attribution{
+      font-size:8px!important;
+    }
+
+</style>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIINfQ3ynh17pDoyGZTeKLA8QemZlKkzU8E="
+    crossorigin=""
+  />
 </head>
 <body>
 
@@ -773,26 +1029,174 @@
           <button class="duration-btn" data-monitoring-hours="48" onclick="setMonitoringHours(48,this)">48h</button>
           <button class="duration-btn" data-monitoring-hours="72" onclick="setMonitoringHours(72,this)">72h</button>
         </div>
-        <div class="mobile-kpi-row">
-          <div class="mobile-kpi"><span>Hội Khách</span><b id="moreHoiKhach">-- m</b></div>
-          <div class="mobile-kpi"><span>Ái Nghĩa</span><b id="moreAiNghia">-- m</b></div>
+        <div class="downstream-current-grid">
+          <div class="downstream-current-card hoi-khach">
+            <span>Hội Khách</span>
+            <b id="moreHoiKhach">-- m</b>
+          </div>
+          <div class="downstream-current-card ai-nghia">
+            <span>Ái Nghĩa</span>
+            <b id="moreAiNghia">-- m</b>
+          </div>
         </div>
         <div class="data-meta" id="moreDownstreamStatus">Chưa tải dữ liệu.</div>
         <div class="table-container" style="margin-top:10px;max-height:360px;overflow:auto;">
-          <table><thead><tr><th>Thời gian</th><th>Hội Khách</th><th>Ái Nghĩa</th></tr></thead><tbody id="moreDownstreamBody"><tr><td colspan="3">Chưa tải</td></tr></tbody></table>
+          <table id="moreDownstreamTable"><thead><tr><th>Thời gian</th><th>Hội Khách</th><th>Ái Nghĩa</th></tr></thead><tbody id="moreDownstreamBody"><tr><td colspan="3">Chưa tải</td></tr></tbody></table>
         </div>
       </div>
 
       <div id="more-openmeteo" class="more-panel card">
         <button class="panel-back" onclick="closeMorePanel()">← Quay lại</button>
-        <div class="cardHead"><b>Mưa Open-Meteo</b><button onclick="loadRainMobile('openmeteo')" style="width:auto;padding:6px 10px;font-size:11px;">Cập nhật</button></div>
-        <div id="moreOpenMeteoContent" class="data-meta">Chưa tải dữ liệu.</div>
+
+        <div class="cardHead">
+          <b>Mưa dự báo Open-Meteo</b>
+          <button
+            onclick="loadRainMobile('openmeteo', true)"
+            style="width:auto;padding:6px 10px;font-size:11px;"
+          >
+            Cập nhật
+          </button>
+        </div>
+
+        <div class="rain-mobile-shell">
+          <div class="rain-mobile-duration">
+            <button
+              class="active"
+              data-rain-source="openmeteo"
+              data-rain-hours="24"
+              onclick="setRainHours('openmeteo',24,this)"
+            >24h</button>
+            <button
+              data-rain-source="openmeteo"
+              data-rain-hours="48"
+              onclick="setRainHours('openmeteo',48,this)"
+            >48h</button>
+            <button
+              data-rain-source="openmeteo"
+              data-rain-hours="72"
+              onclick="setRainHours('openmeteo',72,this)"
+            >72h</button>
+          </div>
+
+          <div id="mobileOpenMeteoMap" class="rain-mobile-map"></div>
+
+          <div class="rain-mobile-summary">
+            <div class="rain-mobile-summary-card">
+              <span>Số vị trí</span>
+              <b id="mobileOpenMeteoCount">--</b>
+            </div>
+            <div class="rain-mobile-summary-card">
+              <span id="mobileOpenMeteoAverageLabel">TB 24H</span>
+              <b id="mobileOpenMeteoAverage">-- mm</b>
+            </div>
+            <div class="rain-mobile-summary-card">
+              <span id="mobileOpenMeteoMaximumLabel">Lớn nhất 24H</span>
+              <b id="mobileOpenMeteoMaximum">-- mm</b>
+            </div>
+            <div class="rain-mobile-summary-card">
+              <span>Trạm lớn nhất</span>
+              <b id="mobileOpenMeteoMaximumStation">--</b>
+            </div>
+          </div>
+
+          <div class="rain-mobile-table-wrap">
+            <table class="rain-mobile-table">
+              <thead>
+                <tr>
+                  <th>Trạm</th>
+                  <th>24H</th>
+                  <th>48H</th>
+                  <th>72H</th>
+                  <th>Cấp</th>
+                </tr>
+              </thead>
+              <tbody id="mobileOpenMeteoTableBody">
+                <tr><td colspan="5">Chưa tải dữ liệu</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="data-meta" id="mobileOpenMeteoStatus">
+            Chưa tải dữ liệu.
+          </div>
+        </div>
       </div>
 
       <div id="more-openweather" class="more-panel card">
         <button class="panel-back" onclick="closeMorePanel()">← Quay lại</button>
-        <div class="cardHead"><b>Mưa OpenWeather</b><button onclick="loadRainMobile('openweather')" style="width:auto;padding:6px 10px;font-size:11px;">Cập nhật</button></div>
-        <div id="moreOpenWeatherContent" class="data-meta">Chưa tải dữ liệu.</div>
+
+        <div class="cardHead">
+          <b>Mưa dự báo OpenWeather</b>
+          <button
+            onclick="loadRainMobile('openweather', true)"
+            style="width:auto;padding:6px 10px;font-size:11px;"
+          >
+            Cập nhật
+          </button>
+        </div>
+
+        <div class="rain-mobile-shell">
+          <div class="rain-mobile-duration">
+            <button
+              class="active"
+              data-rain-source="openweather"
+              data-rain-hours="24"
+              onclick="setRainHours('openweather',24,this)"
+            >24h</button>
+            <button
+              data-rain-source="openweather"
+              data-rain-hours="48"
+              onclick="setRainHours('openweather',48,this)"
+            >48h</button>
+            <button
+              data-rain-source="openweather"
+              data-rain-hours="72"
+              onclick="setRainHours('openweather',72,this)"
+            >72h</button>
+          </div>
+
+          <div id="mobileOpenWeatherMap" class="rain-mobile-map"></div>
+
+          <div class="rain-mobile-summary">
+            <div class="rain-mobile-summary-card">
+              <span>Số vị trí</span>
+              <b id="mobileOpenWeatherCount">--</b>
+            </div>
+            <div class="rain-mobile-summary-card">
+              <span id="mobileOpenWeatherAverageLabel">TB 24H</span>
+              <b id="mobileOpenWeatherAverage">-- mm</b>
+            </div>
+            <div class="rain-mobile-summary-card">
+              <span id="mobileOpenWeatherMaximumLabel">Lớn nhất 24H</span>
+              <b id="mobileOpenWeatherMaximum">-- mm</b>
+            </div>
+            <div class="rain-mobile-summary-card">
+              <span>Trạm lớn nhất</span>
+              <b id="mobileOpenWeatherMaximumStation">--</b>
+            </div>
+          </div>
+
+          <div class="rain-mobile-table-wrap">
+            <table class="rain-mobile-table">
+              <thead>
+                <tr>
+                  <th>Trạm</th>
+                  <th>24H</th>
+                  <th>48H</th>
+                  <th>72H</th>
+                  <th>Cấp</th>
+                </tr>
+              </thead>
+              <tbody id="mobileOpenWeatherTableBody">
+                <tr><td colspan="5">Chưa tải dữ liệu</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="data-meta" id="mobileOpenWeatherStatus">
+            Chưa tải dữ liệu.
+          </div>
+        </div>
       </div>
 
       <div id="more-maps" class="more-panel card">
@@ -2004,6 +2408,14 @@
   }
 
   function goTab(name,el){
+    /*
+      Đóng Windy/bản đồ/iframe viewer trước khi chuyển tab.
+      Nếu không, lớp viewer vẫn che tab mới.
+    */
+    if($("contentViewer")?.classList.contains("active")){
+      closeContentViewer();
+    }
+
     document.querySelectorAll('.tab-pane').forEach(t=>t.classList.remove('active'));
     document.getElementById('tab-'+name).classList.add('active');
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -2438,12 +2850,12 @@
           `<td>${formatTableTime(
             row.obs_hour || row.obs_time
           )}</td>` +
-          `<td>${
+          `<td style="color:rgb(var(--c-in));">${
             row.hoi_khach_m == null
               ? "-"
               : fmt2.format(row.hoi_khach_m)
           }</td>` +
-          `<td>${
+          `<td style="color:rgb(var(--c-green));">${
             row.ai_nghia_m == null
               ? "-"
               : fmt2.format(row.ai_nghia_m)
@@ -2496,36 +2908,504 @@
     }
   }
 
-  function flattenRainRows(payload){
-    const candidates=[payload?.data,payload?.stations,payload?.rows,payload?.result?.data,payload?.result?.stations];
-    return candidates.find(Array.isArray)||[];
+  const mobileRainState = {
+    openmeteo: {
+      hours: 24,
+      rows: [],
+      loadedAt: 0,
+      map: null,
+      markerLayer: null,
+    },
+    openweather: {
+      hours: 24,
+      rows: [],
+      loadedAt: 0,
+      map: null,
+      markerLayer: null,
+    },
+  };
+
+  function rainColor(value) {
+    const number = Number(value);
+
+    if (!Number.isFinite(number) || number <= 0) {
+      return "#64748b";
+    }
+
+    if (number < 10) {
+      return "#22c55e";
+    }
+
+    if (number < 25) {
+      return "#eab308";
+    }
+
+    if (number < 50) {
+      return "#f97316";
+    }
+
+    return "#ef4444";
   }
 
-  async function loadRainMobile(source){
-    const isMeteo=source==="openmeteo";
-    const target=$(isMeteo?"moreOpenMeteoContent":"moreOpenWeatherContent");
-    const endpoint=isMeteo?"/api/openmeteo-rain":"/api/openweather-rain";
-    target.innerHTML="Đang tải dữ liệu...";
-    try{
-      const res=await fetch(endpoint,{cache:"no-store"});
-      const payload=await res.json();
-      if(!res.ok || payload?.ok===false) throw new Error(payload?.error||`HTTP ${res.status}`);
-      const rows=flattenRainRows(payload);
-      if(!rows.length){
-        target.innerHTML=`API đã phản hồi nhưng chưa có danh sách trạm. <br><small>Nguồn: ${endpoint}</small>`;
-        return;
+  function rainLevel(value) {
+    const number = Number(value);
+
+    if (!Number.isFinite(number) || number <= 0) {
+      return "Không mưa";
+    }
+
+    if (number < 10) {
+      return "Mưa nhỏ";
+    }
+
+    if (number < 25) {
+      return "Mưa vừa";
+    }
+
+    if (number < 50) {
+      return "Mưa to";
+    }
+
+    return "Mưa rất to";
+  }
+
+  function getRainValueByHours(row, hours) {
+    const field =
+      hours === 48
+        ? "rain48h"
+        : hours === 72
+          ? "rain72h"
+          : "rain24h";
+
+    const value =
+      Number(row?.[field]);
+
+    return Number.isFinite(value)
+      ? value
+      : null;
+  }
+
+  function getRainUi(source) {
+    const isMeteo =
+      source === "openmeteo";
+
+    return {
+      mapId:
+        isMeteo
+          ? "mobileOpenMeteoMap"
+          : "mobileOpenWeatherMap",
+      countId:
+        isMeteo
+          ? "mobileOpenMeteoCount"
+          : "mobileOpenWeatherCount",
+      averageId:
+        isMeteo
+          ? "mobileOpenMeteoAverage"
+          : "mobileOpenWeatherAverage",
+      averageLabelId:
+        isMeteo
+          ? "mobileOpenMeteoAverageLabel"
+          : "mobileOpenWeatherAverageLabel",
+      maximumId:
+        isMeteo
+          ? "mobileOpenMeteoMaximum"
+          : "mobileOpenWeatherMaximum",
+      maximumLabelId:
+        isMeteo
+          ? "mobileOpenMeteoMaximumLabel"
+          : "mobileOpenWeatherMaximumLabel",
+      maximumStationId:
+        isMeteo
+          ? "mobileOpenMeteoMaximumStation"
+          : "mobileOpenWeatherMaximumStation",
+      tableBodyId:
+        isMeteo
+          ? "mobileOpenMeteoTableBody"
+          : "mobileOpenWeatherTableBody",
+      statusId:
+        isMeteo
+          ? "mobileOpenMeteoStatus"
+          : "mobileOpenWeatherStatus",
+    };
+  }
+
+  function setRainHours(
+    source,
+    hours,
+    button
+  ) {
+    const value = Number(hours);
+
+    if (![24, 48, 72].includes(value)) {
+      return;
+    }
+
+    mobileRainState[source].hours =
+      value;
+
+    document
+      .querySelectorAll(
+        `[data-rain-source="${source}"]`
+      )
+      .forEach((item) => {
+        item.classList.toggle(
+          "active",
+          Number(item.dataset.rainHours) === value
+        );
+      });
+
+    renderRainMobile(source);
+  }
+
+  function initRainMap(source) {
+    const state =
+      mobileRainState[source];
+
+    const ui =
+      getRainUi(source);
+
+    if (
+      state.map ||
+      typeof L === "undefined"
+    ) {
+      return;
+    }
+
+    state.map = L.map(
+      ui.mapId,
+      {
+        zoomControl: true,
+        attributionControl: true,
       }
-      const cards=rows.slice(0,12).map(r=>{
-        const name=r.name||r.station_name||r.station||r.location||"Trạm";
-        const r24=Number(r.rain_24h_mm??r.rain24_mm??r.total_24h??r.rain24h??0);
-        const r48=Number(r.rain_48h_mm??r.rain48_mm??r.total_48h??r.rain48h??0);
-        const r72=Number(r.rain_72h_mm??r.rain72_mm??r.total_72h??r.rain72h??0);
-        return `<div class="metric-card purple"><span class="metric-label">${name}</span><span class="metric-value">${fmt1.format(r24)} <small>mm/24h</small></span><span class="metric-sub">48h: ${fmt1.format(r48)} mm • 72h: ${fmt1.format(r72)} mm</span></div>`;
-      }).join("");
-      target.innerHTML=`<div class="metric-grid">${cards}</div><div class="data-meta">Nguồn: ${endpoint} • ${rows.length} trạm</div>`;
-    }catch(e){
-      console.error(e);
-      target.innerHTML=`<span style="color:#ef4444;">Không tải được dữ liệu: ${e.message}</span><br><small>Nguồn dự kiến: ${endpoint}</small>`;
+    ).setView(
+      [15.89, 107.56],
+      10
+    );
+
+    L.tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        maxZoom: 18,
+        attribution:
+          "&copy; OpenStreetMap",
+      }
+    ).addTo(state.map);
+
+    state.markerLayer =
+      L.layerGroup()
+        .addTo(state.map);
+  }
+
+  function renderRainMap(source) {
+    const state =
+      mobileRainState[source];
+
+    initRainMap(source);
+
+    if (
+      !state.map ||
+      !state.markerLayer
+    ) {
+      return;
+    }
+
+    state.markerLayer.clearLayers();
+
+    const bounds = [];
+
+    for (const row of state.rows) {
+      const lat = Number(row.lat);
+      const lon = Number(row.lon);
+      const value =
+        getRainValueByHours(
+          row,
+          state.hours
+        );
+
+      if (
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lon)
+      ) {
+        continue;
+      }
+
+      bounds.push([lat, lon]);
+
+      const color =
+        rainColor(value);
+
+      const display =
+        value === null
+          ? "-"
+          : fmt1.format(value);
+
+      const icon =
+        L.divIcon({
+          className: "",
+          html:
+            `<div class="mobile-rain-marker" ` +
+            `style="background:${color};">` +
+            `${display}` +
+            `</div>`,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18],
+        });
+
+      const marker =
+        L.marker(
+          [lat, lon],
+          { icon }
+        );
+
+      marker.bindPopup(
+        `<b>${row.code} - ${row.name}</b><br>` +
+        `24h: ${formatRainNumber(row.rain24h)} mm<br>` +
+        `48h: ${formatRainNumber(row.rain48h)} mm<br>` +
+        `72h: ${formatRainNumber(row.rain72h)} mm`
+      );
+
+      marker.addTo(
+        state.markerLayer
+      );
+    }
+
+    if (bounds.length) {
+      state.map.fitBounds(
+        bounds,
+        {
+          padding: [18, 18],
+          maxZoom: 11,
+        }
+      );
+    }
+
+    setTimeout(
+      () =>
+        state.map.invalidateSize(),
+      80
+    );
+  }
+
+  function formatRainNumber(value) {
+    const number = Number(value);
+
+    return Number.isFinite(number)
+      ? fmt1.format(number)
+      : "-";
+  }
+
+  function renderRainMobile(source) {
+    const state =
+      mobileRainState[source];
+
+    const ui =
+      getRainUi(source);
+
+    const rows =
+      Array.isArray(state.rows)
+        ? state.rows
+        : [];
+
+    const values =
+      rows
+        .map((row) =>
+          getRainValueByHours(
+            row,
+            state.hours
+          )
+        )
+        .filter(Number.isFinite);
+
+    const average =
+      values.length
+        ? values.reduce(
+            (sum, value) =>
+              sum + value,
+            0
+          ) / values.length
+        : null;
+
+    const maximum =
+      values.length
+        ? Math.max(...values)
+        : null;
+
+    const maxRow =
+      maximum === null
+        ? null
+        : rows.find(
+            (row) =>
+              getRainValueByHours(
+                row,
+                state.hours
+              ) === maximum
+          );
+
+    $(ui.countId).textContent =
+      String(rows.length);
+
+    $(ui.averageLabelId).textContent =
+      `TB ${state.hours}H`;
+
+    $(ui.maximumLabelId).textContent =
+      `Lớn nhất ${state.hours}H`;
+
+    $(ui.averageId).textContent =
+      average === null
+        ? "-- mm"
+        : `${fmt1.format(average)} mm`;
+
+    $(ui.maximumId).textContent =
+      maximum === null
+        ? "-- mm"
+        : `${fmt1.format(maximum)} mm`;
+
+    $(ui.maximumStationId).textContent =
+      maxRow?.code || "--";
+
+    const tbody =
+      $(ui.tableBodyId);
+
+    tbody.innerHTML = "";
+
+    for (const row of rows) {
+      const selectedValue =
+        getRainValueByHours(
+          row,
+          state.hours
+        );
+
+      const level =
+        rainLevel(selectedValue);
+
+      const color =
+        rainColor(selectedValue);
+
+      const tr =
+        document.createElement("tr");
+
+      tr.innerHTML =
+        `<td>` +
+          `<div class="rain-station-cell">` +
+            `<b>${row.code || "--"}</b>` +
+            `<small>${row.name || ""}</small>` +
+          `</div>` +
+        `</td>` +
+        `<td>${formatRainNumber(row.rain24h)}</td>` +
+        `<td>${formatRainNumber(row.rain48h)}</td>` +
+        `<td>${formatRainNumber(row.rain72h)}</td>` +
+        `<td>` +
+          `<span class="rain-level-pill" style="background:${color};">` +
+            `${level}` +
+          `</span>` +
+        `</td>`;
+
+      tbody.appendChild(tr);
+    }
+
+    if (!rows.length) {
+      tbody.innerHTML =
+        `<tr><td colspan="5">Không có dữ liệu</td></tr>`;
+    }
+
+    const updatedAt =
+      rows
+        .map((row) => row.updatedAt)
+        .filter(Boolean)
+        .sort(
+          (a, b) =>
+            new Date(b).getTime() -
+            new Date(a).getTime()
+        )[0];
+
+    $(ui.statusId).textContent =
+      `Nguồn: ${
+        source === "openmeteo"
+          ? "Open-Meteo"
+          : "OpenWeather"
+      } • ${
+        updatedAt
+          ? `Cập nhật ${formatToVNTime(updatedAt)}`
+          : "Chưa xác định thời gian cập nhật"
+      }`;
+
+    renderRainMap(source);
+  }
+
+  async function loadRainMobile(
+    source,
+    force = false
+  ) {
+    const state =
+      mobileRainState[source];
+
+    const ui =
+      getRainUi(source);
+
+    if (
+      !force &&
+      state.rows.length &&
+      Date.now() - state.loadedAt <
+        10 * 60 * 1000
+    ) {
+      renderRainMobile(source);
+      return;
+    }
+
+    $(ui.statusId).textContent =
+      "Đang tải dữ liệu mưa dự báo...";
+
+    $(ui.tableBodyId).innerHTML =
+      `<tr><td colspan="5">Đang tải...</td></tr>`;
+
+    try {
+      const response =
+        await fetch(
+          `/api/mobile-rain?source=${encodeURIComponent(source)}`,
+          {
+            cache: "no-store",
+          }
+        );
+
+      const payload =
+        await response.json();
+
+      if (
+        !response.ok ||
+        payload?.ok === false
+      ) {
+        throw new Error(
+          payload?.error ||
+          `HTTP ${response.status}`
+        );
+      }
+
+      const sourceData =
+        payload?.sources?.[source] ||
+        payload;
+
+      state.rows =
+        Array.isArray(
+          sourceData?.stations
+        )
+          ? sourceData.stations
+          : [];
+
+      state.loadedAt =
+        Date.now();
+
+      renderRainMobile(source);
+    } catch (error) {
+      console.error(
+        "Lỗi tải mưa dự báo:",
+        error
+      );
+
+      $(ui.statusId).textContent =
+        `Không tải được dữ liệu: ${error.message}`;
+
+      $(ui.tableBodyId).innerHTML =
+        `<tr><td colspan="5" style="color:#ef4444;">Lỗi tải dữ liệu</td></tr>`;
     }
   }
 
@@ -2636,6 +3516,37 @@
     return slots;
   }
 
+  function hasReservoirData(row) {
+    if (!row) {
+      return false;
+    }
+
+    const values = [
+      row.water_level_m,
+      row.inflow_m3s,
+      row.turbine_flow_m3s,
+      row.spillway_flow_m3s,
+    ];
+
+    const finiteValues =
+      values
+        .map((value) => Number(value))
+        .filter(Number.isFinite);
+
+    if (!finiteValues.length) {
+      return false;
+    }
+
+    /*
+      API PCTT đôi khi tạo dòng giờ hiện tại
+      với toàn bộ giá trị bằng 0 khi chưa nhập số liệu.
+      Chỉ dòng toàn 0 mới được coi là thiếu.
+    */
+    return !finiteValues.every(
+      (value) => value === 0
+    );
+  }
+
   function renderRelatedReservoirs(
     payload
   ) {
@@ -2678,8 +3589,20 @@
         );
       });
 
+    const selectedHistory =
+      Array.isArray(selected?.history)
+        ? selected.history
+        : [];
+
     const latest =
-      selected?.latest || null;
+      [...selectedHistory]
+        .reverse()
+        .find(hasReservoirData) ||
+      (
+        hasReservoirData(selected?.latest)
+          ? selected.latest
+          : null
+      );
 
     $("relatedSelectedLevel").textContent =
       latest
@@ -2718,11 +3641,7 @@
         : "--";
 
     const history =
-      Array.isArray(
-        selected?.history
-      )
-        ? selected.history
-        : [];
+      selectedHistory;
 
     const historyMap =
       new Map();
@@ -2734,7 +3653,10 @@
           row.time
         );
 
-      if (key) {
+      if (
+        key &&
+        hasReservoirData(row)
+      ) {
         historyMap.set(
           key,
           row
@@ -2968,5 +3890,10 @@
     } catch (e) { console.error(e); }
   }
 </script>
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
 </body>
 </html>
