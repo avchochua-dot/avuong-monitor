@@ -591,6 +591,11 @@
       <div id="more-downstream" class="more-panel card">
         <button class="panel-back" onclick="closeMorePanel()">← Quay lại</button>
         <div class="cardHead"><b>Mực nước hạ du</b><button onclick="loadDownstreamMobile()" style="width:auto;padding:6px 10px;font-size:11px;">Cập nhật</button></div>
+        <div class="duration-switch" aria-label="Chọn thời hạn số liệu hạ du">
+          <button class="duration-btn active" data-monitoring-hours="24" onclick="setMonitoringHours(24,this)">24h</button>
+          <button class="duration-btn" data-monitoring-hours="48" onclick="setMonitoringHours(48,this)">48h</button>
+          <button class="duration-btn" data-monitoring-hours="72" onclick="setMonitoringHours(72,this)">72h</button>
+        </div>
         <div class="mobile-kpi-row">
           <div class="mobile-kpi"><span>Hội Khách</span><b id="moreHoiKhach">-- m</b></div>
           <div class="mobile-kpi"><span>Ái Nghĩa</span><b id="moreAiNghia">-- m</b></div>
@@ -640,13 +645,34 @@
       <div id="more-reservoirs" class="more-panel card">
         <button class="panel-back" onclick="closeMorePanel()">← Quay lại</button>
         <div class="cardHead"><b>Các hồ liên quan</b><button onclick="loadRelatedReservoirs()" style="width:auto;padding:6px 10px;font-size:11px;">Cập nhật</button></div>
+        <div class="duration-switch" aria-label="Chọn thời hạn số liệu các hồ">
+          <button class="duration-btn active" data-monitoring-hours="24" onclick="setMonitoringHours(24,this)">24h</button>
+          <button class="duration-btn" data-monitoring-hours="48" onclick="setMonitoringHours(48,this)">48h</button>
+          <button class="duration-btn" data-monitoring-hours="72" onclick="setMonitoringHours(72,this)">72h</button>
+        </div>
         <div id="relatedReservoirsContent">
           <div class="metric-grid">
-            <div class="metric-card"><span class="metric-label">Sông Bung 4</span><span class="metric-value" id="relSongBung4">--</span><span class="metric-sub">Chờ nguồn dữ liệu</span></div>
-            <div class="metric-card"><span class="metric-label">Đăk Mi 4</span><span class="metric-value" id="relDakMi4">--</span><span class="metric-sub">Chờ nguồn dữ liệu</span></div>
-            <div class="metric-card"><span class="metric-label">Sông Tranh 2</span><span class="metric-value" id="relSongTranh2">--</span><span class="metric-sub">Chờ nguồn dữ liệu</span></div>
+            <div class="metric-card">
+              <span class="metric-label">Sông Bung 4</span>
+              <span class="metric-value" id="relSongBung4">--</span>
+              <span class="metric-sub" id="relSongBung4Sub">Chưa tải dữ liệu</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Đăk Mi 4</span>
+              <span class="metric-value" id="relDakMi4">--</span>
+              <span class="metric-sub" id="relDakMi4Sub">Chưa tải dữ liệu</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Sông Tranh 2</span>
+              <span class="metric-value" id="relSongTranh2">--</span>
+              <span class="metric-sub" id="relSongTranh2Sub">Chưa tải dữ liệu</span>
+            </div>
           </div>
-          <div class="data-meta" id="relatedReservoirsStatus">Ứng dụng sẽ thử đọc từ /api/related-reservoirs; nếu API chưa có sẽ giữ trạng thái chờ.</div>
+          <div class="mobile-kpi-row" style="margin-top:10px;">
+            <div class="mobile-kpi"><span>Q về Vu Gia</span><b id="relVuGiaFlow">-- m³/s</b></div>
+            <div class="mobile-kpi"><span>Q về Thu Bồn</span><b id="relThuBonFlow">-- m³/s</b></div>
+          </div>
+          <div class="data-meta" id="relatedReservoirsStatus">Chưa tải dữ liệu.</div>
         </div>
       </div>
 
@@ -762,7 +788,7 @@
     IN_FC_7D:{name:"Q Dự báo",hint:"Dự báo 7 ngày tới (Ensemble)",color:C.IF},
     RF_DAILY_FC:{name:"Mưa Ngày",hint:"Mưa ngày & Lũy kế",color:C.RN}, RF_HOURLY_ACC:{name:"Mưa Giờ",hint:"Mưa giờ & Lũy kế",color:C.RN}, RF_COMPARE:{name:"Mưa Thực vs DB",hint:"So sánh mưa Thực & DB",color:C.RF}
   };
-  const state = { hourly24h:[], hourly3D:[], hourly7D_Obs:[], inflowFc_V7:[], inflowFc_Mix:[], inflowFc_AI:[], inflowFc_HEC:[], rainFc:[], rainObs7D:[], rain24hRaw:[], latest24h:[], fcEnsemble:{}, lastObs:null, rainAtHour:0, rain24hSum:0, storage:null, downstreamLatest:null, downstreamHistory:[] };
+  const state = { hourly24h:[], hourly3D:[], hourly7D_Obs:[], inflowFc_V7:[], inflowFc_Mix:[], inflowFc_AI:[], inflowFc_HEC:[], rainFc:[], rainObs7D:[], rain24hRaw:[], latest24h:[], fcEnsemble:{}, lastObs:null, rainAtHour:0, rain24hSum:0, storage:null, downstreamLatest:null, downstreamHistory:[] , monitoringHours:24, mobileMonitoring:null, mobileMonitoringLoadedAt:0 };
   let dataHours = 24;
 
   window.addEventListener("load",()=>{
@@ -771,7 +797,12 @@
     if(window.supabase){ sb=window.supabase.createClient(SB_URL,SB_KEY); sb.auth.getSession().then(({data:{session}})=>{ if(session) showApp(); else showLogin(); }); }
   });
 
-  async function handleLogout(){ await sb.auth.signOut(); showLogin(); }
+  async function handleLogout(){
+    state.mobileMonitoring=null;
+    state.mobileMonitoringLoadedAt=0;
+    await sb.auth.signOut();
+    showLogin();
+  }
   function showApp(){ $("login-view").style.display="none"; $("main-view").style.display="flex"; loadData(); }
   function showLogin(){ $("login-view").style.display="flex"; $("main-view").style.display="none"; $("loginEmail").value=""; $("loginPass").value=""; $("loginError").textContent=""; }
 
@@ -1888,35 +1919,241 @@
     document.querySelectorAll(".more-panel").forEach(p=>p.classList.remove("active"));
   }
 
-  async function loadDownstreamMobile(){
-    const status=$("moreDownstreamStatus");
-    const body=$("moreDownstreamBody");
-    status.textContent="Đang tải dữ liệu hạ du...";
-    try{
-      const [latestRes,historyRes]=await Promise.all([
-        fetch("/api/downstream-forecast?mode=observed-latest",{cache:"no-store"}),
-        fetch("/api/downstream-forecast?mode=observed-history&hours=72",{cache:"no-store"})
-      ]);
-      const latest=await latestRes.json();
-      const history=await historyRes.json();
-      if(!latestRes.ok || !latest?.ok) throw new Error(latest?.error||`HTTP ${latestRes.status}`);
-      const row=latest.data||{};
-      state.downstreamLatest=row;
-      state.downstreamHistory=Array.isArray(history?.data)?history.data:[];
-      $("moreHoiKhach").textContent=`${fmt2.format(Number(row.hoi_khach_m||0))} m`;
-      $("moreAiNghia").textContent=`${fmt2.format(Number(row.ai_nghia_m||0))} m`;
-      status.textContent=`Cập nhật: ${formatToVNTime(row.obs_hour||row.obs_time)} • Nguồn: ${row.source||"--"}`;
-      body.innerHTML="";
-      [...state.downstreamHistory].reverse().slice(0,72).forEach(r=>{
-        const tr=document.createElement("tr");
-        tr.innerHTML=`<td>${formatTableTime(r.obs_hour||r.obs_time)}</td><td>${r.hoi_khach_m==null?"-":fmt2.format(r.hoi_khach_m)}</td><td>${r.ai_nghia_m==null?"-":fmt2.format(r.ai_nghia_m)}</td>`;
+  function setMonitoringHours(hours, button) {
+    const value = Number(hours);
+
+    if (![24, 48, 72].includes(value)) {
+      return;
+    }
+
+    state.monitoringHours = value;
+
+    document
+      .querySelectorAll("[data-monitoring-hours]")
+      .forEach((item) => {
+        item.classList.toggle(
+          "active",
+          Number(item.dataset.monitoringHours) === value
+        );
+      });
+
+    /*
+      Mỗi lần đổi khoảng thời gian sẽ bỏ cache cũ.
+      Panel đang mở sẽ được tải lại ngay.
+    */
+    state.mobileMonitoring = null;
+    state.mobileMonitoringLoadedAt = 0;
+
+    if ($("more-downstream")?.classList.contains("active")) {
+      loadDownstreamMobile(true);
+    }
+
+    if ($("more-reservoirs")?.classList.contains("active")) {
+      loadRelatedReservoirs(true);
+    }
+  }
+
+  async function fetchMobileMonitoring({
+    force = false,
+  } = {}) {
+    const now = Date.now();
+
+    /*
+      Dùng chung một response cho Hạ du và Các hồ liên quan.
+      Cache trong bộ nhớ 2 phút để tránh gọi API lặp lại khi chuyển panel.
+    */
+    if (
+      !force &&
+      state.mobileMonitoring &&
+      now - state.mobileMonitoringLoadedAt < 120000 &&
+      Number(state.mobileMonitoring.hours) === Number(state.monitoringHours)
+    ) {
+      return state.mobileMonitoring;
+    }
+
+    const {
+      data: { session },
+    } = await sb.auth.getSession();
+
+    if (!session?.access_token) {
+      throw new Error("Phiên đăng nhập đã hết hạn");
+    }
+
+    const endpoint =
+      `/api/mobile-monitoring?hours=${encodeURIComponent(
+        state.monitoringHours
+      )}`;
+
+    const response = await fetch(
+      endpoint,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        cache: "no-store",
+      }
+    );
+
+    let payload = null;
+
+    try {
+      payload = await response.json();
+    } catch {
+      throw new Error(
+        `API monitoring trả dữ liệu không đúng JSON, HTTP ${response.status}`
+      );
+    }
+
+    if (!response.ok || payload?.ok === false) {
+      throw new Error(
+        payload?.error ||
+        `Không tải được dữ liệu monitoring, HTTP ${response.status}`
+      );
+    }
+
+    state.mobileMonitoring = payload;
+    state.mobileMonitoringLoadedAt = now;
+
+    return payload;
+  }
+
+  function updateMonitoringDurationButtons() {
+    document
+      .querySelectorAll("[data-monitoring-hours]")
+      .forEach((item) => {
+        item.classList.toggle(
+          "active",
+          Number(item.dataset.monitoringHours) ===
+            Number(state.monitoringHours)
+        );
+      });
+  }
+
+  function renderDownstreamMonitoring(payload) {
+    const status = $("moreDownstreamStatus");
+    const body = $("moreDownstreamBody");
+
+    const downstream =
+      payload?.downstream || {};
+
+    const latest =
+      downstream.latest || null;
+
+    const history =
+      Array.isArray(downstream.history)
+        ? downstream.history
+        : [];
+
+    state.downstreamLatest = latest;
+    state.downstreamHistory = history;
+
+    if (!latest) {
+      $("moreHoiKhach").textContent = "-- m";
+      $("moreAiNghia").textContent = "-- m";
+      status.textContent =
+        payload?.diagnostics?.downstream?.error ||
+        "Không có dữ liệu hạ du trong khoảng đã chọn.";
+
+      body.innerHTML =
+        `<tr><td colspan="3">Không có dữ liệu</td></tr>`;
+
+      return;
+    }
+
+    const hoiKhach =
+      Number(latest.hoi_khach_m);
+
+    const aiNghia =
+      Number(latest.ai_nghia_m);
+
+    $("moreHoiKhach").textContent =
+      Number.isFinite(hoiKhach)
+        ? `${fmt2.format(hoiKhach)} m`
+        : "-- m";
+
+    $("moreAiNghia").textContent =
+      Number.isFinite(aiNghia)
+        ? `${fmt2.format(aiNghia)} m`
+        : "-- m";
+
+    const latestTime =
+      latest.obs_hour ||
+      latest.obs_time;
+
+    status.textContent =
+      `Cập nhật: ${formatToVNTime(latestTime)} • ` +
+      `Nguồn: ${latest.source || "--"} • ` +
+      `${history.length}/${state.monitoringHours} mốc giờ`;
+
+    body.innerHTML = "";
+
+    [...history]
+      .reverse()
+      .forEach((row) => {
+        const tr =
+          document.createElement("tr");
+
+        tr.innerHTML =
+          `<td>${formatTableTime(
+            row.obs_hour || row.obs_time
+          )}</td>` +
+          `<td>${
+            row.hoi_khach_m == null
+              ? "-"
+              : fmt2.format(row.hoi_khach_m)
+          }</td>` +
+          `<td>${
+            row.ai_nghia_m == null
+              ? "-"
+              : fmt2.format(row.ai_nghia_m)
+          }</td>`;
+
         body.appendChild(tr);
       });
-      if(!state.downstreamHistory.length) body.innerHTML=`<tr><td colspan="3">Không có lịch sử</td></tr>`;
-    }catch(e){
-      console.error(e);
-      status.textContent=`Không tải được dữ liệu hạ du: ${e.message}`;
-      body.innerHTML=`<tr><td colspan="3" style="color:#ef4444;">Lỗi tải dữ liệu</td></tr>`;
+
+    if (!history.length) {
+      body.innerHTML =
+        `<tr><td colspan="3">Không có lịch sử</td></tr>`;
+    }
+  }
+
+  async function loadDownstreamMobile(force = false) {
+    const status =
+      $("moreDownstreamStatus");
+
+    const body =
+      $("moreDownstreamBody");
+
+    updateMonitoringDurationButtons();
+
+    status.textContent =
+      `Đang tải ${state.monitoringHours} giờ dữ liệu hạ du...`;
+
+    body.innerHTML =
+      `<tr><td colspan="3">Đang tải...</td></tr>`;
+
+    try {
+      const payload =
+        await fetchMobileMonitoring({
+          force,
+        });
+
+      renderDownstreamMonitoring(
+        payload
+      );
+    } catch (error) {
+      console.error(
+        "Lỗi tải dữ liệu hạ du:",
+        error
+      );
+
+      status.textContent =
+        `Không tải được dữ liệu hạ du: ${error.message}`;
+
+      body.innerHTML =
+        `<tr><td colspan="3" style="color:#ef4444;">Lỗi tải dữ liệu</td></tr>`;
     }
   }
 
@@ -1953,27 +2190,201 @@
     }
   }
 
-  async function loadRelatedReservoirs(){
-    const status=$("relatedReservoirsStatus");
-    status.textContent="Đang thử tải dữ liệu các hồ liên quan...";
-    try{
-      const res=await fetch("/api/related-reservoirs",{cache:"no-store"});
-      const payload=await res.json();
-      if(!res.ok || payload?.ok===false) throw new Error(payload?.error||`HTTP ${res.status}`);
-      const rows=Array.isArray(payload.data)?payload.data:[];
-      const find=(keys)=>rows.find(r=>keys.includes(String(r.code||r.name||"").toLowerCase()));
-      const set=(id,row)=>{
-        if(!row) return;
-        const wl=Number(row.water_level_m??row.water_level);
-        const q=Number(row.inflow_m3s??row.inflow);
-        $(id).textContent=`${Number.isFinite(wl)?fmt2.format(wl)+" m":"--"}${Number.isFinite(q)?" • Q "+fmt1.format(q):""}`;
-      };
-      set("relSongBung4",find(["songbung4","sông bung 4","song bung 4"]));
-      set("relDakMi4",find(["dakmi4","đăk mi 4","dak mi 4"]));
-      set("relSongTranh2",find(["songtranh2","sông tranh 2","song tranh 2"]));
-      status.textContent=`Đã tải ${rows.length} hồ • ${payload.updated_at?formatToVNTime(payload.updated_at):"không có thời gian cập nhật"}`;
-    }catch(e){
-      status.textContent=`API các hồ liên quan chưa sẵn sàng: ${e.message}`;
+  function findRelatedReservoir(
+    rows,
+    code
+  ) {
+    return rows.find(
+      (item) =>
+        String(item?.code || "")
+          .toUpperCase() ===
+        String(code || "")
+          .toUpperCase()
+    ) || null;
+  }
+
+  function renderRelatedReservoirCard(
+    reservoir,
+    valueId,
+    subId
+  ) {
+    const valueElement =
+      $(valueId);
+
+    const subElement =
+      $(subId);
+
+    const latest =
+      reservoir?.latest || null;
+
+    if (!latest) {
+      valueElement.textContent = "--";
+      subElement.textContent = "Không có dữ liệu";
+      return;
+    }
+
+    const waterLevel =
+      Number(latest.water_level_m);
+
+    const inflow =
+      Number(latest.inflow_m3s);
+
+    const turbine =
+      Number(latest.turbine_flow_m3s);
+
+    const spillway =
+      Number(latest.spillway_flow_m3s);
+
+    valueElement.textContent =
+      Number.isFinite(waterLevel)
+        ? `${fmt2.format(waterLevel)} m`
+        : "--";
+
+    subElement.textContent =
+      `Q về ${
+        Number.isFinite(inflow)
+          ? fmt2.format(inflow)
+          : "--"
+      } • Q máy ${
+        Number.isFinite(turbine)
+          ? fmt2.format(turbine)
+          : "--"
+      } • Q xả ${
+        Number.isFinite(spillway)
+          ? fmt2.format(spillway)
+          : "--"
+      } m³/s`;
+  }
+
+  function renderRelatedReservoirs(
+    payload
+  ) {
+    const status =
+      $("relatedReservoirsStatus");
+
+    const rows =
+      Array.isArray(
+        payload?.related_reservoirs
+      )
+        ? payload.related_reservoirs
+        : [];
+
+    renderRelatedReservoirCard(
+      findRelatedReservoir(
+        rows,
+        "SONG_BUNG_4"
+      ),
+      "relSongBung4",
+      "relSongBung4Sub"
+    );
+
+    renderRelatedReservoirCard(
+      findRelatedReservoir(
+        rows,
+        "DAK_MI_4"
+      ),
+      "relDakMi4",
+      "relDakMi4Sub"
+    );
+
+    renderRelatedReservoirCard(
+      findRelatedReservoir(
+        rows,
+        "SONG_TRANH_2"
+      ),
+      "relSongTranh2",
+      "relSongTranh2Sub"
+    );
+
+    const basinLatest =
+      payload?.basin_flow?.latest ||
+      null;
+
+    const vuGia =
+      Number(
+        basinLatest?.vu_gia_m3s
+      );
+
+    const thuBon =
+      Number(
+        basinLatest?.thu_bon_m3s
+      );
+
+    $("relVuGiaFlow").textContent =
+      Number.isFinite(vuGia)
+        ? `${fmt2.format(vuGia)} m³/s`
+        : "-- m³/s";
+
+    $("relThuBonFlow").textContent =
+      Number.isFinite(thuBon)
+        ? `${fmt2.format(thuBon)} m³/s`
+        : "-- m³/s";
+
+    const latestTimes =
+      rows
+        .map(
+          (item) =>
+            item?.latest?.time
+        )
+        .filter(Boolean)
+        .sort(
+          (a, b) =>
+            new Date(b).getTime() -
+            new Date(a).getTime()
+        );
+
+    const latestTime =
+      latestTimes[0] ||
+      basinLatest?.time ||
+      null;
+
+    const pcttDiagnostic =
+      payload?.diagnostics?.pctt || {};
+
+    if (!rows.some((item) => item?.latest)) {
+      status.textContent =
+        pcttDiagnostic.error ||
+        "Không có dữ liệu các hồ liên quan.";
+      return;
+    }
+
+    status.textContent =
+      `Cập nhật: ${
+        latestTime
+          ? formatToVNTime(latestTime)
+          : "--"
+      } • Nguồn: PCTT Đà Nẵng • ` +
+      `${pcttDiagnostic.count || 0}/${state.monitoringHours} mốc giờ`;
+  }
+
+  async function loadRelatedReservoirs(
+    force = false
+  ) {
+    const status =
+      $("relatedReservoirsStatus");
+
+    updateMonitoringDurationButtons();
+
+    status.textContent =
+      `Đang tải ${state.monitoringHours} giờ dữ liệu các hồ...`;
+
+    try {
+      const payload =
+        await fetchMobileMonitoring({
+          force,
+        });
+
+      renderRelatedReservoirs(
+        payload
+      );
+    } catch (error) {
+      console.error(
+        "Lỗi tải các hồ liên quan:",
+        error
+      );
+
+      status.textContent =
+        `Không tải được dữ liệu các hồ liên quan: ${error.message}`;
     }
   }
 
