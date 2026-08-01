@@ -3794,21 +3794,20 @@
       $("moreDownstreamStatus");
 
     const originalText =
-      button?.textContent ||
+      button?.textContent?.trim() ||
       "Cập nhật";
-
-    let syncWarning = null;
-    let reloadSucceeded = false;
 
     try {
       if (button) {
         button.disabled = true;
         button.textContent =
-          "Đang đồng bộ...";
+          "Đang lấy từ máy chủ...";
       }
 
-      status.textContent =
-        "Đang lấy số liệu mới từ API TTB...";
+      if (status) {
+        status.textContent =
+          "Bước 1/2: Đang lấy số liệu Hội Khách và Ái Nghĩa từ máy chủ hạ lưu...";
+      }
 
       const {
         data: { session },
@@ -3820,124 +3819,166 @@
         );
       }
 
+      /*
+        BẮT BUỘC gọi API đồng bộ trước.
+
+        API downstream-forecast phải thực hiện:
+        1. Gọi máy chủ mực nước hạ lưu.
+        2. Chuẩn hóa số liệu Hội Khách, Ái Nghĩa.
+        3. Upsert dữ liệu vào Supabase.
+        4. Chỉ trả ok=true sau khi lưu thành công.
+      */
+      const syncUrl =
+        "/api/downstream-forecast" +
+        "?mode=sync-ttb" +
+        "&hours=72" +
+        `&_=${Date.now()}`;
+
+      console.info(
+        "Bắt đầu đồng bộ hạ du:",
+        syncUrl
+      );
+
+      const syncResponse =
+        await fetch(
+          syncUrl,
+          {
+            method: "GET",
+
+            headers: {
+              Accept:
+                "application/json",
+
+              Authorization:
+                `Bearer ${session.access_token}`,
+            },
+
+            cache:
+              "no-store",
+          }
+        );
+
+      const syncText =
+        await syncResponse.text();
+
+      let syncResult = null;
+
       try {
-        const syncResponse =
-          await fetch(
-            "/api/downstream-forecast?mode=sync-ttb&hours=72",
-            {
-              method: "GET",
+        syncResult =
+          syncText
+            ? JSON.parse(syncText)
+            : null;
+      } catch {
+        throw new Error(
+          `API đồng bộ hạ du trả dữ liệu không đúng JSON, HTTP ${syncResponse.status}`
+        );
+      }
 
-              headers: {
-                Accept:
-                  "application/json",
+      console.info(
+        "Kết quả đồng bộ hạ du:",
+        syncResult
+      );
 
-                Authorization:
-                  `Bearer ${session.access_token}`,
-              },
-
-              cache:
-                "no-store",
-            }
-          );
-
-        let syncResult = null;
-
-        try {
-          syncResult =
-            await syncResponse.json();
-        } catch {
-          throw new Error(
-            `API đồng bộ TTB trả dữ liệu không đúng JSON, HTTP ${syncResponse.status}`
-          );
-        }
-
-        if (
-          !syncResponse.ok ||
-          syncResult?.ok === false
-        ) {
-          const apiError =
-            getApiErrorMessage(
-              syncResult?.error ||
-              syncResult?.message ||
-              syncResult
-            );
-
-          /*
-            Không dừng hẳn tại đây vì API có thể đã ghi dữ liệu
-            nhưng trả về cảnh báo ở bước phụ.
-          */
-          syncWarning =
-            apiError ||
-            `Đồng bộ TTB có cảnh báo, HTTP ${syncResponse.status}`;
-        }
-      } catch (error) {
-        syncWarning =
-          getApiErrorMessage(error);
+      /*
+        Không gọi mobile-monitoring khi bước lấy dữ liệu/lưu Supabase thất bại.
+        Điều này tránh tạo cảm giác nút Cập nhật chỉ đang đọc dữ liệu cũ.
+      */
+      if (
+        !syncResponse.ok ||
+        syncResult?.ok !== true
+      ) {
+        throw new Error(
+          getApiErrorMessage(
+            syncResult?.error ||
+            syncResult?.message ||
+            syncResult
+          ) ||
+          `Đồng bộ hạ du thất bại, HTTP ${syncResponse.status}`
+        );
       }
 
       /*
-        Luôn xóa cache và tải lại monitoring sau khi đã gọi sync,
-        kể cả sync có cảnh báo.
+        Chấp nhận nhiều tên trường để tương thích API hiện tại,
+        nhưng API nên trả ít nhất một trong các trường saved/upserted/fetched.
+      */
+      const savedCount =
+        Number(
+          syncResult.saved ??
+          syncResult.upserted ??
+          syncResult.inserted ??
+          syncResult.rows_saved
+        );
+
+      const fetchedCount =
+        Number(
+          syncResult.fetched ??
+          syncResult.received ??
+          syncResult.rows_fetched
+        );
+
+      const latestTime =
+        syncResult.latest_time ||
+        syncResult.latestTime ||
+        syncResult.source_time ||
+        null;
+
+      if (status) {
+        const savedText =
+          Number.isFinite(savedCount)
+            ? `Đã lưu ${savedCount} bản ghi vào Supabase.`
+            : Number.isFinite(fetchedCount)
+              ? `Đã nhận ${fetchedCount} bản ghi từ máy chủ hạ lưu.`
+              : "Đã lấy và lưu số liệu hạ du thành công.";
+
+        status.textContent =
+          `Bước 2/2: ${savedText} Đang đọc lại dữ liệu mới...`;
+      }
+
+      /*
+        Chỉ sau khi API đồng bộ báo thành công mới xóa cache
+        và gọi mobile-monitoring để đọc dữ liệu vừa lưu.
       */
       state.mobileMonitoring = null;
       state.mobileMonitoringLoadedAt = 0;
 
-      status.textContent =
-        syncWarning
-          ? "Đồng bộ có cảnh báo, đang tải lại dữ liệu..."
-          : "Đồng bộ thành công, đang tải lại dữ liệu...";
+      await loadDownstreamMobile(true);
 
-      try {
-        await loadDownstreamMobile(true);
-        reloadSucceeded = true;
-      } catch (reloadError) {
-        throw new Error(
-          `Không tải lại được dữ liệu: ${getApiErrorMessage(reloadError)}`
-        );
+      const suffix =
+        latestTime
+          ? ` • Nguồn: ${formatDownstreamStatusTime(latestTime)}`
+          : "";
+
+      if (status) {
+        /*
+          renderDownstreamMonitoring đã ghi trạng thái thời gian mới nhất.
+          Chỉ bổ sung xác nhận đồng bộ nếu cần.
+        */
+        status.textContent =
+          `${status.textContent || "Đã tải dữ liệu mới"}${suffix}`;
       }
 
-      if (reloadSucceeded) {
-        if (syncWarning) {
-          /*
-            Giữ dữ liệu vừa tải lên màn hình.
-            Chỉ báo cảnh báo ngắn, không xóa bảng.
-          */
-          const currentStatus =
-            status.textContent || "";
-
-          status.textContent =
-            `${currentStatus} • Cảnh báo đồng bộ: ${syncWarning}`;
-        } else {
-          toast(
-            "Đã cập nhật dữ liệu hạ du"
-          );
-        }
-      }
+      toast(
+        "Đã lấy dữ liệu hạ lưu và lưu vào Supabase"
+      );
     } catch (error) {
       console.error(
-        "Lỗi cập nhật dữ liệu hạ du:",
+        "Lỗi đồng bộ dữ liệu hạ du:",
         error
       );
 
-      status.textContent =
-        `Không cập nhật được: ${getApiErrorMessage(error)}`;
+      if (status) {
+        status.textContent =
+          `Không đồng bộ được từ máy chủ hạ lưu: ${getApiErrorMessage(error)}`;
+      }
 
       /*
-        Không xóa dữ liệu đang hiển thị.
-        Nếu trước đó chưa có dữ liệu, thử tải lại một lần cuối.
+        Không tự gọi mobile-monitoring trong nhánh lỗi.
+        Giữ nguyên dữ liệu cũ đang hiển thị để người dùng biết
+        thao tác cập nhật chưa thành công.
       */
-      if (!reloadSucceeded) {
-        try {
-          state.mobileMonitoring = null;
-          state.mobileMonitoringLoadedAt = 0;
-          await loadDownstreamMobile(true);
-        } catch (finalReloadError) {
-          console.error(
-            "Không tải lại được monitoring:",
-            finalReloadError
-          );
-        }
-      }
+      toast(
+        "Không cập nhật được dữ liệu hạ du"
+      );
     } finally {
       if (button) {
         button.disabled = false;
