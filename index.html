@@ -1232,78 +1232,6 @@
       z-index:700;
     }
 
-
-    /* ======================================================
-       V13 - TẦN SUẤT THỦY VĂN & DỰ BÁO CHẠM MN CHẾT
-    ====================================================== */
-
-    #deadLevelCard.dead-rising{
-      border-color:rgba(16,185,129,.34);
-      background:
-        linear-gradient(
-          180deg,
-          rgba(16,185,129,.11),
-          rgba(255,255,255,.025)
-        );
-    }
-
-    #deadLevelCard.dead-rising #txtDeadLevelForecast{
-      color:rgb(var(--c-green));
-    }
-
-    #deadLevelCard.dead-stable{
-      border-color:rgba(34,211,238,.34);
-      background:
-        linear-gradient(
-          180deg,
-          rgba(34,211,238,.10),
-          rgba(255,255,255,.025)
-        );
-    }
-
-    #deadLevelCard.dead-stable #txtDeadLevelForecast{
-      color:rgb(var(--c-wl));
-    }
-
-    #deadLevelCard.dead-decreasing{
-      border-color:rgba(245,158,11,.34);
-      background:
-        linear-gradient(
-          180deg,
-          rgba(245,158,11,.10),
-          rgba(255,255,255,.025)
-        );
-    }
-
-    #deadLevelCard.dead-decreasing #txtDeadLevelForecast{
-      color:rgb(var(--c-tb));
-    }
-
-    #deadLevelCard.dead-danger{
-      border-color:rgba(239,68,68,.38);
-      background:
-        linear-gradient(
-          180deg,
-          rgba(239,68,68,.12),
-          rgba(255,255,255,.025)
-        );
-    }
-
-    #deadLevelCard.dead-danger #txtDeadLevelForecast{
-      color:rgb(var(--c-sp));
-    }
-
-    #deadLevelCard.dead-missing #txtDeadLevelForecast{
-      color:#c084fc;
-    }
-
-    #txtHydroGroup,
-    #txtDeadLevelDays{
-      white-space:normal;
-      line-height:1.25;
-      text-align:center;
-    }
-
 </style>
   <link
     rel="stylesheet"
@@ -1400,7 +1328,7 @@
           <div class="metric-card green"><span class="metric-label">% hữu ích</span><span class="metric-value" id="txtPctUseful">--%</span></div>
           <div class="metric-card"><span class="metric-label">DT hữu ích còn lại</span><span class="metric-value" id="txtVolUsefulLeft">-- <small>tr.m³</small></span></div>
           <div class="metric-card"><span class="metric-label">DT trống đến MNDBT</span><span class="metric-value" id="txtVolRemain">-- <small>tr.m³</small></span></div>
-          <div class="metric-card purple" id="deadLevelCard"><span class="metric-label">Dự báo chạm MN chết</span><span class="metric-value" id="txtDeadLevelForecast">--</span><span class="metric-sub" id="txtDeadLevelDays">Chưa có dữ liệu</span></div>
+          <div class="metric-card purple"><span class="metric-label">Dự báo chạm MN chết</span><span class="metric-value" id="txtDeadLevelForecast">--</span><span class="metric-sub" id="txtDeadLevelDays">Chưa có dữ liệu</span></div>
         </div>
       </section>
 
@@ -2549,7 +2477,7 @@
 
     setMetricValue(
       "txtRainD1",
-      rain.rain_d1_mm ?? rain.rain_previous_day_mm,
+      rain.rain_d1_mm,
       {
         digits: 1,
         unit: "mm",
@@ -2559,15 +2487,14 @@
     const hydrology =
       forecast.hydrology_frequency || {};
 
-    const hydroPercent =
-      Number(hydrology.percent);
-
     if (
-      Number.isFinite(hydroPercent)
+      Number.isFinite(
+        Number(hydrology.percent)
+      )
     ) {
       setMetricValue(
         "txtHydroFrequency",
-        hydroPercent,
+        hydrology.percent,
         {
           digits: 0,
           unit: "%",
@@ -2576,129 +2503,41 @@
     } else {
       setTextSafe(
         "txtHydroFrequency",
-        "-- %"
+        "Chưa có dữ liệu"
       );
     }
 
-    /*
-      Dòng phụ ưu tiên tên nhóm.
-      Nếu API chưa xác định được nhóm thì hiển thị ghi chú.
-    */
     setTextSafe(
       "txtHydroGroup",
-      hydrology.group ||
-      hydrology.note,
-      "Chưa có dữ liệu tần suất"
+      hydrology.group,
+      hydrology.note ||
+      "Chưa nối nguồn dữ liệu"
     );
 
     const deadLevel =
       forecast.dead_level || {};
 
-    const deadCard =
-      $("deadLevelCard");
+    setTextSafe(
+      "txtDeadLevelForecast",
+      deadLevel.status,
+      "Chưa có dữ liệu"
+    );
 
-    if (deadCard) {
-      deadCard.classList.remove(
-        "dead-rising",
-        "dead-stable",
-        "dead-decreasing",
-        "dead-danger",
-        "dead-missing"
+    if (
+      Number.isFinite(
+        Number(deadLevel.days)
+      )
+    ) {
+      setTextSafe(
+        "txtDeadLevelDays",
+        `${fmt0.format(deadLevel.days)} ngày`
       );
-    }
-
-    switch (deadLevel.code) {
-      case "rising":
-        setTextSafe(
-          "txtDeadLevelForecast",
-          "Đang tăng"
-        );
-
-        setTextSafe(
-          "txtDeadLevelDays",
-          deadLevel.note,
-          "Q về lớn hơn Q chạy máy"
-        );
-
-        deadCard?.classList.add(
-          "dead-rising"
-        );
-        break;
-
-      case "stable":
-        setTextSafe(
-          "txtDeadLevelForecast",
-          "Ổn định"
-        );
-
-        setTextSafe(
-          "txtDeadLevelDays",
-          deadLevel.note,
-          "Q về xấp xỉ Q chạy máy"
-        );
-
-        deadCard?.classList.add(
-          "dead-stable"
-        );
-        break;
-
-      case "decreasing": {
-        const days =
-          Number(deadLevel.days);
-
-        setTextSafe(
-          "txtDeadLevelForecast",
-          Number.isFinite(days)
-            ? `${fmt1.format(days)} ngày`
-            : "Đang giảm"
-        );
-
-        setTextSafe(
-          "txtDeadLevelDays",
-          deadLevel.note,
-          "Q chạy máy lớn hơn Q về"
-        );
-
-        deadCard?.classList.add(
-          "dead-decreasing"
-        );
-        break;
-      }
-
-      case "reached_dead_level":
-        setTextSafe(
-          "txtDeadLevelForecast",
-          "Đã chạm MN chết"
-        );
-
-        setTextSafe(
-          "txtDeadLevelDays",
-          deadLevel.note,
-          "Dung tích hữu ích còn lại bằng 0"
-        );
-
-        deadCard?.classList.add(
-          "dead-danger"
-        );
-        break;
-
-      default:
-        setTextSafe(
-          "txtDeadLevelForecast",
-          deadLevel.status,
-          "Chưa có dữ liệu"
-        );
-
-        setTextSafe(
-          "txtDeadLevelDays",
-          deadLevel.note,
-          "Thiếu dữ liệu tính toán"
-        );
-
-        deadCard?.classList.add(
-          "dead-missing"
-        );
-        break;
+    } else {
+      setTextSafe(
+        "txtDeadLevelDays",
+        deadLevel.note,
+        "Chưa nối nguồn dữ liệu"
+      );
     }
 
     const inflowForecast =
@@ -2768,6 +2607,206 @@
     );
   }
 
+
+  /* ======================================================
+     MOBILE EXTRA API
+     - Chỉ cập nhật 4 phần tử:
+       txtHydroFrequency
+       txtHydroGroup
+       txtDeadLevelForecast
+       txtDeadLevelDays
+     - Không ghi đè bất kỳ số liệu V12 nào khác.
+  ====================================================== */
+
+  function parseNullableNumber(value) {
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      return null;
+    }
+
+    const number =
+      Number(value);
+
+    return Number.isFinite(number)
+      ? number
+      : null;
+  }
+
+  async function fetchMobileExtra() {
+    const {
+      data: { session },
+    } = await sb.auth.getSession();
+
+    if (!session?.access_token) {
+      throw new Error(
+        "Phiên đăng nhập đã hết hạn"
+      );
+    }
+
+    const response =
+      await fetch(
+        "/api/mobile-extra",
+        {
+          method: "GET",
+
+          headers: {
+            Accept:
+              "application/json",
+
+            Authorization:
+              `Bearer ${session.access_token}`,
+          },
+
+          cache:
+            "no-store",
+        }
+      );
+
+    let result = null;
+
+    try {
+      result =
+        await response.json();
+    } catch {
+      throw new Error(
+        `API dữ liệu bổ sung trả JSON không hợp lệ, HTTP ${response.status}`
+      );
+    }
+
+    if (
+      !response.ok ||
+      result?.ok !== true
+    ) {
+      throw new Error(
+        result?.error ||
+        `Không tải được dữ liệu bổ sung, HTTP ${response.status}`
+      );
+    }
+
+    return result;
+  }
+
+  function renderMobileExtra(result) {
+    const hydrology =
+      result?.hydrology_frequency || {};
+
+    const deadLevel =
+      result?.dead_level_forecast || {};
+
+    const percent =
+      parseNullableNumber(
+        hydrology.percent
+      );
+
+    if (percent !== null) {
+      $("txtHydroFrequency").textContent =
+        `${fmt1.format(percent)}%`;
+    } else {
+      $("txtHydroFrequency").textContent =
+        "--";
+    }
+
+    $("txtHydroGroup").textContent =
+      hydrology.group ||
+      hydrology.note ||
+      "Chưa có dữ liệu";
+
+    const days =
+      parseNullableNumber(
+        deadLevel.days
+      );
+
+    if (
+      deadLevel.code ===
+      "decreasing"
+    ) {
+      $("txtDeadLevelForecast").textContent =
+        days !== null
+          ? `${fmt1.format(days)} ngày`
+          : "Đang giảm";
+
+      $("txtDeadLevelDays").textContent =
+        deadLevel.note ||
+        "Q chạy máy lớn hơn Q về";
+
+      return;
+    }
+
+    if (
+      deadLevel.code ===
+      "rising"
+    ) {
+      $("txtDeadLevelForecast").textContent =
+        "Đang tăng";
+
+      $("txtDeadLevelDays").textContent =
+        deadLevel.note ||
+        "Q về lớn hơn Q chạy máy";
+
+      return;
+    }
+
+    if (
+      deadLevel.code ===
+      "stable"
+    ) {
+      $("txtDeadLevelForecast").textContent =
+        "Ổn định";
+
+      $("txtDeadLevelDays").textContent =
+        deadLevel.note ||
+        "Q về xấp xỉ Q chạy máy";
+
+      return;
+    }
+
+    if (
+      deadLevel.code ===
+      "reached_dead_level"
+    ) {
+      $("txtDeadLevelForecast").textContent =
+        "Đã chạm MN chết";
+
+      $("txtDeadLevelDays").textContent =
+        deadLevel.note ||
+        "Dung tích hữu ích bằng 0";
+
+      return;
+    }
+
+    $("txtDeadLevelForecast").textContent =
+      deadLevel.status ||
+      "Chưa có dữ liệu";
+
+    $("txtDeadLevelDays").textContent =
+      deadLevel.note ||
+      "Chưa có dữ liệu";
+  }
+
+  async function loadMobileExtra() {
+    try {
+      const result =
+        await fetchMobileExtra();
+
+      renderMobileExtra(
+        result
+      );
+    } catch (error) {
+      console.warn(
+        "Không tải được tần suất và dự báo MN chết:",
+        error
+      );
+
+      /*
+        Không xóa số liệu V12 đang hiển thị.
+        Chỉ giữ nguyên 2 ô bổ sung ở trạng thái hiện có.
+      */
+    }
+  }
+
   async function loadData(){
     const btn=$("btnLoad");
     if(btn){
@@ -2776,17 +2815,10 @@
     }
 
     /*
-      Gọi API Tổng quan song song.
-      Lỗi API không làm hỏng các tab cũ.
+      V14:
+      Giữ nguyên hoàn toàn dữ liệu Tổng quan của V12.
+      Không gọi mobile-overview để tránh ghi đè số liệu đang đúng.
     */
-    const overviewPromise = fetchMobileOverview()
-      .catch((error) => {
-        console.warn(
-          "Không tải được API Tổng quan, dùng dữ liệu cũ:",
-          error
-        );
-        return null;
-      });
 
     try{
       const dateVal=$("day").value; const [y,m,d]=dateVal.split('-'); const dSelected=new Date(Number(y),Number(m)-1,Number(d));
@@ -2832,14 +2864,12 @@
         resRainFcFuture.data
       );
 
-      const mobileOverview =
-        await overviewPromise;
-
-      if (mobileOverview) {
-        renderMobileOverview(
-          mobileOverview
-        );
-      }
+      /*
+        Chỉ tải thêm đúng 2 nội dung:
+        - Tần suất thủy văn.
+        - Dự báo chạm MN chết.
+      */
+      await loadMobileExtra();
 
       renderChart();
       
