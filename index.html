@@ -5202,11 +5202,27 @@
     return "";
   }
 
-  function formatChatTime(value) {
+  function formatChatReservoirTime(value) {
     if (!value) {
       return "--";
     }
 
+    /*
+      reservoir_hourly_data lưu trực tiếp giờ vận hành Việt Nam
+      trong chuỗi thời gian. Không cộng thêm 7 giờ lần nữa.
+    */
+    return formatReservoirOperationalTime(value);
+  }
+
+  function formatChatDownstreamTime(value) {
+    if (!value) {
+      return "--";
+    }
+
+    /*
+      downstream_manual_observations lưu thời gian chuẩn UTC,
+      vì vậy cần đổi sang múi giờ Việt Nam khi hiển thị.
+    */
     return formatToVNTime(value);
   }
 
@@ -5330,7 +5346,7 @@
       );
 
     const reservoirTime =
-      formatChatTime(
+      formatChatReservoirTime(
         reservoir.time
       );
 
@@ -5473,12 +5489,12 @@
         );
 
       const start =
-        formatChatTime(
+        formatChatReservoirTime(
           rain.period_start
         );
 
       const end =
-        formatChatTime(
+        formatChatReservoirTime(
           rain.period_end
         );
 
@@ -5645,7 +5661,7 @@
         `${hk === null ? "--" : fmt2.format(hk)} m; ` +
         `Ái Nghĩa: ` +
         `${an === null ? "--" : fmt2.format(an)} m; ` +
-        `cập nhật ${formatChatTime(downstream.time)}.` +
+        `cập nhật ${formatChatDownstreamTime(downstream.time)}.` +
         freshness
       );
     }
