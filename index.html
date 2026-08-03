@@ -3328,6 +3328,7 @@
     const panel=$(`more-${name}`);
     if(panel) panel.classList.add("active");
     if(name==="downstream") loadDownstreamMobile();
+    if(name==="chat") prepareChatData();
 
     if(name==="openmeteo"){
       loadRainMobile("openmeteo");
@@ -5005,37 +5006,538 @@
     log.scrollTop=log.scrollHeight;
   }
 
-  function buildQuickAnswer(question){
-    const q=String(question||"").toLowerCase();
-    const l=state.lastObs;
-    if(!l) return "Ứng dụng chưa tải được số liệu hồ. Hãy cập nhật lại dữ liệu trước.";
-    if(q.includes("mực nước hồ")) return `Mực nước hồ gần nhất là ${fmt2.format(l.water_level)} m, lúc ${formatToVNTime(l.time)}.`;
-    if(q.includes("tăng")||q.includes("giảm")||q.includes("xu thế q")){
-      const arr=state.latest24h||[];
-      if(arr.length<2) return "Chưa đủ dữ liệu để xác định xu thế Q về.";
-      const delta=Number(arr[arr.length-1].inflow)-Number(arr[0].inflow);
-      return `Trong chuỗi 24 giờ hiện có, Q về ${delta>=0?"tăng":"giảm"} khoảng ${fmt2.format(Math.abs(delta))} m³/s; giá trị gần nhất ${fmt2.format(l.inflow)} m³/s.`;
-    }
-    if(q.includes("mưa")) return `Mưa giờ gần nhất ${fmt1.format(state.rainAtHour)} mm; tổng mưa ngày đang tính ${fmt1.format(state.rain24hSum)} mm.`;
-    if(q.includes("hạ du")){
-      const d=state.downstreamLatest;
-      if(!d) return "Chưa tải dữ liệu hạ du. Vào mục Mực nước hạ du và bấm Cập nhật.";
-      return `Hội Khách ${fmt2.format(Number(d.hoi_khach_m||0))} m; Ái Nghĩa ${fmt2.format(Number(d.ai_nghia_m||0))} m, cập nhật ${formatToVNTime(d.obs_hour||d.obs_time)}.`;
-    }
-    return `Số liệu gần nhất: MNH ${fmt2.format(l.water_level)} m; Q về ${fmt2.format(l.inflow)} m³/s; Q máy ${fmt2.format(l.turbine_flow)} m³/s; Q xả ${fmt2.format(l.spillway_flow)} m³/s.`;
+  function normalizeVietnameseText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
-  function askQuickAI(question){
-    addChatMessage("user",question);
-    setTimeout(()=>addChatMessage("ai",buildQuickAnswer(question)),120);
+  function includesAny(value, keywords) {
+    return keywords.some(
+      (keyword) => value.includes(keyword)
+    );
   }
 
-  function sendMobileChat(){
-    const input=$("mobileChatInput");
-    const question=input.value.trim();
-    if(!question) return;
-    input.value="";
-    askQuickAI(question);
+  function nullableNumber(value) {
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      return null;
+    }
+
+    const number = Number(value);
+
+    return Number.isFinite(number)
+      ? number
+      : null;
+  }
+
+  function detectChatIntent(question) {
+    const q =
+      normalizeVietnameseText(question);
+
+    if (
+      includesAny(q, [
+        "muc nuoc chet",
+        "mn chet",
+        "mnc",
+        "cham muc nuoc chet",
+        "cham mn chet",
+        "bao lau nua cham",
+      ])
+    ) {
+      return "dead_level_forecast";
+    }
+
+    if (
+      includesAny(q, [
+        "tan suat thuy van",
+        "tan suat dong chay",
+        "nhieu nuoc",
+        "it nuoc",
+      ])
+    ) {
+      return "hydrology_frequency";
+    }
+
+    if (
+      includesAny(q, [
+        "ha du",
+        "ha luu",
+        "hoi khach",
+        "ai nghia",
+      ])
+    ) {
+      return "downstream";
+    }
+
+    if (
+      includesAny(q, [
+        "muc nuoc ho",
+        "mnh",
+        "cao trinh ho",
+        "ho bao nhieu met",
+        "muc ho",
+      ])
+    ) {
+      return "reservoir_level";
+    }
+
+    if (
+      includesAny(q, [
+        "q may",
+        "luu luong qua may",
+        "luu luong phat dien",
+        "nuoc qua may",
+      ])
+    ) {
+      return "turbine_flow";
+    }
+
+    if (
+      includesAny(q, [
+        "q xa",
+        "xa tran",
+        "luu luong xa",
+        "dang xa bao nhieu",
+      ])
+    ) {
+      return "spillway_flow";
+    }
+
+    if (
+      includesAny(q, [
+        "q ve",
+        "luu luong ve",
+        "nuoc ve ho",
+        "dong chay ve",
+      ])
+    ) {
+      if (
+        includesAny(q, [
+          "tang",
+          "giam",
+          "xu the",
+          "bien dong",
+          "thay doi",
+        ])
+      ) {
+        return "inflow_trend";
+      }
+
+      return "inflow_current";
+    }
+
+    if (
+      includesAny(q, [
+        "mua",
+        "luong mua",
+      ])
+    ) {
+      return "rainfall";
+    }
+
+    if (
+      includesAny(q, [
+        "dung tich",
+        "dung tich huu ich",
+        "the tich ho",
+        "nuoc con lai",
+      ])
+    ) {
+      return "storage";
+    }
+
+    if (
+      includesAny(q, [
+        "cap nhat luc nao",
+        "du lieu moi khong",
+        "du lieu cu",
+        "thoi gian cap nhat",
+        "so lieu luc nao",
+      ])
+    ) {
+      return "data_freshness";
+    }
+
+    return "overview";
+  }
+
+  function formatMetricOrDash(value, formatter) {
+    const number =
+      nullableNumber(value);
+
+    return number === null
+      ? "--"
+      : formatter.format(number);
+  }
+
+  function answerByIntent(intent) {
+    const latest =
+      state.lastObs || null;
+
+    if (!latest) {
+      return (
+        "Ứng dụng chưa tải được số liệu hồ. " +
+        "Hãy tải lại dữ liệu trước."
+      );
+    }
+
+    const waterLevel =
+      nullableNumber(latest.water_level);
+
+    const inflow =
+      nullableNumber(latest.inflow);
+
+    const turbine =
+      nullableNumber(latest.turbine_flow);
+
+    const spillway =
+      nullableNumber(latest.spillway_flow);
+
+    const latestTime =
+      latest.time
+        ? formatReservoirOperationalTime(
+            latest.time
+          )
+        : "--";
+
+    if (intent === "reservoir_level") {
+      if (waterLevel === null) {
+        return "Chưa có số liệu mực nước hồ.";
+      }
+
+      const diffNormal =
+        waterLevel - RES_CONST.WL_NORMAL;
+
+      const relation =
+        Math.abs(diffNormal) < 0.005
+          ? "đúng bằng MNDBT"
+          : diffNormal > 0
+            ? `cao hơn MNDBT ${fmt2.format(Math.abs(diffNormal))} m`
+            : `thấp hơn MNDBT ${fmt2.format(Math.abs(diffNormal))} m`;
+
+      return (
+        `Mực nước hồ gần nhất là ` +
+        `${fmt2.format(waterLevel)} m, ` +
+        `lúc ${latestTime}; ${relation}.`
+      );
+    }
+
+    if (intent === "inflow_current") {
+      if (inflow === null) {
+        return "Chưa có số liệu lưu lượng về hồ.";
+      }
+
+      return (
+        `Lưu lượng về hồ gần nhất là ` +
+        `${fmt2.format(inflow)} m³/s, ` +
+        `lúc ${latestTime}.`
+      );
+    }
+
+    if (intent === "inflow_trend") {
+      const rows =
+        (state.latest24h || []).filter(
+          (row) =>
+            nullableNumber(row?.inflow) !== null
+        );
+
+      if (rows.length < 2) {
+        return (
+          "Chưa đủ dữ liệu để xác định xu thế " +
+          "lưu lượng về trong 24 giờ."
+        );
+      }
+
+      const first =
+        nullableNumber(rows[0].inflow);
+
+      const last =
+        nullableNumber(
+          rows[rows.length - 1].inflow
+        );
+
+      if (
+        first === null ||
+        last === null
+      ) {
+        return (
+          "Dữ liệu lưu lượng về chưa đầy đủ " +
+          "để xác định xu thế."
+        );
+      }
+
+      const delta =
+        last - first;
+
+      const direction =
+        Math.abs(delta) < 0.05
+          ? "gần như ổn định"
+          : delta > 0
+            ? "tăng"
+            : "giảm";
+
+      return (
+        `Trong chuỗi 24 giờ, lưu lượng về ` +
+        `${direction}. ` +
+        `Chênh lệch đầu-cuối là ` +
+        `${fmt2.format(Math.abs(delta))} m³/s; ` +
+        `giá trị gần nhất ${fmt2.format(last)} m³/s.`
+      );
+    }
+
+    if (intent === "turbine_flow") {
+      if (turbine === null) {
+        return "Chưa có số liệu lưu lượng qua máy.";
+      }
+
+      return (
+        `Lưu lượng qua máy gần nhất là ` +
+        `${fmt2.format(turbine)} m³/s, ` +
+        `lúc ${latestTime}.`
+      );
+    }
+
+    if (intent === "spillway_flow") {
+      if (spillway === null) {
+        return "Chưa có số liệu lưu lượng xả.";
+      }
+
+      return (
+        `Lưu lượng xả gần nhất là ` +
+        `${fmt2.format(spillway)} m³/s, ` +
+        `lúc ${latestTime}.`
+      );
+    }
+
+    if (intent === "rainfall") {
+      const rain1h =
+        nullableNumber(state.rainAtHour);
+
+      const rain24h =
+        nullableNumber(state.rain24hSum);
+
+      return (
+        `Mưa giờ gần nhất: ` +
+        `${rain1h === null ? "--" : fmt1.format(rain1h)} mm. ` +
+        `Tổng mưa 24 giờ: ` +
+        `${rain24h === null ? "--" : fmt1.format(rain24h)} mm.`
+      );
+    }
+
+    if (intent === "storage") {
+      const volume =
+        nullableNumber(
+          state.storage?.volume ??
+          state.storage?.current_volume
+        );
+
+      if (volume === null) {
+        return "Chưa có số liệu dung tích hồ.";
+      }
+
+      const useful =
+        Math.max(
+          0,
+          volume - RES_CONST.VOL_DEAD
+        );
+
+      const usefulPercent =
+        Math.max(
+          0,
+          Math.min(
+            100,
+            useful /
+            (
+              RES_CONST.VOL_MAX -
+              RES_CONST.VOL_DEAD
+            ) *
+            100
+          )
+        );
+
+      return (
+        `Dung tích hiện tại khoảng ` +
+        `${fmt2.format(volume)} triệu m³; ` +
+        `dung tích hữu ích còn lại khoảng ` +
+        `${fmt2.format(useful)} triệu m³ ` +
+        `(${fmt1.format(usefulPercent)}%).`
+      );
+    }
+
+    if (intent === "hydrology_frequency") {
+      const frequency =
+        $("txtHydroFrequency")
+          ?.textContent
+          ?.trim() || "--";
+
+      const group =
+        $("txtHydroGroup")
+          ?.textContent
+          ?.trim() ||
+        "Chưa có dữ liệu";
+
+      return (
+        `Tần suất thủy văn hiện tại là ` +
+        `${frequency}; phân nhóm: ${group}.`
+      );
+    }
+
+    if (intent === "dead_level_forecast") {
+      const forecast =
+        $("txtDeadLevelForecast")
+          ?.textContent
+          ?.trim() || "--";
+
+      const note =
+        $("txtDeadLevelDays")
+          ?.textContent
+          ?.trim() ||
+        "Chưa có dữ liệu";
+
+      return (
+        `Dự báo chạm mực nước chết: ` +
+        `${forecast}. ${note}`
+      );
+    }
+
+    if (intent === "downstream") {
+      const downstream =
+        state.downstreamLatest || null;
+
+      if (!downstream) {
+        return (
+          "Chưa tải được dữ liệu hạ du. " +
+          "Ứng dụng đang thử tải dữ liệu mới; " +
+          "hãy hỏi lại sau vài giây."
+        );
+      }
+
+      const hoiKhach =
+        nullableNumber(
+          downstream.hoi_khach_m
+        );
+
+      const aiNghia =
+        nullableNumber(
+          downstream.ai_nghia_m
+        );
+
+      const downstreamTime =
+        downstream.obs_hour ||
+        downstream.obs_time ||
+        null;
+
+      return (
+        `Hội Khách: ` +
+        `${hoiKhach === null ? "--" : fmt2.format(hoiKhach)} m; ` +
+        `Ái Nghĩa: ` +
+        `${aiNghia === null ? "--" : fmt2.format(aiNghia)} m` +
+        (
+          downstreamTime
+            ? `; cập nhật ${formatToVNTime(downstreamTime)}.`
+            : "."
+        )
+      );
+    }
+
+    if (intent === "data_freshness") {
+      return (
+        `Dữ liệu hồ gần nhất lúc ` +
+        `${latestTime}.`
+      );
+    }
+
+    return (
+      `Số liệu gần nhất: ` +
+      `MNH ${formatMetricOrDash(waterLevel, fmt2)} m; ` +
+      `Q về ${formatMetricOrDash(inflow, fmt2)} m³/s; ` +
+      `Q máy ${formatMetricOrDash(turbine, fmt2)} m³/s; ` +
+      `Q xả ${formatMetricOrDash(spillway, fmt2)} m³/s.`
+    );
+  }
+
+  function buildQuickAnswer(question) {
+    const intent =
+      detectChatIntent(question);
+
+    return answerByIntent(intent);
+  }
+
+  async function prepareChatData() {
+    try {
+      const cacheAge =
+        Date.now() -
+        Number(
+          state.mobileMonitoringLoadedAt || 0
+        );
+
+      if (
+        !state.downstreamLatest ||
+        !state.mobileMonitoring ||
+        cacheAge > 120000
+      ) {
+        await loadDownstreamMobile(false);
+      }
+    } catch (error) {
+      console.warn(
+        "Không tải được dữ liệu hạ du cho Chatbox:",
+        error
+      );
+    }
+  }
+
+  async function askQuickAI(question){
+    const cleanQuestion =
+      String(question || "").trim();
+
+    if (!cleanQuestion) {
+      return;
+    }
+
+    addChatMessage(
+      "user",
+      cleanQuestion
+    );
+
+    const intent =
+      detectChatIntent(cleanQuestion);
+
+    if (
+      intent === "downstream" &&
+      !state.downstreamLatest
+    ) {
+      await prepareChatData();
+    }
+
+    addChatMessage(
+      "ai",
+      buildQuickAnswer(cleanQuestion)
+    );
+  }
+
+  async function sendMobileChat(){
+    const input =
+      $("mobileChatInput");
+
+    const question =
+      input.value.trim();
+
+    if(!question) {
+      return;
+    }
+
+    input.value = "";
+
+    await askQuickAI(question);
   }
 
   async function generateAI() {
