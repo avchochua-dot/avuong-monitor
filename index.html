@@ -1,7 +1,9 @@
 
+
 <!doctype html>
 <html lang="vi">
 <head>
+  <!-- PWA DATA FIX V15: source-specific forecast queries + -3d chart window -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18,21 +20,73 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
   <script>
+    /*
+      PWA BUILD 2026-09-14-DATAFIX-V15
+
+      - Bắt buộc kiểm tra service-worker mới qua network.
+      - Gắn build vào URL SW để tránh trình duyệt dùng lại script SW cũ.
+      - Chỉ reload khi controller thực sự đổi, tránh reload sớm khi
+        worker mới mới chỉ ở trạng thái "waiting".
+    */
+    const PWA_BUILD = '2026-09-14-datafix-v15';
+
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js')
-          .then(reg => {
-             console.log('SW Registered!', reg.scope);
-             reg.onupdatefound = () => {
-               const installingWorker = reg.installing;
-               installingWorker.onstatechange = () => {
-                 if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                     window.location.reload();
-                 }
-               };
-             };
-          })
-          .catch(err => console.log('SW Failed:', err));
+      let pwaReloading = false;
+
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (pwaReloading) return;
+        pwaReloading = true;
+        window.location.reload();
+      });
+
+      window.addEventListener('load', async () => {
+        try {
+          const reg = await navigator.serviceWorker.register(
+            `./service-worker.js?v=${encodeURIComponent(PWA_BUILD)}`,
+            {
+              updateViaCache: 'none'
+            }
+          );
+
+          console.log(
+            '[PWA] Service Worker registered',
+            {
+              scope: reg.scope,
+              build: PWA_BUILD
+            }
+          );
+
+          // Chủ động kiểm tra bản mới sau mỗi lần mở PWA.
+          try {
+            await reg.update();
+          } catch (updateError) {
+            console.warn('[PWA] SW update check failed', updateError);
+          }
+
+          // Nếu service-worker.js có hỗ trợ message SKIP_WAITING
+          // thì bản mới sẽ active ngay. Nếu không, nó sẽ active khi
+          // người dùng đóng/mở lại PWA như cơ chế chuẩn của browser.
+          if (reg.waiting) {
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+
+          reg.addEventListener('updatefound', () => {
+            const worker = reg.installing;
+            if (!worker) return;
+
+            worker.addEventListener('statechange', () => {
+              if (
+                worker.state === 'installed' &&
+                navigator.serviceWorker.controller
+              ) {
+                console.log('[PWA] New Service Worker installed');
+                worker.postMessage({ type: 'SKIP_WAITING' });
+              }
+            });
+          });
+        } catch (err) {
+          console.warn('[PWA] Service Worker registration failed', err);
+        }
       });
     }
   </script>
@@ -2809,77 +2863,539 @@
 
   async function loadData(){
     const btn=$("btnLoad");
+
     if(btn){
       btn.disabled=true;
       btn.innerText="...";
     }
 
     /*
-      V14:
-      Giữ nguyên hoàn toàn dữ liệu Tổng quan của V12.
-      Không gọi mobile-overview để tránh ghi đè số liệu đang đúng.
+      ============================================================
+      PWA V15 - DATA QUERY FIX
+      ============================================================
+
+      Nguyên nhân lỗi cũ:
+      1) PWA lấy TẤT CẢ source của inflow_forecast trong res2,
+         sau đó mới lọc bằng JavaScript.
+      2) Cửa sổ thực tế đã > 1000 row nên Supabase/PostgREST
+         cắt response. Các row 11-13/09 có created_at cũ bị mất.
+      3) Chart hiển thị selectedDate - 3 ngày, nhưng loadData cũ
+         chỉ tải forecast/obs từ selectedDate - 1 ngày.
+
+      Cách sửa:
+      - Query V7 / Mixed / AI riêng theo source.
+      - Chart data bắt đầu từ selectedDate - 3 ngày.
+      - Overview 7 ngày chỉ lấy các source production.
+      - Không đưa source test vào response production.
+      - Giữ nguyên logic Tổng quan V12/V14 và loadMobileExtra().
+      ============================================================
     */
 
     try{
-      const dateVal=$("day").value; const [y,m,d]=dateVal.split('-'); const dSelected=new Date(Number(y),Number(m)-1,Number(d));
-      const tStart=dateVal+"T00:00:00Z"; const tEnd=dateVal+"T23:59:59Z";
-      const t7DaysAgo=new Date(dSelected.getTime()-6*86400000).toISOString(); const tFcStart=new Date(dSelected.getTime()-1*86400000).toISOString(); const tFcEnd=new Date(dSelected.getTime()+10*86400000).toISOString();
-      const now=new Date(); const future7d=new Date(now.getTime()+7*24*3600*1000).toISOString();
+      const dateVal=$("day").value;
 
-      const [res1,res2,res4,res6,res7,res8,resLatest,resRainFc,resFcFuture,resRainFcFuture,resHec] = await Promise.all([
-        sb.from('reservoir_hourly_data').select('*').gte('time',tStart).lte('time',tEnd).order('time',{ascending:true}),
-        sb.from('inflow_forecast').select('*').gte('forecast_time',tFcStart).lte('forecast_time',tFcEnd).order('created_at',{ascending:false}), 
-        sb.from('reservoir_hourly_data').select('*').gte('time',tFcStart).lte('time',tEnd).order('time',{ascending:true}), 
-        sb.from('v_current_storage').select('*').order('time',{ascending:false}).limit(1), 
-        sb.from('reservoir_hourly_data').select('*').gte('time',t7DaysAgo).lte('time',tEnd).order('time',{ascending:true}), 
-        sb.from('reservoir_hourly_data').select('*').gte('time',t7DaysAgo).lte('time',tEnd).order('time',{ascending:true}),
-        sb.from('reservoir_hourly_data').select('*').order('time',{ascending:false}).limit(24),
-        sb.from('rainfall_forecast').select('*').gte('forecast_time',tFcStart).lte('forecast_time',tFcEnd).order('created_at',{ascending:false}),
-        sb.from('inflow_forecast').select('*').gte('forecast_time',now.toISOString()).lte('forecast_time',future7d),
-        sb.from('rainfall_forecast').select('*').gte('forecast_time',now.toISOString()).lte('forecast_time',future7d),
-        sb.from('inflow_forecast_sql').select('*').gte('forecast_time',tFcStart).lte('forecast_time',tFcEnd).order('created_at', {ascending:false})
+      const [y,m,d]=
+        dateVal
+          .split('-')
+          .map(Number);
+
+      const dSelected=
+        new Date(
+          y,
+          m-1,
+          d
+        );
+
+      /*
+        Giữ nguyên quy ước dữ liệu vận hành đang dùng trong PWA.
+      */
+      const tStart=
+        dateVal+"T00:00:00Z";
+
+      const tEnd=
+        dateVal+"T23:59:59Z";
+
+      const t7DaysAgo=
+        new Date(
+          dSelected.getTime()
+          - 6*86400000
+        ).toISOString();
+
+      /*
+        FIX QUAN TRỌNG:
+        renderChart() dùng selectedDate - 3 ngày.
+        Query phải tải đúng cùng cửa sổ này.
+      */
+      const tFcStart=
+        new Date(
+          dSelected.getTime()
+          - 3*86400000
+        ).toISOString();
+
+      const tFcEnd=
+        new Date(
+          dSelected.getTime()
+          + 10*86400000
+        ).toISOString();
+
+      const now=
+        new Date();
+
+      const future7d=
+        new Date(
+          now.getTime()
+          + 7*24*3600*1000
+        ).toISOString();
+
+      /*
+        Chỉ các source production.
+        Không đưa rf2q_mixed_v2_test hoặc source backtest vào UI.
+      */
+      const productionSources=[
+        'rf2q_v7',
+        'rf2q_high_fast',
+        'rf2q_low_slow',
+        'rf2q_mixed_real_fc',
+        'rf2q_ai_v1'
+      ];
+
+      const [
+        res1,
+        resV7,
+        resMix,
+        resAI,
+        res4,
+        res6,
+        res7,
+        res8,
+        resLatest,
+        resRainFc,
+        resFcFuture,
+        resRainFcFuture,
+        resHec
+      ] = await Promise.all([
+
+        /*
+          24h của ngày được chọn.
+        */
+        sb.from('reservoir_hourly_data')
+          .select('*')
+          .gte('time',tStart)
+          .lte('time',tEnd)
+          .order('time',{ascending:true}),
+
+
+        /*
+          V7:
+          query riêng source để không bị giới hạn 1000 row.
+        */
+        sb.from('inflow_forecast')
+          .select('*')
+          .eq('source','rf2q_v7')
+          .gte('forecast_time',tFcStart)
+          .lte('forecast_time',tFcEnd)
+          .order('forecast_time',{ascending:true}),
+
+
+        /*
+          Mixed V23.8 production.
+        */
+        sb.from('inflow_forecast')
+          .select('*')
+          .eq('source','rf2q_mixed_real_fc')
+          .gte('forecast_time',tFcStart)
+          .lte('forecast_time',tFcEnd)
+          .order('forecast_time',{ascending:true}),
+
+
+        /*
+          AI V1.
+        */
+        sb.from('inflow_forecast')
+          .select('*')
+          .eq('source','rf2q_ai_v1')
+          .gte('forecast_time',tFcStart)
+          .lte('forecast_time',tFcEnd)
+          .order('forecast_time',{ascending:true}),
+
+
+        /*
+          Q thực đo cho chart:
+          phải tải từ -3 ngày giống vùng chart.
+        */
+        sb.from('reservoir_hourly_data')
+          .select('*')
+          .gte('time',tFcStart)
+          .lte('time',tEnd)
+          .order('time',{ascending:true}),
+
+
+        /*
+          Dung tích hiện tại.
+        */
+        sb.from('v_current_storage')
+          .select('*')
+          .order('time',{ascending:false})
+          .limit(1),
+
+
+        /*
+          Quan trắc 7 ngày dùng cho MA24 / Q 7D.
+        */
+        sb.from('reservoir_hourly_data')
+          .select('*')
+          .gte('time',t7DaysAgo)
+          .lte('time',tEnd)
+          .order('time',{ascending:true}),
+
+
+        /*
+          Mưa quan trắc 7 ngày.
+        */
+        sb.from('reservoir_hourly_data')
+          .select('*')
+          .gte('time',t7DaysAgo)
+          .lte('time',tEnd)
+          .order('time',{ascending:true}),
+
+
+        /*
+          24 row quan trắc mới nhất.
+        */
+        sb.from('reservoir_hourly_data')
+          .select('*')
+          .order('time',{ascending:false})
+          .limit(24),
+
+
+        /*
+          Mưa dự báo cho chart.
+        */
+        sb.from('rainfall_forecast')
+          .select('*')
+          .gte('forecast_time',tFcStart)
+          .lte('forecast_time',tFcEnd)
+          .order('created_at',{ascending:false}),
+
+
+        /*
+          Forecast tương lai dùng cho Tổng quan.
+          Chỉ lấy source production để tránh source test chen vào.
+        */
+        sb.from('inflow_forecast')
+          .select('*')
+          .in('source',productionSources)
+          .gte('forecast_time',now.toISOString())
+          .lte('forecast_time',future7d)
+          .order('forecast_time',{ascending:true}),
+
+
+        /*
+          Mưa 7 ngày tới cho Tổng quan.
+        */
+        sb.from('rainfall_forecast')
+          .select('*')
+          .gte('forecast_time',now.toISOString())
+          .lte('forecast_time',future7d),
+
+
+        /*
+          HEC-HMS dùng bảng riêng.
+        */
+        sb.from('inflow_forecast_sql')
+          .select('*')
+          .gte('forecast_time',tFcStart)
+          .lte('forecast_time',tFcEnd)
+          .order('created_at',{ascending:false})
       ]);
 
-      state.hourly24h = getLatestUniqueData(res1.data,'time');
-      const allForecasts = res2.data||[];
-      state.inflowFc_V7=getLatestUniqueData(allForecasts.filter(i=>i.source==='rf2q_v7'),'forecast_time');
-      state.inflowFc_Mix=getLatestUniqueData(allForecasts.filter(i=>i.source==='rf2q_mixed_real_fc'),'forecast_time');
-      state.inflowFc_AI=getLatestUniqueData(allForecasts.filter(i=>i.source==='rf2q_ai_v1'),'forecast_time');
-      state.inflowFc_HEC=getLatestUniqueData(resHec.data, 'forecast_time');
-      state.rainFc = getLatestUniqueData(resRainFc.data,'forecast_time').map(i=>({forecast_time:i.forecast_time, rainfall_mm:Number(i.rainfall_mm)||0}));
-      const mapFc={}; (res2.data||[]).forEach(i=>{ if(!mapFc[i.forecast_time]) mapFc[i.forecast_time]=[]; mapFc[i.forecast_time].push(i); }); state.fcEnsemble=mapFc;
-      state.hourly3D = getLatestUniqueData(res4.data,'time'); state.hourly7D_Obs = getLatestUniqueData(res7.data,'time'); 
-      state.rainObs7D = getLatestUniqueData(res8.data,'time'); state.rain24hRaw = getLatestUniqueData(res1.data,'time');
-      state.latest24h = (resLatest.data||[]).reverse(); state.storage = res6.data?res6.data[0]:null;
-      state.lastObs = state.latest24h.length?state.latest24h[state.latest24h.length-1]:null;
-      let rainCur = 0; if(state.lastObs){ rainCur = getRain(state.lastObs); }
-      state.rainAtHour = rainCur; state.rain24hSum = state.rain24hRaw.reduce((s,r)=>s+getRain(r),0);
 
       /*
-        Render dữ liệu cũ trước để giữ khả năng fallback.
-        Sau đó API Tổng quan sẽ ghi đè các chỉ số bằng dữ liệu chuẩn hóa.
+        Không cho query lỗi âm thầm.
+        Trước đây nếu một response lỗi/truncate, chart vẫn render và
+        rất khó nhận biết trên điện thoại.
       */
-      renderOverview(
-        resFcFuture.data,
-        resRainFcFuture.data
+      const queryChecks=[
+        ['reservoir_hourly_data 24h',res1],
+        ['forecast V7',resV7],
+        ['forecast Mixed',resMix],
+        ['forecast AI',resAI],
+        ['reservoir chart',res4],
+        ['current storage',res6],
+        ['reservoir 7D',res7],
+        ['rain obs 7D',res8],
+        ['latest 24h',resLatest],
+        ['rain forecast chart',resRainFc],
+        ['forecast future',resFcFuture],
+        ['rain forecast future',resRainFcFuture],
+        ['HEC-HMS',resHec]
+      ];
+
+      for(const [name,res] of queryChecks){
+        if(res?.error){
+          throw new Error(
+            `${name}: ` +
+            (
+              res.error.message ||
+              'Supabase query error'
+            )
+          );
+        }
+      }
+
+
+      state.hourly24h=
+        getLatestUniqueData(
+          res1.data||[],
+          'time'
+        );
+
+
+      /*
+        Các model lấy trực tiếp từ response source riêng.
+      */
+      state.inflowFc_V7=
+        getLatestUniqueData(
+          resV7.data||[],
+          'forecast_time'
+        );
+
+      state.inflowFc_Mix=
+        getLatestUniqueData(
+          resMix.data||[],
+          'forecast_time'
+        );
+
+      state.inflowFc_AI=
+        getLatestUniqueData(
+          resAI.data||[],
+          'forecast_time'
+        );
+
+
+      state.inflowFc_HEC=
+        getLatestUniqueData(
+          resHec.data||[],
+          'forecast_time'
+        );
+
+
+      state.rainFc=
+        getLatestUniqueData(
+          resRainFc.data||[],
+          'forecast_time'
+        ).map(i=>({
+          forecast_time:
+            i.forecast_time,
+
+          rainfall_mm:
+            Number(i.rainfall_mm)||0
+        }));
+
+
+      /*
+        IN_FC_7D hiện dùng rf2q_ai_v1.
+        Ghép ba source chart chính để giữ tương thích với code cũ,
+        nhưng không tải toàn bảng inflow_forecast.
+      */
+      const mapFc={};
+
+      [
+        ...(resV7.data||[]),
+        ...(resMix.data||[]),
+        ...(resAI.data||[])
+      ].forEach(i=>{
+        if(!mapFc[i.forecast_time]){
+          mapFc[i.forecast_time]=[];
+        }
+
+        mapFc[i.forecast_time].push(i);
+      });
+
+      state.fcEnsemble=
+        mapFc;
+
+
+      state.hourly3D=
+        getLatestUniqueData(
+          res4.data||[],
+          'time'
+        );
+
+      state.hourly7D_Obs=
+        getLatestUniqueData(
+          res7.data||[],
+          'time'
+        );
+
+      state.rainObs7D=
+        getLatestUniqueData(
+          res8.data||[],
+          'time'
+        );
+
+      state.rain24hRaw=
+        getLatestUniqueData(
+          res1.data||[],
+          'time'
+        );
+
+
+      state.latest24h=
+        (resLatest.data||[])
+          .slice()
+          .reverse();
+
+
+      state.storage=
+        (
+          res6.data &&
+          res6.data.length
+        )
+          ? res6.data[0]
+          : null;
+
+
+      state.lastObs=
+        state.latest24h.length
+          ? state.latest24h[
+              state.latest24h.length-1
+            ]
+          : null;
+
+
+      let rainCur=0;
+
+      if(state.lastObs){
+        rainCur=
+          getRain(
+            state.lastObs
+          );
+      }
+
+      state.rainAtHour=
+        rainCur;
+
+      state.rain24hSum=
+        state.rain24hRaw.reduce(
+          (sum,row)=>
+            sum+getRain(row),
+          0
+        );
+
+
+      /*
+        Debug kỹ thuật:
+        Có thể xem bằng Safari Web Inspector / Chrome remote debug.
+      */
+      console.info(
+        '[PWA chart data V15]',
+        {
+          selectedDate:
+            dateVal,
+
+          chartFrom:
+            tFcStart,
+
+          chartTo:
+            tFcEnd,
+
+          obsRows:
+            state.hourly3D.length,
+
+          v7Rows:
+            state.inflowFc_V7.length,
+
+          mixedRows:
+            state.inflowFc_Mix.length,
+
+          aiRows:
+            state.inflowFc_AI.length,
+
+          hecRows:
+            state.inflowFc_HEC.length,
+
+          rainForecastRows:
+            state.rainFc.length,
+
+          futureForecastRows:
+            (resFcFuture.data||[]).length
+        }
       );
 
+
       /*
-        Chỉ tải thêm đúng 2 nội dung:
+        Giữ nguyên logic Tổng quan V12/V14.
+      */
+      renderOverview(
+        resFcFuture.data||[],
+        resRainFcFuture.data||[]
+      );
+
+
+      /*
+        Chỉ tải thêm:
         - Tần suất thủy văn.
         - Dự báo chạm MN chết.
       */
       await loadMobileExtra();
 
+
       renderChart();
-      
-      if($('tab-data').classList.contains('active')) loadTableData();
-      if($('tab-forecast').classList.contains('active')) loadForecasts();
-      if($('tab-more').classList.contains('active') && $('more-bulletins').classList.contains('active')) loadAIBulletins(); 
-      
-      toast("Đã cập nhật dữ liệu");
-    } catch(e){ console.error(e); toast("Lỗi kết nối"); }
-    finally{
+
+
+      if(
+        $('tab-data')
+          .classList
+          .contains('active')
+      ){
+        loadTableData();
+      }
+
+
+      if(
+        $('tab-forecast')
+          .classList
+          .contains('active')
+      ){
+        loadForecasts();
+      }
+
+
+      if(
+        $('tab-more')
+          .classList
+          .contains('active')
+        &&
+        $('more-bulletins')
+          .classList
+          .contains('active')
+      ){
+        loadAIBulletins();
+      }
+
+
+      toast(
+        "Đã cập nhật dữ liệu"
+      );
+
+    } catch(e){
+
+      console.error(
+        '[PWA loadData V15]',
+        e
+      );
+
+      toast(
+        "Lỗi tải dữ liệu: " +
+        (
+          e?.message ||
+          "Không xác định"
+        )
+      );
+
+    } finally{
+
       if(btn){
         btn.disabled=false;
         btn.innerText="Tải lại";
