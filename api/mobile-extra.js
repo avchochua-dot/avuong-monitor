@@ -1,5 +1,7 @@
 /**
  * api/mobile-extra.js
+ * FIX 2026-09-15:
+ * normalize hydrology frequency ratio 0..1 -> percent 0..100
  *
  * API chỉ phục vụ:
  * 1. Tần suất thủy văn của Q về trung bình tháng.
@@ -20,6 +22,11 @@ const SUPABASE_SERVICE_ROLE_KEY =
 
 const DEAD_VOLUME_MILLION_M3 =
   77.07;
+
+
+/* ================================================================
+   RESPONSE
+   ================================================================ */
 
 function sendJson(
   res,
@@ -56,6 +63,11 @@ function sendJson(
     .json(payload);
 }
 
+
+/* ================================================================
+   BASIC UTILITIES
+   ================================================================ */
+
 function toNumber(
   value,
   fallback = null
@@ -76,6 +88,7 @@ function toNumber(
     : fallback;
 }
 
+
 function round(
   value,
   digits = 2
@@ -95,6 +108,7 @@ function round(
     factor
   );
 }
+
 
 function average(
   values = []
@@ -123,6 +137,7 @@ function average(
   );
 }
 
+
 function uniqueByTime(
   rows = []
 ) {
@@ -147,6 +162,11 @@ function uniqueByTime(
   ];
 }
 
+
+/* ================================================================
+   AUTH
+   ================================================================ */
+
 function getBearerToken(req) {
   const authorization =
     String(
@@ -164,6 +184,7 @@ function getBearerToken(req) {
     : "";
 }
 
+
 function requireEnvironment() {
   if (!SUPABASE_URL) {
     throw new Error(
@@ -180,13 +201,16 @@ function requireEnvironment() {
   }
 }
 
+
 async function verifyUser(
   accessToken
 ) {
   if (!accessToken) {
     return {
       ok: false,
+
       status: 401,
+
       error:
         "Thiếu access token",
     };
@@ -196,7 +220,8 @@ async function verifyUser(
     await fetch(
       `${SUPABASE_URL}/auth/v1/user`,
       {
-        method: "GET",
+        method:
+          "GET",
 
         headers: {
           apikey:
@@ -211,7 +236,9 @@ async function verifyUser(
   if (!response.ok) {
     return {
       ok: false,
+
       status: 401,
+
       error:
         "Phiên đăng nhập không hợp lệ hoặc đã hết hạn",
     };
@@ -221,6 +248,11 @@ async function verifyUser(
     ok: true,
   };
 }
+
+
+/* ================================================================
+   SUPABASE
+   ================================================================ */
 
 async function supabaseSelect(
   table,
@@ -293,6 +325,11 @@ async function supabaseSelect(
   }
 }
 
+
+/* ================================================================
+   TIME
+   ================================================================ */
+
 function getMonthInfo(
   value
 ) {
@@ -321,6 +358,11 @@ function getMonthInfo(
       `${match[1]}-${match[2]}-01T00:00:00`,
   };
 }
+
+
+/* ================================================================
+   STORAGE
+   ================================================================ */
 
 function getStorageValue(
   row
@@ -351,10 +393,22 @@ function getStorageValue(
   return null;
 }
 
+
+/* ================================================================
+   HYDROLOGY FREQUENCY
+   ================================================================ */
+
 /*
  * Ghi chú theo tần suất:
+ *
  * P nhỏ → nước nhiều.
  * P lớn → nước ít.
+ *
+ * Hàm này luôn nhận giá trị theo đơn vị %:
+ *
+ * 10  = 10%
+ * 20  = 20%
+ * 50  = 50%
  */
 function classifyFrequency(
   percent
@@ -385,18 +439,39 @@ function classifyFrequency(
   return "Rất ít nước";
 }
 
+
 /*
- * Nội suy giữa hai mốc trong bảng
- * monthly_inflow_frequency.
+ * Nội suy giữa hai mốc trong bảng:
  *
- * Nhờ đó tần suất trả về là một số cụ thể,
- * ví dụ 42,6%, thay vì chỉ lấy mốc gần nhất.
+ * public.monthly_inflow_frequency
+ *
+ * FIX QUAN TRỌNG:
+ *
+ * Có hai kiểu dữ liệu có thể tồn tại:
+ *
+ * 1. Ratio:
+ *
+ *      0.1 = 10%
+ *      0.2 = 20%
+ *      0.5 = 50%
+ *
+ * 2. Percentage:
+ *
+ *      10 = 10%
+ *      20 = 20%
+ *      50 = 50%
+ *
+ * API sẽ tự nhận biết toàn bộ bảng tháng đang dùng kiểu nào.
+ *
+ * Sau hàm này:
+ *
+ *      percent LUÔN ở thang 0..100
  */
 function interpolateFrequency(
   frequencyRows,
   inflow
 ) {
-  const points =
+  const parsed =
     (frequencyRows || [])
       .map(
         (row) => ({
@@ -405,7 +480,7 @@ function interpolateFrequency(
               row.inflow_value
             ),
 
-          percent:
+          percentRaw:
             toNumber(
               row.frequency_percent
             ),
@@ -417,14 +492,72 @@ function interpolateFrequency(
             row.inflow
           ) &&
           Number.isFinite(
-            row.percent
+            row.percentRaw
           )
+      );
+
+
+  /*
+   * Xác định scale của bảng.
+   *
+   * Nếu tất cả giá trị <= 1:
+   *
+   *     0.2 = 20%
+   *
+   * Nếu có giá trị > 1:
+   *
+   *     20 = 20%
+   */
+  const maxRawPercent =
+    parsed.length
+      ? Math.max(
+          ...parsed.map(
+            (row) =>
+              Math.abs(
+                row.percentRaw
+              )
+          )
+        )
+      : null;
+
+
+  const sourceScale =
+    parsed.length &&
+    maxRawPercent <= 1
+      ? "ratio_0_1"
+      : "percent_0_100";
+
+
+  const multiplier =
+    sourceScale === "ratio_0_1"
+      ? 100
+      : 1;
+
+
+  /*
+   * Chuẩn hóa tất cả về % 0..100.
+   */
+  const points =
+    parsed
+      .map(
+        (row) => ({
+          inflow:
+            row.inflow,
+
+          percent:
+            row.percentRaw *
+            multiplier,
+
+          raw_percent:
+            row.percentRaw,
+        })
       )
       .sort(
         (a, b) =>
           a.inflow -
           b.inflow
       );
+
 
   if (!points.length) {
     return {
@@ -436,8 +569,12 @@ function interpolateFrequency(
 
       upper:
         null,
+
+      source_scale:
+        sourceScale,
     };
   }
+
 
   if (points.length === 1) {
     return {
@@ -449,9 +586,16 @@ function interpolateFrequency(
 
       upper:
         points[0],
+
+      source_scale:
+        sourceScale,
     };
   }
 
+
+  /*
+   * Ngoài khoảng thấp nhất.
+   */
   if (
     inflow <=
     points[0].inflow
@@ -465,14 +609,22 @@ function interpolateFrequency(
 
       upper:
         points[0],
+
+      source_scale:
+        sourceScale,
     };
   }
+
 
   const last =
     points[
       points.length - 1
     ];
 
+
+  /*
+   * Ngoài khoảng cao nhất.
+   */
   if (
     inflow >=
     last.inflow
@@ -486,9 +638,16 @@ function interpolateFrequency(
 
       upper:
         last,
+
+      source_scale:
+        sourceScale,
     };
   }
 
+
+  /*
+   * Nội suy tuyến tính.
+   */
   for (
     let index = 0;
     index < points.length - 1;
@@ -514,9 +673,14 @@ function interpolateFrequency(
             lower.percent,
 
           lower,
+
           upper,
+
+          source_scale:
+            sourceScale,
         };
       }
+
 
       const ratio =
         (
@@ -524,6 +688,7 @@ function interpolateFrequency(
           lower.inflow
         ) /
         width;
+
 
       const percent =
         lower.percent +
@@ -533,13 +698,20 @@ function interpolateFrequency(
           lower.percent
         );
 
+
       return {
         percent,
+
         lower,
+
         upper,
+
+        source_scale:
+          sourceScale,
       };
     }
   }
+
 
   return {
     percent:
@@ -550,8 +722,16 @@ function interpolateFrequency(
 
     upper:
       null,
+
+    source_scale:
+      sourceScale,
   };
 }
+
+
+/* ================================================================
+   DEAD LEVEL FORECAST
+   ================================================================ */
 
 function calculateDeadLevelForecast({
   usefulVolumeMillionM3,
@@ -572,6 +752,7 @@ function calculateDeadLevelForecast({
     toNumber(
       turbine24h
     );
+
 
   if (
     !Number.isFinite(
@@ -599,6 +780,7 @@ function calculateDeadLevelForecast({
     };
   }
 
+
   if (usefulVolume <= 0) {
     return {
       status:
@@ -615,8 +797,10 @@ function calculateDeadLevelForecast({
     };
   }
 
+
   const netDecrease =
     qMachine - qIn;
+
 
   if (
     Math.abs(
@@ -637,6 +821,7 @@ function calculateDeadLevelForecast({
         "Q về xấp xỉ Q chạy máy",
     };
   }
+
 
   if (netDecrease < 0) {
     return {
@@ -660,6 +845,7 @@ function calculateDeadLevelForecast({
     };
   }
 
+
   const days =
     (
       usefulVolume *
@@ -669,6 +855,7 @@ function calculateDeadLevelForecast({
       netDecrease *
       86_400
     );
+
 
   return {
     status:
@@ -694,10 +881,18 @@ function calculateDeadLevelForecast({
   };
 }
 
+
+/* ================================================================
+   MAIN HANDLER
+   ================================================================ */
+
 export default async function handler(
   req,
   res
 ) {
+  /*
+   * CORS preflight.
+   */
   if (
     req.method === "OPTIONS"
   ) {
@@ -710,6 +905,7 @@ export default async function handler(
       }
     );
   }
+
 
   if (
     req.method !== "GET"
@@ -727,13 +923,20 @@ export default async function handler(
     );
   }
 
+
   try {
     requireEnvironment();
+
+
+    /* ============================================================
+       AUTH
+       ============================================================ */
 
     const auth =
       await verifyUser(
         getBearerToken(req)
       );
+
 
     if (!auth.ok) {
       return sendJson(
@@ -749,9 +952,11 @@ export default async function handler(
       );
     }
 
-    /*
-     * Mốc dữ liệu vận hành mới nhất.
-     */
+
+    /* ============================================================
+       LATEST OPERATIONAL DATA
+       ============================================================ */
+
     const latestRows =
       await supabaseSelect(
         "reservoir_hourly_data",
@@ -767,8 +972,10 @@ export default async function handler(
         }
       );
 
+
     const latest =
       latestRows?.[0];
+
 
     if (!latest?.time) {
       return sendJson(
@@ -784,16 +991,23 @@ export default async function handler(
       );
     }
 
+
     const monthInfo =
       getMonthInfo(
         latest.time
       );
+
 
     if (!monthInfo) {
       throw new Error(
         `Thời gian vận hành không hợp lệ: ${latest.time}`
       );
     }
+
+
+    /* ============================================================
+       LOAD DATA
+       ============================================================ */
 
     const [
       rows24hRaw,
@@ -802,9 +1016,9 @@ export default async function handler(
       storageRows,
     ] =
       await Promise.all([
+
         /*
-         * Giống V12:
-         * lấy đúng 24 bản ghi mới nhất.
+         * 24 bản ghi mới nhất.
          */
         supabaseSelect(
           "reservoir_hourly_data",
@@ -819,6 +1033,7 @@ export default async function handler(
               24,
           }
         ),
+
 
         /*
          * Q về từ đầu tháng đến mốc mới nhất.
@@ -840,8 +1055,9 @@ export default async function handler(
           }
         ),
 
+
         /*
-         * Bảng tần suất Q về tháng.
+         * Bảng tần suất thủy văn tháng.
          */
         supabaseSelect(
           "monthly_inflow_frequency",
@@ -860,8 +1076,9 @@ export default async function handler(
           }
         ),
 
+
         /*
-         * Dung tích hiện tại giống V12.
+         * Dung tích hiện tại.
          */
         supabaseSelect(
           "v_current_storage",
@@ -878,15 +1095,22 @@ export default async function handler(
         ),
       ]);
 
+
+    /* ============================================================
+       PREPARE DATA
+       ============================================================ */
+
     const rows24h =
       uniqueByTime(
         rows24hRaw
       );
 
+
     const monthRows =
       uniqueByTime(
         monthRowsRaw
       );
+
 
     const averageInflow24h =
       average(
@@ -896,6 +1120,7 @@ export default async function handler(
         )
       );
 
+
     const averageTurbine24h =
       average(
         rows24h.map(
@@ -904,6 +1129,7 @@ export default async function handler(
         )
       );
 
+
     const averageInflowMonth =
       average(
         monthRows.map(
@@ -911,6 +1137,11 @@ export default async function handler(
             row.inflow
         )
       );
+
+
+    /* ============================================================
+       HYDROLOGY FREQUENCY
+       ============================================================ */
 
     const frequencyResult =
       Number.isFinite(
@@ -929,21 +1160,40 @@ export default async function handler(
 
             upper:
               null,
+
+            source_scale:
+              null,
           };
 
+
+    /*
+     * Kết quả cuối cùng luôn là % thang 0..100.
+     *
+     * Ví dụ:
+     *
+     * database = 0.2
+     * API      = 20
+     */
     const frequencyPercent =
       round(
         frequencyResult.percent,
         1
       );
 
+
+    /* ============================================================
+       STORAGE
+       ============================================================ */
+
     const currentStorage =
       getStorageValue(
         storageRows?.[0]
       );
 
+
     /*
      * Dung tích hữu ích hiện có:
+     *
      * V hiện tại - dung tích chết.
      */
     const usefulVolume =
@@ -952,10 +1202,16 @@ export default async function handler(
       )
         ? Math.max(
             0,
+
             currentStorage -
             DEAD_VOLUME_MILLION_M3
           )
         : null;
+
+
+    /* ============================================================
+       DEAD LEVEL
+       ============================================================ */
 
     const deadLevelForecast =
       calculateDeadLevelForecast({
@@ -969,6 +1225,11 @@ export default async function handler(
           averageTurbine24h,
       });
 
+
+    /* ============================================================
+       RESPONSE
+       ============================================================ */
+
     return sendJson(
       res,
       200,
@@ -976,27 +1237,67 @@ export default async function handler(
         ok:
           true,
 
+
         generated_at:
           new Date()
             .toISOString(),
 
+
         source_time:
           latest.time,
 
+
+        /* ========================================================
+           HYDROLOGY FREQUENCY
+           ======================================================== */
+
         hydrology_frequency: {
+
           /*
-           * Đây là con số chính hiển thị trên ô.
+           * Giữ field cũ để PWA cũ vẫn chạy.
+           *
+           * Đơn vị từ bản này trở đi:
+           *
+           *     20 = 20%
            */
           percent:
             frequencyPercent,
 
+
           /*
-           * Ghi chú bên dưới.
+           * Field rõ nghĩa cho frontend mới.
+           *
+           * Khuyến nghị PWA ưu tiên field này.
+           */
+          frequency_percent:
+            frequencyPercent,
+
+
+          percent_unit:
+            "%",
+
+
+          /*
+           * Cho phép debug:
+           *
+           * ratio_0_1
+           * hoặc
+           * percent_0_100
+           */
+          source_scale:
+            frequencyResult.source_scale,
+
+
+          /*
+           * Nhóm tần suất.
+           *
+           * Hàm classifyFrequency nhận thang 0..100.
            */
           group:
             classifyFrequency(
               frequencyPercent
             ),
+
 
           note:
             Number.isFinite(
@@ -1014,8 +1315,10 @@ export default async function handler(
                   `${monthInfo.month}`
                 ),
 
+
           month:
             monthInfo.month,
+
 
           average_inflow_month_m3s:
             round(
@@ -1023,15 +1326,23 @@ export default async function handler(
               2
             ),
 
+
           lower_reference:
             frequencyResult.lower,
+
 
           upper_reference:
             frequencyResult.upper,
         },
 
+
+        /* ========================================================
+           DEAD LEVEL FORECAST
+           ======================================================== */
+
         dead_level_forecast: {
           ...deadLevelForecast,
+
 
           useful_volume_million_m3:
             round(
@@ -1039,11 +1350,13 @@ export default async function handler(
               2
             ),
 
+
           inflow_24h_m3s:
             round(
               averageInflow24h,
               2
             ),
+
 
           turbine_24h_m3s:
             round(
@@ -1053,11 +1366,14 @@ export default async function handler(
         },
       }
     );
+
   } catch (error) {
+
     console.error(
       "mobile-extra error:",
       error
     );
+
 
     return sendJson(
       res,
