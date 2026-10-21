@@ -30,7 +30,7 @@
       - Chỉ reload khi controller thực sự đổi, tránh reload sớm khi
         worker mới mới chỉ ở trạng thái "waiting".
     */
-    const PWA_BUILD = '2026-10-21-PWA-V23-SLIM-VIOLET-FULL-HEIGHT-CHART';
+    const PWA_BUILD = '2026-10-21-PWA-V24-BOTTOM-NAV-SAFEAREA-FIX';
 
     if ('serviceWorker' in navigator) {
       let pwaReloading = false;
@@ -1833,6 +1833,44 @@
     }
     @media(max-width:350px){
       #main-view.app-container{border-width:1px;border-radius:20px}
+    }
+
+
+    /* ================================================================
+       PWA V24 — Bottom navigation: iPhone safe-area layout correction
+       - Safe area belongs outside the navigation controls, not as a
+         blank 34px strip inside the navbar.
+       - The app's flex column allocates the freed room to the content.
+       - Keep the thin violet frame and full-height chart from V23.
+       ================================================================ */
+    #main-view .bottom-nav{
+      box-sizing:border-box;
+      position:relative;
+      flex:0 0 61px;
+      height:61px!important;
+      min-height:61px!important;
+      padding:2px 0 2px!important;
+      margin:0 var(--pwa22-shell-inset) 7px;
+      align-items:stretch;
+      justify-items:stretch;
+    }
+    #main-view .bottom-nav .nav-item{
+      height:auto;
+      min-height:0;
+      align-self:stretch;
+      justify-content:center;
+      padding:2px 0;
+    }
+    #main-view .main-content{
+      flex:1 1 auto;
+      min-height:0;
+    }
+    @media(max-width:350px){
+      #main-view .bottom-nav{
+        flex-basis:57px;
+        height:57px!important;
+        min-height:57px!important;
+      }
     }
 
   </style>
