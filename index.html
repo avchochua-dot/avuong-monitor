@@ -10,7 +10,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>A Vương • Dashboard • AI</title>
-  <meta name="theme-color" content="#080b1a" />
+  <meta name="theme-color" content="#071b2b" />
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,7 +30,7 @@
       - Chỉ reload khi controller thực sự đổi, tránh reload sớm khi
         worker mới mới chỉ ở trạng thái "waiting".
     */
-    const PWA_BUILD = '2026-10-21-PWA-V21-6x3-RAIN-COMPARE-7D';
+    const PWA_BUILD = '2026-10-21-PWA-V23-SLIM-VIOLET-FULL-HEIGHT-CHART';
 
     if ('serviceWorker' in navigator) {
       let pwaReloading = false;
@@ -1367,8 +1367,7 @@
 #pwa20ResidualCanvas{width:100%!important;height:86px!important;max-height:86px!important}
 #pwa20ResidualEmpty{padding:13px 4px;color:#8da8bd;text-align:center;font-size:10px}
 #pwa20ResidualEmpty[hidden]{display:none!important}
-/* PWA chart canvas keeps original 320px outside residual only */
-#tab-chart .card:has(#chart) .cardBody > div:has(> #chart){height:300px!important}
+/* PWA V23: chart height follows the app-shell's remaining viewport space. */
 #tab-chart #chart{height:100%!important}
 /* Nine More cards in five compact rows within a mobile viewport. */
 #more-home .more-grid{
@@ -1477,7 +1476,366 @@
       #tab-chart #tabs .tab:nth-child(-n+4){font-size:7.3px!important}
     }
 
-</style>
+
+    /* ============================================================
+       PWA V22 · UNIFIED APP SHELL
+       Một khung duy nhất: header – nội dung cuộn – bottom navigation.
+       Giữ nguyên logo, tên A Vương • Dashboard • AI và chức năng cũ.
+       ============================================================ */
+    :root{
+      --pwa22-top-safe: env(safe-area-inset-top, 0px);
+      --pwa22-bottom-safe: env(safe-area-inset-bottom, 0px);
+      --pwa22-shell-border: rgba(60,160,194,.75);
+      --pwa22-shell-inset: 9px;
+    }
+    html, body{
+      width:100%;
+      height:100%;
+      min-height:100%;
+      overflow:hidden;
+      background:#05131f;
+      overscroll-behavior:none;
+    }
+    #main-view.app-container{
+      position:relative;
+      box-sizing:border-box;
+      width:calc(100% - 8px);
+      max-width:600px;
+      height:calc(100vh - var(--pwa22-top-safe) - 8px);
+      height:calc(100dvh - var(--pwa22-top-safe) - 8px);
+      margin:calc(var(--pwa22-top-safe) + 4px) auto 4px;
+      padding:0;
+      min-height:0;
+      border:2px solid var(--pwa22-shell-border);
+      border-radius:26px;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 2% 0%,rgba(18,109,156,.16),transparent 34%),
+        linear-gradient(180deg,#081b2a 0%,#080b1a 38%,#080b1a 100%);
+      box-shadow:
+        0 0 0 1px rgba(8,33,49,.85) inset,
+        0 0 24px rgba(12,141,191,.12),
+        0 10px 36px rgba(0,0,0,.4);
+      isolation:isolate;
+    }
+    #main-view .topbar{
+      box-sizing:border-box;
+      position:relative;
+      flex:0 0 auto;
+      min-width:0;
+      min-height:68px;
+      margin:8px var(--pwa22-shell-inset) 0;
+      padding:9px 10px;
+      padding-top:9px;
+      display:flex;
+      flex-direction:row;
+      justify-content:space-between;
+      align-items:center;
+      gap:7px;
+      border:1px solid rgba(72,153,190,.53);
+      border-radius:18px;
+      background:
+        linear-gradient(120deg,rgba(14,51,73,.98),rgba(10,35,56,.99));
+      box-shadow:inset 0 1px rgba(170,232,251,.10),0 4px 18px rgba(0,0,0,.22);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+      z-index:20;
+    }
+    #main-view .brand{
+      flex:1 1 auto;
+      min-width:0;
+      display:flex;
+      align-items:center;
+      gap:7px;
+    }
+    #main-view .logo-container{
+      box-sizing:border-box;
+      flex:0 0 auto;
+      width:74px;
+      height:39px;
+      padding:3px;
+      border-radius:9px;
+      background:#f4f8fa;
+      border:1px solid rgba(231,247,253,.65);
+    }
+    #main-view .brand-text{
+      flex:1 1 auto;
+      min-width:0;
+    }
+    #main-view .brand-text h1{
+      display:block;
+      margin:0;
+      font-size:14px;
+      font-weight:800;
+      line-height:1.24;
+      letter-spacing:-.25px;
+      white-space:normal;
+      overflow:visible;
+      overflow-wrap:normal;
+      word-break:normal;
+      text-wrap:balance;
+      color:#f3faff;
+    }
+    #main-view .brand-text small{
+      margin:3px 0 0;
+      display:block;
+      font-size:11px;
+      font-weight:650;
+      letter-spacing:.1px;
+      color:#54d9f3;
+      white-space:nowrap;
+    }
+    #main-view .header-actions{
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:5px;
+    }
+    #main-view .header-icon-btn{
+      width:31px;
+      height:31px;
+      min-width:31px;
+      padding:0;
+      display:grid;
+      place-items:center;
+      border-radius:10px;
+      border:1px solid rgba(79,156,231,.43);
+      background:rgba(23,75,124,.46);
+      color:#6eb8ff;
+      line-height:1;
+    }
+    #main-view .header-icon-btn svg{
+      width:17px;
+      height:17px;
+      fill:none;
+    }
+    #main-view .header-icon-btn:disabled{
+      opacity:.6;
+      cursor:wait;
+    }
+    #main-view .status-badge{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+      margin:0;
+      padding:5px 6px;
+      min-height:31px;
+      font-size:10px;
+      line-height:1;
+      border-radius:9px;
+      white-space:nowrap;
+      color:#43dfac;
+      background:rgba(10,82,69,.45);
+      border:1px solid rgba(36,190,151,.34);
+    }
+    #main-view .header-logout-btn{
+      margin:0;
+      padding:5px 7px;
+      height:31px;
+      border-radius:9px;
+      border:1px solid rgba(245,102,118,.32);
+      background:rgba(119,35,48,.26);
+      color:#ff8993;
+      font-size:10px;
+      font-weight:750;
+      white-space:nowrap;
+    }
+    #main-view .main-content{
+      flex:1 1 auto;
+      min-height:0;
+      overflow-y:auto;
+      overflow-x:hidden;
+      margin:0;
+      padding:11px var(--pwa22-shell-inset) 17px;
+      scroll-padding-bottom:15px;
+      overscroll-behavior-y:contain;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+    }
+    #main-view .main-content::-webkit-scrollbar{display:none}
+    #main-view .main-content .tab-pane{
+      width:100%;
+      max-width:100%;
+    }
+    #main-view .card,
+    #main-view .safety-card{
+      border-color:rgba(71,142,181,.28);
+      box-shadow:0 3px 16px rgba(0,0,0,.26);
+    }
+    #main-view .tab-pane > .card:first-child{
+      margin-top:0;
+    }
+    #main-view .bottom-nav{
+      position:relative;
+      flex:0 0 auto;
+      left:auto;
+      right:auto;
+      bottom:auto;
+      inset:auto;
+      width:auto;
+      height:calc(61px + var(--pwa22-bottom-safe));
+      min-height:61px;
+      padding:2px 0 var(--pwa22-bottom-safe);
+      margin:0 var(--pwa22-shell-inset) 7px;
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      align-items:stretch;
+      border:1px solid rgba(66,139,177,.35);
+      border-radius:15px;
+      background:linear-gradient(180deg,rgba(6,28,46,.99),rgba(3,15,29,.99));
+      box-shadow:inset 0 1px rgba(146,220,241,.06),0 -2px 12px rgba(0,0,0,.18);
+      z-index:100;
+    }
+    #main-view .bottom-nav .nav-item{
+      min-width:0;
+      border-radius:12px;
+      gap:3px;
+      padding-top:3px;
+      padding-bottom:2px;
+      transition:background .15s,color .15s;
+    }
+    #main-view .bottom-nav .nav-item.active{
+      background:linear-gradient(180deg,rgba(27,95,151,.24),rgba(9,49,86,.25));
+      color:#41b4ff;
+    }
+    #main-view .bottom-nav .nav-item svg{
+      width:22px;
+      height:22px;
+      flex:0 0 auto;
+    }
+    #main-view .bottom-nav .nav-item span{
+      font-size:9px;
+      line-height:1.1;
+      letter-spacing:.05px;
+      white-space:nowrap;
+    }
+    #main-view .toast{
+      bottom:calc(82px + var(--pwa22-bottom-safe));
+    }
+    @media(max-width:390px){
+      :root{--pwa22-shell-inset:8px}
+      #main-view .topbar{margin-top:7px;padding:8px 8px;gap:5px}
+      #main-view .logo-container{width:66px;height:35px}
+      #main-view .brand{gap:6px}
+      #main-view .brand-text h1{font-size:13px;letter-spacing:-.28px}
+      #main-view .brand-text small{font-size:10px}
+      #main-view .header-actions{gap:4px}
+      #main-view .header-icon-btn{width:29px;height:29px;min-width:29px}
+      #main-view .status-badge{min-height:29px;padding:5px;font-size:9px}
+      #main-view .header-logout-btn{height:29px;padding:4px 6px;font-size:9px}
+    }
+    @media(max-width:350px){
+      :root{--pwa22-shell-inset:7px}
+      #main-view.app-container{width:calc(100% - 6px);border-radius:20px}
+      #main-view .topbar{margin-top:6px;padding:7px 7px;gap:4px}
+      #main-view .logo-container{width:53px;height:33px;padding:2px}
+      #main-view .brand{gap:5px}
+      #main-view .brand-text h1{font-size:12px;letter-spacing:-.22px;line-height:1.2}
+      #main-view .brand-text small{font-size:9px}
+      #main-view .header-actions{gap:3px}
+      #main-view .header-icon-btn{width:27px;height:27px;min-width:27px}
+      #main-view .header-icon-btn svg{width:15px;height:15px}
+      #main-view .status-badge{min-height:27px;padding:4px;font-size:8px}
+      #main-view .header-logout-btn{height:27px;padding:4px 5px;font-size:8px}
+      #main-view .bottom-nav{height:calc(57px + var(--pwa22-bottom-safe));min-height:57px}
+      #main-view .bottom-nav .nav-item svg{width:19px;height:19px}
+      #main-view .bottom-nav .nav-item span{font-size:8px}
+    }
+    @media(min-width:601px){
+      #main-view.app-container{max-width:600px}
+    }
+
+
+    /* ================================================================
+       PWA V23 — SLIM VIOLET FRAME • FULL HEIGHT CHART
+       Selected visual: refined 1px violet border, no decorative top strip.
+       The chart grows inside available app height; other tabs unchanged.
+       ================================================================ */
+    :root{
+      --pwa22-shell-border:rgba(119,117,223,.76);
+    }
+    #main-view.app-container{
+      border-width:1px;
+      border-color:var(--pwa22-shell-border);
+      border-radius:24px;
+      background:linear-gradient(180deg,#071524 0%,#080b1a 40%,#080b1a 100%);
+      box-shadow:
+        inset 0 0 0 1px rgba(47,54,105,.15),
+        0 5px 20px rgba(0,0,0,.3);
+    }
+    /* Make the former bright strip impossible to render, even after cache. */
+    #main-view .topbar::before{
+      display:none!important;
+      content:none!important;
+    }
+    /* Soft old-code tones for the inner cards and navigation. */
+    #main-view .topbar{
+      border-color:rgba(59,113,165,.36);
+      box-shadow:inset 0 1px rgba(140,188,240,.05),0 3px 10px rgba(0,0,0,.14);
+    }
+    #main-view .bottom-nav{
+      border-color:rgba(58,111,157,.32);
+      box-shadow:inset 0 1px rgba(145,198,230,.04);
+    }
+    #main-view .card,
+    #main-view .safety-card{
+      border-color:rgba(75,113,168,.31);
+    }
+    /* Let the chart tab occupy the central scroll-port without leaving
+       a blank band below a fixed 300px canvas. On short phones the
+       central portion can still scroll; the bottom nav stays visible. */
+    #main-view .main-content:has(#tab-chart.active){
+      display:flex;
+      flex-direction:column;
+      padding-bottom:9px;
+    }
+    #main-view #tab-chart.active{
+      display:flex;
+      flex-direction:column;
+      flex:1 0 auto;
+      min-height:100%;
+    }
+    #main-view #tab-chart > .card{
+      display:flex;
+      flex-direction:column;
+      flex:1 0 auto;
+      min-height:100%;
+      margin:0;
+    }
+    #main-view #tab-chart .cardBody{
+      display:flex;
+      flex-direction:column;
+      flex:1 1 auto;
+      min-height:0;
+    }
+    #main-view #tab-chart .cardBody > .pwa23-chart-stage{
+      position:relative;
+      display:block;
+      box-sizing:border-box;
+      height:auto!important;
+      min-height:320px;
+      flex:1 0 320px;
+      width:100%;
+      margin:0;
+    }
+    #main-view #tab-chart #chart{
+      display:block;
+      width:100%!important;
+      height:100%!important;
+    }
+    @media(max-height:720px){
+      #main-view #tab-chart .cardBody > .pwa23-chart-stage{
+        min-height:280px;
+        flex-basis:280px;
+      }
+    }
+    @media(max-width:350px){
+      #main-view.app-container{border-width:1px;border-radius:20px}
+    }
+
+  </style>
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -1500,19 +1858,29 @@
 </div>
 
 <div class="app-container" id="main-view">
-  <div class="topbar">
+  <header class="topbar" role="banner">
     <div class="brand">
-      <div class="logo-container"><img src="https://ycthhachfxczwkburnfa.supabase.co/storage/v1/object/public/Image/Logo%20AVC.png" alt="Logo AVC"></div>
-      <div class="brand-text"><h1>A Vương • Dashboard • AI</h1><small id="lastUpdate" style="margin-left: 8px; font-weight: 500;">--:--</small></div>
+      <div class="logo-container">
+        <img src="https://ycthhachfxczwkburnfa.supabase.co/storage/v1/object/public/Image/Logo%20AVC.png" alt="EVNGENCO2 – Công ty Cổ phần Thủy điện A Vương">
+      </div>
+      <div class="brand-text">
+        <h1>A Vương • Dashboard • AI</h1>
+        <small id="lastUpdate">--:--</small>
+      </div>
     </div>
-    <div style="display:flex; align-items:center; gap:8px;">
-      <button onclick="window.location.reload()" style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:#60a5fa; padding:0; width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-right:4px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+    <div class="header-actions">
+      <button type="button" id="pwa22RefreshBtn" class="header-icon-btn" onclick="pwa22Refresh()" aria-label="Làm mới dữ liệu" title="Làm mới dữ liệu">
+        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
       </button>
-      <div class="status-badge">ONLINE</div>
-      <button onclick="handleLogout()" style="background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.3); color:#ef4444; padding:4px 8px; font-size:10px; width:auto;">Thoát</button>
+      <div class="status-badge" id="pwa22OnlineBadge">ONLINE</div>
+      <button type="button" class="header-logout-btn" onclick="handleLogout()">Thoát</button>
     </div>
-  </div>
+  </header>
+  <!-- Ngày vận hành tự động, chỉ dùng cho logic tải dữ liệu; không hiện trên PWA. -->
+  <input type="hidden" id="day" aria-hidden="true" />
 
   <div class="main-content">
     
@@ -1599,15 +1967,6 @@
 
     <div id="tab-chart" class="tab-pane">
       <section class="card">
-        <div class="cardHead"><b>Điều khiển</b></div>
-        <div class="cardBody">
-          <div class="row">
-            <div class="control"><label>Ngày xem</label><input id="day" type="date"></div>
-            <div class="control" style="flex:0"><label>&nbsp;</label><button id="btnLoad" onclick="loadData()">Tải lại</button></div>
-          </div>
-        </div>
-      </section>
-      <section class="card">
         <div class="cardHead"><b>Biểu đồ</b> <span class="chip" id="chartRange">...</span></div>
         <div class="cardBody">
           <div class="tabs" id="tabs"></div>
@@ -1620,7 +1979,7 @@
           </div>
           <div id="pwa20QLegend" hidden></div>
           <div id="pwa20DataStatus" hidden aria-live="polite"></div>
-          <div style="height:320px; position:relative;">
+          <div class="pwa23-chart-stage">
             <canvas id="chart"></canvas>
             <div id="pwa20ChartPlaceholder" hidden style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;text-align:center;color:#94a3b8;font-size:12px;line-height:1.5;"></div>
           </div>
@@ -2299,6 +2658,41 @@
     H_AI_NGHIA_RF_V2: "H Ái<br>Nghĩa"
   };
 
+
+  /* PWA V22: ngày vận hành theo Asia/Ho_Chi_Minh, không phụ thuộc múi giờ của điện thoại. */
+  function pwa22VietnamDateKey(){
+    const parts=new Intl.DateTimeFormat('en-GB',{
+      timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'
+    }).formatToParts(new Date());
+    const values={};
+    parts.forEach(part=>{if(part.type==='year'||part.type==='month'||part.type==='day')values[part.type]=part.value;});
+    return `${values.year}-${values.month}-${values.day}`;
+  }
+  let pwa22RefreshBusy=false;
+  async function pwa22Refresh(){
+    if(pwa22RefreshBusy)return;
+    pwa22RefreshBusy=true;
+    const button=$("pwa22RefreshBtn");
+    if(button)button.disabled=true;
+    try{
+      const today=pwa22VietnamDateKey();
+      const dateInput=$("day");
+      if(dateInput)dateInput.value=today;
+      await loadData();
+    }finally{
+      pwa22RefreshBusy=false;
+      if(button)button.disabled=false;
+    }
+  }
+  /* Khi mở lại app sang ngày mới, tự cập nhật đúng ngày VN. */
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState!=='visible')return;
+    const app=$("main-view");
+    if(!app||getComputedStyle(app).display==='none')return;
+    const dateInput=$("day");
+    if(dateInput&&dateInput.value!==pwa22VietnamDateKey())pwa22Refresh();
+  });
+
   window.addEventListener("load",()=>{
     const tc=$("tabs");
     Object.keys(tabMeta).forEach(k=>{
@@ -2321,7 +2715,7 @@
       };
       tc.appendChild(t);
     });
-    const d=new Date(); const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); $("day").value=`${y}-${m}-${day}`;
+    $("day").value=pwa22VietnamDateKey();
     if(window.supabase){ sb=window.supabase.createClient(SB_URL,SB_KEY); sb.auth.getSession().then(({data:{session}})=>{ if(session) showApp(); else showLogin(); }); }
   });
 
@@ -3172,6 +3566,9 @@
   }
 
   async function loadData(){
+    /* PWA chỉ xem dữ liệu hiện hành, tự cập nhật ngày Việt Nam khi làm mới. */
+    const dateInput=$("day");
+    if(dateInput)dateInput.value=pwa22VietnamDateKey();
     const btn=$("btnLoad");
 
     if(btn){
