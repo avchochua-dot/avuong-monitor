@@ -30,7 +30,7 @@
       - Chỉ reload khi controller thực sự đổi, tránh reload sớm khi
         worker mới mới chỉ ở trạng thái "waiting".
     */
-    const PWA_BUILD = '2026-09-15-hydro-frequency-percent-fix-v19';
+    const PWA_BUILD = '2026-10-21-PWA-V21-6x3-RAIN-COMPARE-7D';
 
     if ('serviceWorker' in navigator) {
       let pwaReloading = false;
@@ -1288,6 +1288,195 @@
       z-index:700;
     }
 
+
+#pwa20ChartPlaceholder[hidden]{display:none!important}
+#pwa20ResidualCanvas[hidden]{display:none!important}
+/* ===== PWA V20 · 4 Q H120 + 2 H RF V2; compact More grid ===== */
+#tab-chart #tabs{
+  display:grid!important;
+  grid-template-columns:repeat(12,minmax(0,1fr))!important;
+  gap:6px!important;
+  align-items:stretch;
+}
+#tab-chart #tabs .tab{
+  grid-column:span 4;
+  min-width:0;min-height:37px;
+  padding:7px 3px;line-height:1.15;
+  white-space:normal;overflow-wrap:anywhere;
+  text-overflow:clip;
+  font-size:10px;text-align:center;
+  border-radius:11px;
+}
+#tab-chart #tabs .tab:nth-child(-n+4){
+  grid-column:span 3;
+  font-size:9.2px;
+  line-height:1.13;
+  padding:7px 2px;
+  border-color:rgba(124,148,255,.29);
+}
+#tab-chart #tabs .tab:nth-child(-n+4).active{
+  border-color:rgba(118,182,255,.84);
+  background:rgba(53,116,219,.28);
+}
+#tab-chart #tabs .tab:nth-last-child(-n+2){
+  border-color:rgba(37,186,218,.37);
+}
+#tab-chart #tabs .tab:nth-last-child(-n+2).active{
+  border-color:#39cdea;background:rgba(6,182,212,.19);
+}
+#tab-chart #tabs .swatch{width:7px;height:7px;min-width:7px;margin-right:1px}
+#pwa20ControlBar[hidden],#pwa20DataStatus[hidden],#pwa20ResidualPanel[hidden],#pwa20QLegend[hidden]{display:none!important}
+#pwa20ControlBar{
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:4px;margin:0 0 8px;
+}
+#pwa20ControlBar .pwa20-toggle{
+  width:100%!important;min-width:0;padding:7px 2px!important;
+  font-size:9px!important;line-height:1.08;border-radius:9px!important;
+  color:#9baabd!important;background:rgba(255,255,255,.035)!important;
+  border:1px solid rgba(160,183,218,.15)!important;
+  white-space:nowrap;overflow:hidden;text-overflow:clip;
+}
+#pwa20ControlBar .pwa20-toggle.is-active{
+  color:#dceeff!important;background:rgba(37,99,235,.16)!important;
+  border-color:var(--accent,#60a5fa)!important;
+}
+#pwa20ControlBar .pwa20-toggle .mark{color:var(--accent,#60a5fa);font-weight:900}
+#pwa20DataStatus{
+  display:flex;align-items:center;justify-content:space-between;gap:7px;
+  margin:0 0 7px;flex-wrap:wrap;
+  font-size:9.5px;line-height:1.25;color:#a5bacd;
+}
+#pwa20DataStatus strong{color:#8fe7fa;font-size:10px}
+#pwa20DataStatus .pwa20-age{color:#f9c978}
+#pwa20QLegend{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:0 0 6px;font-size:9px;color:#a9bfd6}
+#pwa20QLegend span{display:inline-flex;align-items:center;gap:4px}
+#pwa20QLegend span::before{content:'';display:inline-block;width:13px;height:3px;background:var(--key,#63baf9);border-radius:2px}
+#pwa20QLegend span.dash::before{height:0;background:none;border-top:2px dashed var(--key,#c084fc)}
+#pwa20QLegend span.band::before{height:7px;background:var(--key,#a5b4fc);opacity:.45}
+#pwa20ResidualPanel{
+  margin-top:7px;padding:7px 7px 5px;border-radius:12px;
+  border:1px solid rgba(116,157,199,.16);
+  background:rgba(9,19,38,.65);
+}
+#pwa20ResidualPanel .pwa20-residual-title{
+  display:flex;align-items:center;justify-content:space-between;gap:5px;
+  font-size:9px;font-weight:800;letter-spacing:.01em;color:#bbcee0;
+  margin:0 4px 3px;
+}
+#pwa20ResidualCanvas{width:100%!important;height:86px!important;max-height:86px!important}
+#pwa20ResidualEmpty{padding:13px 4px;color:#8da8bd;text-align:center;font-size:10px}
+#pwa20ResidualEmpty[hidden]{display:none!important}
+/* PWA chart canvas keeps original 320px outside residual only */
+#tab-chart .card:has(#chart) .cardBody > div:has(> #chart){height:300px!important}
+#tab-chart #chart{height:100%!important}
+/* Nine More cards in five compact rows within a mobile viewport. */
+#more-home .more-grid{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:6px!important;
+}
+#more-home .card{padding:10px!important;margin-bottom:8px!important}
+#more-home .cardHead{padding-bottom:7px!important;margin-bottom:8px!important}
+#more-home .more-card{
+  min-height:0!important;
+  height:clamp(79px,10.9dvh,99px)!important;
+  padding:7px 6px 6px!important;
+  gap:3px!important;justify-content:center!important;
+  border-radius:13px!important;
+}
+#more-home .more-card .more-icon{
+  width:30px!important;height:30px!important;
+  font-size:17px!important;border-radius:10px!important;
+  margin:0 auto 1px!important;
+  box-shadow:0 4px 10px var(--more-shadow,rgba(59,130,246,.12))!important;
+}
+#more-home .more-card b{
+  display:block!important;min-height:0!important;
+  font-size:10.3px!important;line-height:1.16!important;
+  margin:0!important;font-weight:850!important;
+}
+#more-home .more-card small{
+  display:block!important;min-height:0!important;
+  font-size:8.1px!important;line-height:1.17!important;
+  padding:0!important;margin:0!important;
+}
+#more-home .more-badge{
+  top:4px!important;right:4px!important;
+  min-height:15px!important;padding:2px 4px!important;
+  font-size:7px!important;
+}
+@media(max-width:370px){
+  #tab-chart #tabs{gap:4px!important}
+  #tab-chart #tabs .tab{font-size:9px!important;padding:6px 2px!important}
+  #tab-chart #tabs .tab:nth-child(-n+4){font-size:8.3px!important}
+  #pwa20ControlBar{gap:2px}
+  #pwa20ControlBar .pwa20-toggle{font-size:8px!important;padding:6px 1px!important}
+  #more-home .more-card b{font-size:9.5px!important}
+  #more-home .more-card small{font-size:7.4px!important}
+}
+
+
+/* Extra-short phones: all nine navigation tiles remain within the visible scroll area. */
+@media (max-height:690px){
+  #more-home .more-card{height:clamp(66px,9.8dvh,78px)!important;padding:5px 5px!important;gap:2px!important}
+  #more-home .more-card .more-icon{width:24px!important;height:24px!important;font-size:13px!important;margin-bottom:0!important}
+  #more-home .more-card b{font-size:9px!important;line-height:1.12!important}
+  #more-home .more-card small{font-size:7.1px!important;line-height:1.1!important}
+  #more-home .more-badge{top:3px!important;right:3px!important;padding:1px 3px!important;font-size:6px!important}
+}
+
+    /* PWA V21: 18 chart selectors -- exactly 3 rows x 6 equal cells. */
+    #tab-chart #tabs{
+      display:grid!important;
+      grid-template-columns:repeat(6,minmax(0,1fr))!important;
+      gap:5px!important;
+      align-items:stretch!important;
+      margin-bottom:11px!important;
+    }
+    #tab-chart #tabs .tab,
+    #tab-chart #tabs .tab:nth-child(-n+4),
+    #tab-chart #tabs .tab:nth-last-child(-n+2){
+      grid-column:auto!important;
+      width:100%!important;min-width:0!important;
+      height:44px!important;min-height:44px!important;
+      margin:0!important;padding:4px 1px!important;
+      display:flex!important;flex-direction:column!important;
+      align-items:center!important;justify-content:center!important;
+      gap:3px!important;line-height:1.08!important;
+      font-size:9px!important;font-weight:750!important;
+      text-align:center!important;white-space:normal!important;
+      overflow:hidden!important;overflow-wrap:normal!important;
+      word-break:normal!important;border-radius:11px!important;
+      -webkit-tap-highlight-color:transparent;
+    }
+    #tab-chart #tabs .swatch{
+      display:block!important;width:6px!important;height:6px!important;
+      min-width:6px!important;margin:0!important;flex-shrink:0!important;
+    }
+    #tab-chart #tabs .pwa21-tab-name{
+      display:block!important;width:100%;flex:0 0 auto;color:inherit;
+      font-size:inherit;line-height:1.07;white-space:normal;text-align:center;
+    }
+    #tab-chart #tabs .tab.active{
+      background:rgba(59,130,246,.20)!important;
+      border-color:rgba(130,175,255,.72)!important;color:#eef7ff!important;
+    }
+    #tab-chart #tabs .tab:nth-last-child(-n+2).active{
+      border-color:#39cdea!important;background:rgba(6,182,212,.18)!important;
+    }
+    @media(max-width:380px){
+      #tab-chart #tabs{gap:3px!important}
+      #tab-chart #tabs .tab,
+      #tab-chart #tabs .tab:nth-child(-n+4){
+        font-size:8.1px!important;padding:3px 0!important;
+        height:42px!important;min-height:42px!important;gap:2px!important;
+      }
+    }
+    @media(max-width:340px){
+      #tab-chart #tabs .tab,
+      #tab-chart #tabs .tab:nth-child(-n+4){font-size:7.3px!important}
+    }
+
 </style>
   <link
     rel="stylesheet"
@@ -1422,8 +1611,23 @@
         <div class="cardHead"><b>Biểu đồ</b> <span class="chip" id="chartRange">...</span></div>
         <div class="cardBody">
           <div class="tabs" id="tabs"></div>
+          <div id="pwa20ControlBar" hidden aria-label="Ẩn hiện các đường biểu đồ hạ du">
+            <button class="pwa20-toggle is-active" style="--accent:#38bdf8" data-pwa20-toggle="obs" onclick="pwa20Toggle('obs')"><span class="mark">✓</span> Thực đo</button>
+            <button class="pwa20-toggle is-active" style="--accent:#a78bfa" data-pwa20-toggle="rf" onclick="pwa20Toggle('rf')"><span class="mark">✓</span> RF V2</button>
+            <button class="pwa20-toggle is-active" style="--accent:#94a3b8" data-pwa20-toggle="persistence" onclick="pwa20Toggle('persistence')"><span class="mark">✓</span> Duy trì</button>
+            <button class="pwa20-toggle is-active" style="--accent:#fb923c" data-pwa20-toggle="alarms" onclick="pwa20Toggle('alarms')"><span class="mark">✓</span> BĐ I–III</button>
+            <button class="pwa20-toggle is-active" style="--accent:#22d3ee" data-pwa20-toggle="peak" onclick="pwa20Toggle('peak')"><span class="mark">✓</span> Đỉnh 2025</button>
+          </div>
+          <div id="pwa20QLegend" hidden></div>
+          <div id="pwa20DataStatus" hidden aria-live="polite"></div>
           <div style="height:320px; position:relative;">
             <canvas id="chart"></canvas>
+            <div id="pwa20ChartPlaceholder" hidden style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;text-align:center;color:#94a3b8;font-size:12px;line-height:1.5;"></div>
+          </div>
+          <div id="pwa20ResidualPanel" hidden>
+            <div class="pwa20-residual-title"><span>Sai số dự báo (RF V2 − thực đo)</span><span>m</span></div>
+            <canvas id="pwa20ResidualCanvas"></canvas>
+            <div id="pwa20ResidualEmpty" hidden></div>
           </div>
         </div>
       </section>
@@ -2054,8 +2258,12 @@
   const RES_CONST = { WL_MAX_CHECK:382.2, WL_NORMAL:380.0, WL_FLOOD:376.0, WL_FLOOD_MIN:370.0, WL_DEAD:340.0, VOL_DEAD:77.07, VOL_MAX:343.55 };
   const C = { WL:'34, 211, 238', IN:'59, 130, 246', TB:'245, 158, 11', SP:'239, 68, 68', RN:'167, 139, 250', IF:'255, 152, 0', RF:'34, 197, 94', ACC:'250, 204, 21', HEC:'255, 87, 34' };
 
-  let sb=null, chart=null, currentTab="WL_24H";
+  let sb=null, chart=null, currentTab="IN_OBS_FC_LONG_H120";
   const tabMeta = {
+    IN_OBS_FC_LONG_H120:{name:"Q Long H120",hint:"Dự báo Q Long H120 • P50 + các dải",color:'2, 132, 199'},
+    IN_OBS_FC_LSTM_H120:{name:"Q LSTM H120",hint:"Dự báo Q LSTM H120 • P50 + các dải",color:'139, 92, 246'},
+    IN_OBS_FC_CNN_LSTM_H120:{name:"Q CNN-LSTM H120",hint:"Dự báo Q CNN-LSTM H120 • P50 + các dải",color:'219, 39, 119'},
+    IN_OBS_FC_TIMEXER_H120:{name:"Q TimeXer H120",hint:"Dự báo Q TimeXer H120 • P50 + các dải",color:'8, 145, 178'},
     WL_24H:{name:"MNH 24h",hint:"Mực nước 24h qua",color:C.WL}, FLOW_24H:{name:"Q 24h",hint:"Dòng chảy 24h qua",color:C.IN},
     WL_7D:{name:"MNH 7D",hint:"Mực nước 7 ngày",color:C.WL}, FLOW_7D:{name:"Q Tổng hợp",hint:"Q về/máy/xả 7 ngày",color:C.IN},
     IN_OBS_FC_V7:{name:"Q Về vs DB (V7)",hint:"Thực tế vs Mô hình V7",color:'34, 197, 94'}, 
@@ -2063,13 +2271,56 @@
     IN_OBS_FC_AI:{name:"Q Về vs DB (AI)",hint:"Thực tế vs Mô hình AI V1 (Tự học)",color:'156, 39, 176'}, 
     IN_OBS_FC_HEC:{name:"Q Về vs HEC-HMS",hint:"Thực tế vs HEC-HMS Lite V3.2",color:C.HEC}, 
     IN_FC_7D:{name:"Q Dự báo",hint:"Dự báo 7 ngày tới (Ensemble)",color:C.IF},
-    RF_DAILY_FC:{name:"Mưa Ngày",hint:"Mưa ngày & Lũy kế",color:C.RN}, RF_HOURLY_ACC:{name:"Mưa Giờ",hint:"Mưa giờ & Lũy kế",color:C.RN}, RF_COMPARE:{name:"Mưa Thực vs DB",hint:"So sánh mưa Thực & DB",color:C.RF}
+    RF_DAILY_FC:{name:"Mưa Ngày",hint:"Mưa ngày & Lũy kế",color:C.RN}, RF_HOURLY_ACC:{name:"Mưa Giờ",hint:"Mưa giờ & Lũy kế",color:C.RN}, RF_COMPARE:{name:"Mưa Thực vs DB",hint:"Mưa thực và dự báo • 7 ngày",color:C.RF},
+    H_HOI_KHACH_RF_V2:{name:"H Hội Khách RF V2",hint:"24h thực đo và RF V2 H+1…H+6",color:'2, 132, 199'},
+    H_AI_NGHIA_RF_V2:{name:"H Ái Nghĩa RF V2",hint:"24h thực đo và RF V2 H+1…H+6",color:'6, 182, 212'}
   };
   const state = { hourly24h:[], hourly3D:[], hourly7D_Obs:[], inflowFc_V7:[], inflowFc_Mix:[], inflowFc_AI:[], inflowFc_HEC:[], hecIssueTime:null, rainFc:[], rainObs7D:[], rain24hRaw:[], latest24h:[], fcEnsemble:{}, lastObs:null, rainAtHour:0, rain24hSum:0, storage:null, downstreamLatest:null, downstreamHistory:[] , monitoringHours:24, selectedRelatedReservoir:"SONG_BUNG_4", mobileMonitoring:null, mobileMonitoringLoadedAt:0 };
   let dataHours = 24;
 
+  const PWA21_TAB_LABELS = {
+    IN_OBS_FC_LONG_H120: "Long<br>H120",
+    IN_OBS_FC_LSTM_H120: "LSTM<br>H120",
+    IN_OBS_FC_CNN_LSTM_H120: "CNN<br>LSTM",
+    IN_OBS_FC_TIMEXER_H120: "TimeXer<br>H120",
+    WL_24H: "MNH<br>24h",
+    FLOW_24H: "Q<br>24h",
+    WL_7D: "MNH<br>7D",
+    FLOW_7D: "Q tổng<br>hợp",
+    IN_OBS_FC_V7: "Q vs<br>V7",
+    IN_OBS_FC_MIX: "Q vs<br>Mixed",
+    IN_OBS_FC_AI: "Q vs<br>AI",
+    IN_OBS_FC_HEC: "Q vs<br>HEC",
+    IN_FC_7D: "Q dự<br>báo",
+    RF_DAILY_FC: "Mưa<br>ngày",
+    RF_HOURLY_ACC: "Mưa<br>giờ",
+    RF_COMPARE: "Mưa<br>Thực/DB",
+    H_HOI_KHACH_RF_V2: "H Hội<br>Khách",
+    H_AI_NGHIA_RF_V2: "H Ái<br>Nghĩa"
+  };
+
   window.addEventListener("load",()=>{
-    const tc=$("tabs"); Object.keys(tabMeta).forEach(k=>{ const t=document.createElement("span"); t.className=`tab ${k===currentTab?'active':''}`; t.innerHTML=`<span class="swatch" style="background:rgb(${tabMeta[k].color})"></span>${tabMeta[k].name}`; t.onclick=()=>{ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active")); t.classList.add("active"); currentTab=k; renderChart(); }; tc.appendChild(t); });
+    const tc=$("tabs");
+    Object.keys(tabMeta).forEach(k=>{
+      const t=document.createElement("button");
+      t.type="button";
+      t.className=`tab ${k===currentTab?'active':''}`;
+      t.title=tabMeta[k].name;
+      t.setAttribute("aria-label",tabMeta[k].name);
+      t.setAttribute("aria-pressed",String(k===currentTab));
+      t.innerHTML=`<span class="swatch" aria-hidden="true" style="background:rgb(${tabMeta[k].color})"></span><span class="pwa21-tab-name">${PWA21_TAB_LABELS[k] || tabMeta[k].name}</span>`;
+      t.onclick=()=>{
+        tc.querySelectorAll(".tab").forEach(x=>{
+          x.classList.remove("active");
+          x.setAttribute("aria-pressed","false");
+        });
+        t.classList.add("active");
+        t.setAttribute("aria-pressed","true");
+        currentTab=k;
+        renderChart();
+      };
+      tc.appendChild(t);
+    });
     const d=new Date(); const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); $("day").value=`${y}-${m}-${day}`;
     if(window.supabase){ sb=window.supabase.createClient(SB_URL,SB_KEY); sb.auth.getSession().then(({data:{session}})=>{ if(session) showApp(); else showLogin(); }); }
   });
@@ -3706,7 +3957,578 @@
     if(fcRain&&fcRain.length){ const m={}; fcRain.forEach(r=>{ const d=r.forecast_time.substring(0,10); m[d]=(m[d]||0)+Number(r.rainfall_mm); }); const v=Object.values(m); if(v.length) $("fcRainRange").textContent=`${fmt1.format(Math.min(...v))} - ${fmt1.format(Math.max(...v))}`; }
   }
 
+
+
+
+  /* PWA V21 -- mưa thực so với dự báo theo đúng 7 ngày lịch VN.
+     Reservoir observations use a VN wall-clock date already in `time`;
+     forecast_time is an actual UTC timestamp converted into VN day. */
+  const pwa21RainWeek = {
+    dateKey:null,rows:[],loaded:false,busy:false,loadedAt:0,error:null
+  };
+  const PWA21_HOUR_MS=3600000;
+  function pwa21WeekKeys(dateKey){
+    if(!/^\d{4}-\d\d-\d\d$/.test(dateKey||""))return [];
+    const [y,m,d]=dateKey.split("-").map(Number);
+    if(!Number.isFinite(Date.UTC(y,m-1,d)))return [];
+    return Array.from({length:7},(_,i)=>
+      new Date(Date.UTC(y,m-1,d-6+i)).toISOString().slice(0,10)
+    );
+  }
+  function pwa21ForecastVNDay(raw){
+    const ms=Date.parse(raw);
+    return Number.isFinite(ms)
+      ?new Date(ms+7*PWA21_HOUR_MS).toISOString().slice(0,10)
+      :null;
+  }
+  function pwa21ActualOperationalDay(raw){
+    const s=String(raw||"");
+    return /^\d{4}-\d\d-\d\d/.test(s)?s.slice(0,10):null;
+  }
+  function pwa21AggregateDaily(rows,isForecast,allowedKeys){
+    const out=new Map();
+    for(const r of rows||[]){
+      const key=isForecast
+        ?pwa21ForecastVNDay(r?.forecast_time)
+        :pwa21ActualOperationalDay(r?.time);
+      if(!key||!allowedKeys.has(key))continue;
+      const raw=isForecast?r?.rainfall_mm:r?.rainfallreal;
+      if(raw===null||raw===undefined||raw==="")continue;
+      const n=Number(raw);
+      if(!Number.isFinite(n)||n<0)continue;
+      out.set(key,(out.get(key)||0)+n);
+    }
+    return out;
+  }
+  async function pwa21FetchRainWeek(dateKey){
+    if(!sb)throw Error("Chưa kết nối được Supabase");
+    const [y,m,d]=dateKey.split("-").map(Number);
+    // Seven VN days [day - 6 at 00:00, day + 1 at 00:00).
+    const start=new Date(Date.UTC(y,m-1,d-6)-7*PWA21_HOUR_MS).toISOString();
+    const end=new Date(Date.UTC(y,m-1,d+1)-7*PWA21_HOUR_MS).toISOString();
+    const rows=[];
+    const batch=1000,maxPages=12;
+    for(let page=0;page<maxPages;page++){
+      const {data,error}=await sb.from("rainfall_forecast")
+        .select("forecast_time,rainfall_mm,created_at")
+        .gte("forecast_time",start)
+        .lt("forecast_time",end)
+        .order("forecast_time",{ascending:true})
+        .order("created_at",{ascending:false})
+        .range(page*batch,(page+1)*batch-1);
+      if(error)throw Error(error.message||"Lỗi tải mưa dự báo");
+      const part=data||[];
+      rows.push(...part);
+      if(part.length<batch)break;
+      if(page===maxPages-1)throw Error("Dữ liệu mưa dự báo vượt giới hạn phân trang");
+    }
+    // Use latest archived forecast for each timestamp, without inventing zeros.
+    const latest=new Map();
+    for(const r of rows){
+      const ms=Date.parse(r?.forecast_time);
+      if(!Number.isFinite(ms))continue;
+      const prev=latest.get(ms);
+      if(!prev||Date.parse(r.created_at||0)>Date.parse(prev.created_at||0)){
+        latest.set(ms,r);
+      }
+    }
+    return Array.from(latest.values());
+  }
+  function pwa21EnsureRainWeek(){
+    const dateKey=$("day")?.value;
+    if(!sb||!pwa21WeekKeys(dateKey).length)return;
+    const cache=pwa21RainWeek;
+    if(cache.dateKey===dateKey&&cache.busy)return;
+    if(cache.dateKey===dateKey&&cache.loaded&&Date.now()-cache.loadedAt<5*60*1000)return;
+    cache.dateKey=dateKey;
+    cache.rows=[];cache.loaded=false;cache.busy=true;cache.error=null;
+    pwa21FetchRainWeek(dateKey).then(rows=>{
+      if(cache.dateKey!==dateKey)return;
+      cache.rows=rows;cache.loaded=true;
+      cache.loadedAt=Date.now();cache.busy=false;
+      if(currentTab==="RF_COMPARE")renderChart();
+    }).catch(err=>{
+      if(cache.dateKey!==dateKey)return;
+      cache.loaded=true;cache.loadedAt=Date.now();cache.busy=false;
+      cache.error=err?.message||"Không có dữ liệu dự báo";
+      console.warn("[PWA rain 7D]",err);
+      if(currentTab==="RF_COMPARE")renderChart();
+    });
+  }
+
+  /* ========= PWA V20: Mobile H120 models + downstream RF sequence ========= */
+  const PWA20_HOUR = 3600000;
+  const PWA20_RELEASE = 'RF_DOWNSTREAM_V2_SEQ6_20261020_R1';
+  const PWA20_Q = {
+    IN_OBS_FC_LONG_H120: {view:'v_inflow_forecast_long_dashboard',name:'Long H120',color:'#0284c7',kind:'long'},
+    IN_OBS_FC_LSTM_H120: {view:'v_inflow_forecast_lstm_latest',name:'LSTM H120',color:'#8b5cf6',kind:'lstm'},
+    IN_OBS_FC_CNN_LSTM_H120: {view:'v_inflow_forecast_cnn_lstm_latest',name:'CNN-LSTM H120',color:'#db2777',kind:'cnn'},
+    IN_OBS_FC_TIMEXER_H120: {view:'v_inflow_forecast_timexer_latest',name:'TimeXer H120',color:'#0891b2',kind:'timexer'}
+  };
+  const pwa20 = {
+    q:{}, qBusy:{}, down:null, downBusy:false,
+    toggles:{obs:true,rf:true,persistence:true,alarms:true,peak:true},
+    residualChart:null
+  };
+  function pwa20IsQ(k){return Object.prototype.hasOwnProperty.call(PWA20_Q,k)}
+  function pwa20IsDown(k){return k==='H_HOI_KHACH_RF_V2'||k==='H_AI_NGHIA_RF_V2'}
+  function pwa20IsNew(k){return pwa20IsQ(k)||pwa20IsDown(k)}
+  function pwa20Station(k){return k==='H_HOI_KHACH_RF_V2'?'HOI_KHACH':'AI_NGHIA'}
+  function pwa20Num(v){
+    if(v===null||v===undefined||v==='')return null;
+    const n=Number(v);return Number.isFinite(n)?n:null;
+  }
+  function pwa20Val(obj,names){
+    for(const key of names){
+      const n=pwa20Num(obj?.[key]);
+      if(n!==null)return n;
+    }
+    return null;
+  }
+  function pwa20Time(s,naiveVN=false){
+    if(s==null||s==='')return null;
+    if(typeof s==='number')return Number.isFinite(s)?s:null;
+    let text=String(s).trim().replace(' ','T');
+    // Manual observation without timezone is local VN; forecast view timestamps
+    // are used exactly as the existing A Vuong web chart (no extra +/-7h).
+    if(naiveVN && /^\d{4}-\d\d-\d\dT\d\d:\d\d/.test(text) &&
+       !/(?:Z|[+-]\d\d(?::?\d\d)?)$/i.test(text))text+='+07:00';
+    const ms=Date.parse(text);return Number.isFinite(ms)?ms:null;
+  }
+  function pwa20Fmt(ms,vietnam=false){
+    const d=new Date(ms);
+    if(!Number.isFinite(d.getTime()))return '--';
+    const v=vietnam?new Date(ms+7*PWA20_HOUR):d;
+    const dd=String(v.getUTCDate()).padStart(2,'0'),mo=String(v.getUTCMonth()+1).padStart(2,'0');
+    const hr=String(v.getUTCHours()).padStart(2,'0');
+    return `${hr}:00 ${dd}/${mo}`;
+  }
+  function pwa20Date(ms,vietnam=false){
+    const d=new Date(ms+(vietnam?7*PWA20_HOUR:0));
+    if(!Number.isFinite(d.getTime()))return '--';
+    return `${String(d.getUTCHours()).padStart(2,'0')}:00 ${String(d.getUTCDate()).padStart(2,'0')}/${String(d.getUTCMonth()+1).padStart(2,'0')}`;
+  }
+  function pwa20DataStatus(label,note=''){
+    const el=$('pwa20DataStatus'); if(!el)return;
+    el.hidden=false;
+    el.replaceChildren();
+    const a=document.createElement('strong');a.textContent=label;
+    const b=document.createElement('span');b.textContent=note;
+    if(/trễ|thiếu|lỗi|quá hạn/i.test(note))b.className='pwa20-age';
+    el.append(a,b);
+  }
+  function pwa20Empty(message){
+    if(chart){chart.destroy();chart=null;}
+    const canvas=$('chart'), e=$('pwa20ChartPlaceholder');
+    if(canvas)canvas.style.display='none';
+    if(e){e.hidden=false;e.textContent=message;}
+  }
+  function pwa20Ready(){
+    const canvas=$('chart'),e=$('pwa20ChartPlaceholder');
+    if(canvas)canvas.style.display='block';
+    if(e)e.hidden=true;
+  }
+  function pwa20CloseExtra(){
+    const c=$('pwa20ControlBar'),st=$('pwa20DataStatus'),lg=$('pwa20QLegend'),r=$('pwa20ResidualPanel');
+    if(c)c.hidden=true;if(st)st.hidden=true;if(lg)lg.hidden=true;if(r)r.hidden=true;
+    if(pwa20.residualChart){pwa20.residualChart.destroy();pwa20.residualChart=null;}
+    pwa20Ready();
+  }
+  function pwa20Toolbar(k){
+    const control=$('pwa20ControlBar'),legend=$('pwa20QLegend'),residual=$('pwa20ResidualPanel');
+    if(control)control.hidden=!pwa20IsDown(k);
+    if(legend)legend.hidden=!pwa20IsQ(k);
+    if(residual)residual.hidden=!pwa20IsDown(k);
+    for(const b of document.querySelectorAll('[data-pwa20-toggle]')){
+      const on=!!pwa20.toggles[b.dataset.pwa20Toggle];
+      b.classList.toggle('is-active',on);
+      b.setAttribute('aria-pressed',String(on));
+      const m=b.querySelector('.mark');if(m)m.textContent=on?'✓':'○';
+    }
+  }
+  function pwa20Toggle(key){
+    if(!(key in pwa20.toggles))return;
+    pwa20.toggles[key]=!pwa20.toggles[key];pwa20Toolbar(currentTab);
+    if(pwa20IsDown(currentTab))pwa20DrawDown(currentTab);
+  }
+  function pwa20ChartOptions({vietnam=false,minTime,maxTime,yMin=null,yMax=null,stepSize=null}={}){
+    const scales={
+      x:{
+        type:'linear',min:minTime,max:maxTime,
+        grid:{color:'rgba(148,163,184,.105)'},
+        ticks:{color:'#94a3b8',font:{size:9},maxRotation:0,autoSkip:true,maxTicksLimit:5,
+          callback:(v)=>pwa20Fmt(Number(v),vietnam)}
+      },
+      y:{
+        min:yMin,max:yMax,
+        grid:{color:'rgba(148,163,184,.13)'},
+        ticks:{color:'#aabdd1',font:{size:10},stepSize:stepSize??undefined,callback:(v)=>Number(v).toLocaleString('vi-VN')}
+      }
+    };
+    return {
+      responsive:true,maintainAspectRatio:false,animation:false,parsing:false,
+      interaction:{mode:'nearest',intersect:false,axis:'x'},
+      plugins:{
+        legend:{display:false},
+        tooltip:{mode:'nearest',intersect:false,
+          backgroundColor:'#0d172b',titleColor:'#e5f2ff',bodyColor:'#dbe7f6',
+          padding:9,
+          callbacks:{
+            title:(items)=>items.length?pwa20Fmt(items[0].parsed.x,vietnam):'',
+            label:(ctx)=>{
+              if(ctx.parsed.y===null)return '';
+              return `${ctx.dataset.label}: ${Number(ctx.parsed.y).toLocaleString('vi-VN',{maximumFractionDigits:3})}${vietnam?' m':' m³/s'}`;
+            }
+          }
+        }
+      },
+      scales
+    };
+  }
+  function pwa20ModelCenter(r,kind){
+    if(kind==='long')return pwa20Val(r,['q_central','q_median','q_p50']);
+    return pwa20Val(r,['q_p50','q_median','q_central','inflow_m3s']);
+  }
+  function pwa20Pct(arr,p){
+    const a=arr.filter(Number.isFinite).slice().sort((x,y)=>x-y);
+    if(!a.length)return null;
+    const index=p*(a.length-1),lo=Math.floor(index),hi=Math.ceil(index);
+    return a[lo]+(a[hi]-a[lo])*(index-lo);
+  }
+  async function pwa20FetchQ(k){
+    const cfg=PWA20_Q[k]; if(!cfg||pwa20.qBusy[k]||!sb)return;
+    pwa20.qBusy[k]=true;
+    pwa20DataStatus(cfg.name,'Đang tải dự báo…');
+    try{
+      let model=sb.from(cfg.view).select('*');
+      if(cfg.kind==='timexer')model=model.eq('basin_id','AVUONG').eq('source','timexer_h120_v2_core4_shadow');
+      const modelTask=model.order('issue_time',{ascending:false}).order('lead_hour',{ascending:true}).limit(360);
+      const obsTask=sb.from('reservoir_hourly_data').select('time,inflow').order('time',{ascending:false}).limit(110);
+      const scTask=cfg.kind==='long'
+        ?sb.from('v_inflow_forecast_long_scenario_latest')
+           .select('issue_time,forecast_time,lead_hour,rain_model,q_forecast')
+           .order('issue_time',{ascending:false}).order('lead_hour',{ascending:true}).limit(850)
+        :Promise.resolve({data:[],error:null});
+      const [mr,or,sr]=await Promise.all([modelTask,obsTask,scTask]);
+      if(mr.error)throw Error(`Nguồn ${cfg.name}: ${mr.error.message}`);
+      if(or.error)throw Error(`Q thực đo: ${or.error.message}`);
+      if(sr.error)console.warn('[PWA Q long scenarios]',sr.error.message);
+      pwa20.q[k]={
+        forecast:Array.isArray(mr.data)?mr.data:[],
+        observed:Array.isArray(or.data)?or.data:[],
+        scenarios:sr.error?[]:(sr.data||[]),
+        loadedAt:Date.now(),error:null
+      };
+    }catch(e){
+      pwa20.q[k]={forecast:[],observed:[],scenarios:[],loadedAt:Date.now(),error:e?.message||String(e)};
+      console.warn('[PWA H120]',k,e);
+    }finally{
+      pwa20.qBusy[k]=false;
+      if(currentTab===k&&$('tab-chart').classList.contains('active'))pwa20DrawQ(k);
+    }
+  }
+  function pwa20DrawQ(k){
+    const cfg=PWA20_Q[k],cache=pwa20.q[k];
+    $('chartRange').textContent=`Q ${cfg.name} · H+1 đến H+120`;
+    pwa20Toolbar(k);
+    const lg=$('pwa20QLegend');
+    if(lg)lg.innerHTML=
+      `<span style="--key:#38bdf8">Q thực đo</span>`+
+      `<span class="dash" style="--key:${cfg.color}">${cfg.name} P50</span>`+
+      `<span class="band" style="--key:${cfg.color}">P25–P75</span>`+
+      `<span class="band" style="--key:#a0bfe9">Min–Max</span>`;
+    if(!cache){
+      pwa20Empty('Đang tải dự báo '+cfg.name+'…');
+      pwa20FetchQ(k);return;
+    }
+    if(cache.error){
+      pwa20DataStatus(cfg.name,'Lỗi nguồn dữ liệu');
+      pwa20Empty('Không tải được '+cfg.name+': '+cache.error);
+      return;
+    }
+    // Select ONE model issue, never mix forecast cycles.
+    const groups=new Map();
+    for(const r of cache.forecast){
+      const issue=pwa20Time(r.issue_time),tm=pwa20Time(r.forecast_time),v=pwa20ModelCenter(r,cfg.kind);
+      if(issue===null||tm===null||v===null)continue;
+      const lead=pwa20Val(r,['lead_hour']);
+      if(lead!==null&&(lead<1||lead>120))continue;
+      if(tm<=issue||tm>issue+121*PWA20_HOUR)continue;
+      if(!groups.has(issue))groups.set(issue,[]);
+      groups.get(issue).push({...r,_ms:tm,_q:v});
+    }
+    const issue=[...groups.keys()].sort((a,b)=>b-a)[0];
+    if(issue===undefined){
+      pwa20DataStatus(cfg.name,'Chưa có chuỗi H120');
+      pwa20Empty('Chưa có dự báo '+cfg.name+' hợp lệ trong Supabase.');
+      return;
+    }
+    const rows=[...new Map(groups.get(issue).sort((a,b)=>a._ms-b._ms).map(r=>[r._ms,r])).values()];
+    const byTime=new Map(rows.map(r=>[r._ms,r]));
+    const minTime=issue-24*PWA20_HOUR,maxTime=Math.max(...rows.map(r=>r._ms));
+    const obs=new Map();
+    for(const r of cache.observed){
+      const t=pwa20Time(r.time),q=pwa20Num(r.inflow);
+      if(t===null||q===null||t<minTime||t>issue)continue;
+      if(!obs.has(t))obs.set(t,q);
+    }
+    const obsPoints=[...obs].sort((a,b)=>a[0]-b[0]).map(([x,y])=>({x,y}));
+    const fcPoints=rows.map(r=>({x:r._ms,y:r._q}));
+    // P50 begins at real observation at issue, or the model's q_now.
+    const first=rows[0];
+    const anchor=pwa20Val(first,['q_now'])??obs.get(issue)??null;
+    if(anchor!==null && first._ms>issue)fcPoints.unshift({x:issue,y:anchor});
+    const scByMs=new Map();
+    if(cfg.kind==='long'){
+      for(const sc of cache.scenarios){
+        if(pwa20Time(sc.issue_time)!==issue)continue;
+        const tm=pwa20Time(sc.forecast_time),val=pwa20Num(sc.q_forecast);
+        if(tm===null||val===null)continue;
+        if(!scByMs.has(tm))scByMs.set(tm,[]);
+        scByMs.get(tm).push(val);
+      }
+    }
+    const ranged=(name)=>rows.map(r=>{
+      const sc=scByMs.get(r._ms)||[];
+      let y=null;
+      if(name==='p25')y=pwa20Val(r,['q_p25'])??pwa20Pct(sc,.25);
+      if(name==='p75')y=pwa20Val(r,['q_p75'])??pwa20Pct(sc,.75);
+      if(name==='min')y=pwa20Val(r,['q_min'])??(sc.length?Math.min(...sc):null);
+      if(name==='max')y=pwa20Val(r,['q_max'])??(sc.length?Math.max(...sc):null);
+      return {x:r._ms,y};
+    }).filter(x=>x.y!==null);
+    const lower=ranged('min'),upper=ranged('max'),p25=ranged('p25'),p75=ranged('p75');
+    const datasets=[];
+    const addBand=(low,high,color,label)=>{
+      if(!low.length||!high.length)return;
+      // Chart.js fill:'-1' fills against the immediately preceding baseline.
+      datasets.push({label:label+' lower',data:low,pointRadius:0,fill:false,borderWidth:0,
+        borderColor:'transparent',backgroundColor:'transparent'});
+      datasets.push({label:label,data:high,pointRadius:0,fill:'-1',borderWidth:0,
+        borderColor:'transparent',backgroundColor:color});
+    };
+    addBand(lower,upper,'rgba(135,182,229,.105)','Min–Max');
+    const rgb=cfg.kind==='long'?'2,132,199':cfg.kind==='lstm'?'139,92,246':cfg.kind==='cnn'?'219,39,119':'8,145,178';
+    addBand(p25,p75,`rgba(${rgb},.18)`,'P25–P75');
+    datasets.push({label:'Q thực đo',data:obsPoints,borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,.08)',
+      borderWidth:2.35,pointRadius:0,pointHoverRadius:3,tension:.18,fill:false,spanGaps:false});
+    datasets.push({label:cfg.name+' P50',data:fcPoints,borderColor:cfg.color,backgroundColor:cfg.color,
+      borderDash:[6,4],borderWidth:2.5,pointRadius:0,pointHoverRadius:3,tension:.22,fill:false,spanGaps:false});
+    const opts=pwa20ChartOptions({minTime,maxTime});
+    opts.plugins.tooltip.filter=ctx=>!String(ctx.dataset.label).includes(' lower');
+    pwa20Ready();
+    if(chart){chart.destroy();chart=null;}
+    chart=new Chart($('chart').getContext('2d'),{type:'line',data:{datasets},options:opts});
+    const latestObs=obsPoints.length?obsPoints.at(-1).x:null;
+    const age=(Date.now()-issue)/PWA20_HOUR;
+    const status=age>7?`Phát hành ${pwa20Fmt(issue)} · dữ liệu trễ ${age.toFixed(1)}h`
+                      :`Phát hành ${pwa20Fmt(issue)} · ${rows.length}/120 giờ`;
+    pwa20DataStatus('Q '+cfg.name,latestObs===null?status+' · chưa có Q quan trắc 24h':status);
+  }
+  async function pwa20FetchDown(){
+    if(pwa20.downBusy||!sb)return;
+    pwa20.downBusy=true;pwa20DataStatus('Hạ du','Đang đọc Supabase…');
+    try{
+      const [fr,or]=await Promise.all([
+        sb.from('rf_downstream_shadow_forecasts')
+          .select('station_code,horizon_hours,issue_time,forecast_time,h_now_m,forecast_level_m,model_version,status')
+          .eq('model_version',PWA20_RELEASE)
+          .order('issue_time',{ascending:false}).limit(350),
+        sb.from('downstream_manual_observations')
+          .select('obs_time,obs_hour,hoi_khach_m,ai_nghia_m')
+          .order('obs_time',{ascending:false}).limit(140)
+      ]);
+      if(fr.error)throw Error('RF V2: '+fr.error.message);
+      if(or.error)throw Error('Quan trắc hạ du: '+or.error.message);
+      pwa20.down={forecasts:fr.data||[],observed:or.data||[],loadedAt:Date.now(),error:null};
+    }catch(e){
+      pwa20.down={forecasts:[],observed:[],loadedAt:Date.now(),error:e?.message||String(e)};
+      console.warn('[PWA H downstream]',e);
+    }finally{
+      pwa20.downBusy=false;
+      if(pwa20IsDown(currentTab)&&$('tab-chart').classList.contains('active'))pwa20DrawDown(currentTab);
+    }
+  }
+  function pwa20SelectIssue(station,rows){
+    const groups=new Map();
+    for(const r of rows){
+      if(String(r.station_code).toUpperCase()!==station)continue;
+      const issue=pwa20Time(r.issue_time),tm=pwa20Time(r.forecast_time);
+      const lead=pwa20Num(r.horizon_hours),val=pwa20Num(r.forecast_level_m),h0=pwa20Num(r.h_now_m);
+      if(issue===null||tm===null||lead===null||val===null||h0===null)continue;
+      if(!Number.isInteger(lead)||lead<1||lead>6)continue;
+      if(Math.abs(tm-issue-lead*PWA20_HOUR)>5*60000)continue;
+      if(issue>Date.now()+15*60000)continue;
+      if(!groups.has(issue))groups.set(issue,{issue,h0,values:new Map()});
+      const g=groups.get(issue);
+      if(Math.abs(g.h0-h0)>.06)continue;
+      g.values.set(lead,{x:tm,y:val,lead,status:r.status});
+    }
+    const ordered=[...groups.values()].sort((a,b)=>b.issue-a.issue);
+    return ordered.find(g=>g.values.size===6)||ordered[0]||null;
+  }
+  const PWA20_LEVELS={
+    HOI_KHACH:{max:20,bd:[14.5,15.5,16.5],peak:19.32,name:'Hội Khách',column:'hoi_khach_m'},
+    AI_NGHIA:{max:11,bd:[6.5,8,9],peak:10.60,name:'Ái Nghĩa',column:'ai_nghia_m'}
+  };
+  function pwa20DownPlugins(issue,config){
+    const alarms=pwa20.toggles.alarms,peak=pwa20.toggles.peak;
+    return [{
+      id:'pwa20HydroRefs',
+      afterDraw(c){
+        const {ctx,chartArea,scales}=c;
+        if(!chartArea||!scales?.x||!scales?.y)return;
+        const x=scales.x.getPixelForValue(issue);
+        if(x>=chartArea.left&&x<=chartArea.right){
+          ctx.save();ctx.strokeStyle='rgba(183,198,222,.65)';ctx.setLineDash([5,5]);ctx.lineWidth=1.05;
+          ctx.beginPath();ctx.moveTo(x,chartArea.top);ctx.lineTo(x,chartArea.bottom);ctx.stroke();ctx.setLineDash([]);
+          ctx.font='bold 9px Inter, sans-serif';ctx.fillStyle='#a9bbd4';
+          ctx.fillText('PHÁT HÀNH',Math.min(x+4,chartArea.right-58),chartArea.top+11);ctx.restore();
+        }
+        // Compact threshold names on right, avoiding separate tall legend.
+        const lines=[];
+        if(alarms)config.bd.forEach((v,i)=>lines.push({v,label:'BĐ '+['I','II','III'][i],color:['#fbbf24','#fb923c','#fb7185'][i]}));
+        if(peak)lines.push({v:config.peak,label:'Đỉnh 2025',color:'#22d3ee'});
+        ctx.save();ctx.font='bold 9px Inter, sans-serif';ctx.textBaseline='middle';
+        for(const l of lines){
+          const y=scales.y.getPixelForValue(l.v);
+          if(y<chartArea.top+7||y>chartArea.bottom-7)continue;
+          const text=`${l.label}: ${l.v.toLocaleString('vi-VN',{maximumFractionDigits:2})}`;
+          const w=ctx.measureText(text).width+9;
+          ctx.fillStyle='rgba(8,15,33,.82)';ctx.fillRect(chartArea.right-w-1,y-7,w+1,14);
+          ctx.fillStyle=l.color;ctx.fillText(text,chartArea.right-w+4,y+0.5);
+        }
+        ctx.restore();
+      }
+    }];
+  }
+  function pwa20DrawResidual(forecast,actualByHour,config){
+    const panel=$('pwa20ResidualPanel'),msg=$('pwa20ResidualEmpty'),cv=$('pwa20ResidualCanvas');
+    if(!panel||!cv)return;
+    panel.hidden=false;
+    if(pwa20.residualChart){pwa20.residualChart.destroy();pwa20.residualChart=null;}
+    const evaluated=forecast.filter(p=>actualByHour.has(p.x))
+      .map(p=>({x:p.x,y:+(p.y-actualByHour.get(p.x)).toFixed(4)}));
+    if(!evaluated.length){
+      cv.hidden=true;if(msg){msg.hidden=false;msg.textContent='Chưa có quan trắc trùng giờ để tính sai số dự báo.';}
+      return;
+    }
+    cv.hidden=false;if(msg)msg.hidden=true;
+    const mm=Math.max(.08,Math.max(...evaluated.map(p=>Math.abs(p.y)))*1.3);
+    pwa20.residualChart=new Chart(cv.getContext('2d'),{
+      type:'bar',data:{datasets:[{label:'RF − thực đo',data:evaluated,
+        backgroundColor:evaluated.map(p=>p.y>=0?'rgba(56,189,248,.84)':'rgba(251,146,60,.84)'),
+        borderRadius:2,barThickness:12}]},
+      options:{
+        responsive:true,maintainAspectRatio:false,animation:false,parsing:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{
+          title:(items)=>items.length?pwa20Fmt(items[0].parsed.x,true):'',
+          label:(c)=>`Sai số: ${Number(c.parsed.y).toFixed(3)} m`
+        }}},
+        scales:{
+          x:{type:'linear',grid:{display:false},
+            ticks:{maxTicksLimit:3,color:'#8098ac',font:{size:8},
+              callback:(v)=>pwa20Fmt(Number(v),true)}},
+          y:{min:-mm,max:mm,grid:{color:'rgba(128,156,190,.14)'},
+            ticks:{color:'#90a6bd',maxTicksLimit:3,font:{size:9},callback:(v)=>Number(v).toFixed(2)}}
+        }
+      }
+    });
+  }
+  function pwa20DrawDown(k){
+    const cfgStation=pwa20Station(k),config=PWA20_LEVELS[cfgStation],cache=pwa20.down;
+    $('chartRange').textContent=`H ${config.name} · 24h + RF H+1…H+6`;
+    pwa20Toolbar(k);
+    if(!cache){pwa20Empty('Đang tải số liệu hạ du…');pwa20FetchDown();return;}
+    if(cache.error){
+      pwa20DataStatus(config.name,'Lỗi nguồn dữ liệu');
+      pwa20Empty('Không tải được số liệu hạ du: '+cache.error);return;
+    }
+    const g=pwa20SelectIssue(cfgStation,cache.forecasts);
+    if(!g){
+      pwa20DataStatus(config.name,'Chưa có dự báo RF V2');
+      pwa20Empty('Không tìm thấy chuỗi RF V2 H+1…H+6 hợp lệ cho '+config.name+'.');
+      return;
+    }
+    const start=g.issue-24*PWA20_HOUR,end=g.issue+6*PWA20_HOUR;
+    const actualByHour=new Map();
+    for(const r of cache.observed){
+      const t=pwa20Time(r.obs_hour||r.obs_time,true),h=pwa20Num(r[config.column]);
+      if(t===null||h===null||h<0||h>config.max+10||t<start||t>end)continue;
+      const hour=Math.floor((t+30000)/PWA20_HOUR)*PWA20_HOUR;
+      if(!actualByHour.has(hour))actualByHour.set(hour,h);
+    }
+    const actual=[...actualByHour].sort((a,b)=>a[0]-b[0]).map(([x,y])=>({x,y}));
+    const forecast=[...g.values.values()].sort((a,b)=>a.x-b.x);
+    const rf=[{x:g.issue,y:g.h0},...forecast];
+    const persist=[{x:g.issue,y:g.h0},...Array.from({length:6},(_,i)=>({x:g.issue+(i+1)*PWA20_HOUR,y:g.h0}))];
+    pwa20Ready();
+    const ctx=$('chart').getContext('2d');
+    const water=ctx.createLinearGradient(0,0,0,325);
+    water.addColorStop(0,'rgba(56,189,248,.07)');water.addColorStop(.5,'rgba(14,165,233,.32)');
+    water.addColorStop(1,'rgba(56,189,248,.62)');
+    const futureWater=ctx.createLinearGradient(0,0,0,325);
+    futureWater.addColorStop(0,'rgba(167,139,250,.03)');futureWater.addColorStop(1,'rgba(56,189,248,.18)');
+    const ds=[];
+    const toggle=pwa20.toggles;
+    if(toggle.alarms){
+      config.bd.forEach((h,i)=>ds.push({
+        label:'BĐ '+['I','II','III'][i],data:[{x:start,y:h},{x:end,y:h}],
+        borderColor:['#fbbf24','#fb923c','#fb7185'][i],borderWidth:1.05,borderDash:[7,5],
+        pointRadius:0,fill:false
+      }));
+    }
+    if(toggle.peak)ds.push({
+      label:'Đỉnh lũ 2025',data:[{x:start,y:config.peak},{x:end,y:config.peak}],
+      borderColor:'#22d3ee',borderWidth:1.1,borderDash:[3,4],pointRadius:0,fill:false
+    });
+    if(toggle.obs)ds.push({
+      label:config.name+' thực đo',data:actual,borderColor:'#38bdf8',backgroundColor:water,
+      borderWidth:2.6,pointRadius:actual.length<40?2:0,pointHoverRadius:4,
+      tension:.15,fill:'origin',spanGaps:false
+    });
+    if(toggle.persistence)ds.push({
+      label:'Persistence',data:persist,borderColor:'#94a3b8',
+      borderWidth:1.35,borderDash:[3,5],pointRadius:0,fill:false
+    });
+    if(toggle.rf)ds.push({
+      label:'RF V2 H+1…H+6',data:rf,borderColor:'#a78bfa',backgroundColor:futureWater,
+      borderWidth:2.7,borderDash:[6,4],pointRadius:3,pointBackgroundColor:'#a78bfa',
+      pointHoverRadius:5,tension:.13,fill:'origin',spanGaps:false
+    });
+    if(chart){chart.destroy();chart=null;}
+    const opts=pwa20ChartOptions({vietnam:true,minTime:start,maxTime:end,yMin:0,yMax:config.max,
+      stepSize:config.max===20?4:2});
+    opts.plugins.tooltip.filter=ctx=>!String(ctx.dataset.label||'').startsWith('BĐ') && ctx.dataset.label!=='Đỉnh lũ 2025';
+    chart=new Chart(ctx,{type:'line',data:{datasets:ds},options:opts,
+      plugins:pwa20DownPlugins(g.issue,config)});
+    pwa20DrawResidual(forecast,actualByHour,config);
+    const age=(Date.now()-g.issue)/PWA20_HOUR;
+    let status=`Phát hành ${pwa20Fmt(g.issue,true)} · ${g.values.size}/6 giờ`;
+    if(g.values.size<6)status+=' · thiếu dự báo';
+    else if(age>4)status+=` · dữ liệu trễ ${age.toFixed(1)}h`;
+    pwa20DataStatus(config.name,status);
+  }
+  function pwa20RenderChart(){
+    if(!$('tab-chart')?.classList.contains('active'))return;
+    pwa20Toolbar(currentTab);
+    if(pwa20IsQ(currentTab)){
+      const k=currentTab,cache=pwa20.q[k];
+      if(cache && Date.now()-cache.loadedAt>5*60000 && !pwa20.qBusy[k]){
+        // Continue to display cached charts until the refreshed query completes.
+        pwa20FetchQ(k);
+      }
+      pwa20DrawQ(k);
+    }else if(pwa20IsDown(currentTab)){
+      if(pwa20.down && Date.now()-pwa20.down.loadedAt>3*60000 && !pwa20.downBusy)pwa20FetchDown();
+      pwa20DrawDown(currentTab);
+    }
+  }
+  /* ========= End PWA V20 ========= */
+
   function renderChart(){
+    if(pwa20IsNew(currentTab)){pwa20RenderChart();return;}
+    pwa20CloseExtra();
     if(chart) chart.destroy(); const ctx=$("chart").getContext("2d"); $("chartRange").textContent=tabMeta[currentTab].hint;
     const opts={ responsive:true, maintainAspectRatio:false, interaction:{mode:"index",intersect:false}, plugins:{legend:{labels:{color:"#9ca3af",font:{size:11},boxWidth:12}}}, scales:{x:{ticks:{color:"#64748b",font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:6},grid:{color:"rgba(255,255,255,0.05)"}},y:{ticks:{color:"#64748b",font:{size:10}},grid:{color:"rgba(255,255,255,0.05)"}}} };
     let labels=[], datasets=[];
@@ -3778,19 +4600,49 @@
       opts.scales.y1={type:'linear',display:true,position:'right',grid:{drawOnChartArea:false},ticks:{color:rgba(C.ACC,0.9)}};
     }
     else if(currentTab==='RF_COMPARE'){
-        const te=new Date($("day").value).setHours(0,0,0,0)+86400000-1; const ts=te-7*86400000;
-        const o=state.hourly7D_Obs.filter(r=>{const t=new Date(r.time).getTime();return t>=ts&&t<=te;});
-        const f=state.rainFc.filter(r=>{const t=new Date(r.forecast_time).getTime();return t>=ts&&t<=te;});
-        const ao=aggregateRainByDay(o,'time'); const af=aggregateRainByDay(f,'forecast_time','rainfall_mm');
-        const all=[...new Set([...Object.keys(ao),...Object.keys(af)])].sort((a,b) => {
-            const [d1,m1] = a.split('/'); const [d2,m2] = b.split('/');
-            return new Date(2026, m1-1, d1) - new Date(2026, m2-1, d2);
-        });
-        datasets=[{type:'bar',label:'Thực tế',data:all.map(k=>ao[k]||0),backgroundColor:rgba(C.RF,0.7)},{type:'bar',label:'Dự báo',data:all.map(k=>af[k]||0),backgroundColor:rgba(C.RN,0.7)}];
-        labels=all;
+        // Exactly seven consecutive VN calendar days ending on selected day.
+        // Null means source unavailable; 0 means measured/forecast zero rain.
+        pwa21EnsureRainWeek();
+        const dateKey=$("day")?.value||"";
+        const keys=pwa21WeekKeys(dateKey);
+        const allow=new Set(keys);
+        const obs=pwa21AggregateDaily(state.hourly7D_Obs,false,allow);
+        const forecastRows=(pwa21RainWeek.dateKey===dateKey&&pwa21RainWeek.loaded)
+          ?pwa21RainWeek.rows:[];
+        const fc=pwa21AggregateDaily(forecastRows,true,allow);
+        labels=keys.map(k=>`${k.slice(8,10)}/${k.slice(5,7)}`);
+        datasets=[
+          {type:'bar',label:'Mưa thực đo',
+            data:keys.map(k=>obs.has(k)?+obs.get(k).toFixed(2):null),
+            backgroundColor:'rgba(34,197,94,.82)',borderColor:'rgba(34,197,94,1)',
+            borderWidth:1,borderRadius:3,maxBarThickness:26},
+          {type:'bar',label:'Mưa dự báo',
+            data:keys.map(k=>fc.has(k)?+fc.get(k).toFixed(2):null),
+            backgroundColor:'rgba(167,139,250,.78)',borderColor:'rgba(167,139,250,1)',
+            borderWidth:1,borderRadius:3,maxBarThickness:26}
+        ];
+        opts.scales.x.ticks.autoSkip=false;
+        opts.scales.x.ticks.maxRotation=0;
+        opts.scales.x.ticks.font={size:10};
+        opts.scales.y.beginAtZero=true;
+        opts.scales.y.title={display:true,text:"mm/ngày",color:"#94a3b8",font:{size:10}};
+        opts.plugins.tooltip={
+          ...opts.plugins.tooltip,
+          callbacks:{label:context=>`${context.dataset.label}: ${
+            context.parsed.y===null?"chưa có dữ liệu":fmt1.format(context.parsed.y)+" mm"
+          }`}
+        };
+        const range=$("chartRange");
+        if(range){
+          range.textContent=pwa21RainWeek.dateKey===dateKey&&pwa21RainWeek.busy
+            ?"Mưa 7 ngày • đang tải dự báo"
+            :pwa21RainWeek.dateKey===dateKey&&pwa21RainWeek.error
+              ?"Mưa 7 ngày • thiếu nguồn dự báo"
+              :"Mưa thực và dự báo • 7 ngày";
+        }
     }
-    const ty=(currentTab.startsWith('RF_')&&currentTab!=='RF_COMPARE')?'bar':'line';
-    chart=new Chart(ctx,{type:(currentTab==='RF_HOURLY_ACC'||currentTab==='RF_DAILY_FC'?'bar':ty),data:{labels,datasets},options:opts});
+    const ty=(currentTab.startsWith('RF_'))?'bar':'line';
+    chart=new Chart(ctx,{type:(currentTab==='RF_HOURLY_ACC'||currentTab==='RF_DAILY_FC'||currentTab==='RF_COMPARE'?'bar':ty),data:{labels,datasets},options:opts});
   }
 
   function goTab(name,el){
@@ -3810,7 +4662,7 @@
     if(name==='data') loadTableData();
     if(name==='forecast') loadForecasts();
     if(name==='more') closeMorePanel(); 
-    if(name==='chart'&&chart) chart.resize();
+    if(name==='chart'){ if(pwa20IsNew(currentTab))renderChart(); else if(chart)chart.resize(); }
   }
 
   function setDataHours(hours, button){
