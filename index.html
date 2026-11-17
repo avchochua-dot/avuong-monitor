@@ -30,7 +30,7 @@
       - Chỉ reload khi controller thực sự đổi, tránh reload sớm khi
         worker mới mới chỉ ở trạng thái "waiting".
     */
-    const PWA_BUILD = '2026-10-21-PWA-V24-BOTTOM-NAV-SAFEAREA-FIX';
+    const PWA_BUILD = '2026-11-17-PWA-V25-QD2138-CHAT';
 
     if ('serviceWorker' in navigator) {
       let pwaReloading = false;
@@ -1044,6 +1044,36 @@
       --more-shadow:rgba(192,132,252,.16);
       --more-glow:rgba(192,132,252,.17);
     }
+
+    #more-home .more-card.theme-qt2138{
+      --more-accent:#2dd4bf;
+      --more-border:rgba(45,212,191,.40);
+      --more-bg:rgba(45,212,191,.14);
+      --more-shadow:rgba(45,212,191,.16);
+      --more-glow:rgba(45,212,191,.18);
+    }
+    .qt-intro{font-size:11px;line-height:1.45;color:#94a3b8;margin:4px 0 8px;}
+    .qt-group{border:1px solid rgba(45,212,191,.22);border-radius:12px;margin:6px 0;background:rgba(45,212,191,.05);}
+    .qt-group summary{cursor:pointer;padding:8px 10px;font-size:12px;font-weight:800;color:#99f6e4;list-style:none;}
+    .qt-group summary::-webkit-details-marker{display:none;}
+    .qt-group summary::after{content:" ▸";color:#5eead4;}
+    .qt-group[open] summary::after{content:" ▾";}
+    .qt-group .quick-questions{margin:0;padding:0 8px 8px;}
+    .qt-chat-log{max-height:56vh;}
+    .qt-chat-log .chat-msg{max-width:94%;}
+    .qt-chat-log .chat-msg.ai{white-space:normal;}
+    .qt-answer{white-space:normal;}
+    .qt-ref{margin-top:8px;padding:7px 9px;border-radius:9px;background:rgba(45,212,191,.10);border:1px solid rgba(45,212,191,.28);font-size:11px;color:#99f6e4;}
+    .qt-ref span{display:block;color:#cbd5e1;font-weight:400;margin-top:3px;}
+    .qt-missing{margin-top:8px;padding:7px 9px;border-radius:9px;background:rgba(251,191,36,.10);border:1px solid rgba(251,191,36,.30);font-size:11px;color:#fde68a;}
+    .qt-missing ul{margin:4px 0 0;padding-left:16px;}
+    .qt-note{margin-top:7px;font-size:10.5px;color:#fbbf24;}
+    .qt-meta{margin-top:6px;font-size:10px;color:#64748b;}
+    .ai-answer-highlight{padding:0 3px;border-radius:4px;font-weight:700;}
+    .ai-answer-highlight--danger{background:rgba(248,113,113,.18);color:#fca5a5;}
+    .ai-answer-highlight--action{background:rgba(96,165,250,.18);color:#93c5fd;}
+    .ai-answer-highlight--success{background:rgba(74,222,128,.16);color:#86efac;}
+    .ai-answer-highlight--warning{background:rgba(251,191,36,.16);color:#fde68a;}
 
     #more-home .more-card.theme-ai{
       --more-accent:#f472b6;
@@ -2137,6 +2167,13 @@
               <small>Hỏi nhanh số liệu<br>Tra cứu thông tin đang hiển thị</small>
             </button>
 
+            <button class="more-card theme-qt2138" onclick="openMorePanel('qt2138')">
+              <span class="more-badge">QĐ 2138</span>
+              <span class="more-icon">📘</span>
+              <b>Hỏi đáp Quy trình 2138</b>
+              <small>Tra cứu quy trình liên hồ<br>Đối chiếu tình huống A Vương</small>
+            </button>
+
             <button class="more-card theme-ai" onclick="openMorePanel('bulletins')">
               <span class="more-badge">AI</span>
               <span class="more-icon">✨</span>
@@ -2464,6 +2501,50 @@
         <div id="mobileChatLog" class="chat-log"><div class="chat-msg ai">Xin chào. Tôi có thể tóm tắt nhanh số liệu đang được PWA tải về.</div></div>
         <div class="chat-compose"><textarea id="mobileChatInput" placeholder="Nhập câu hỏi nhanh..."></textarea><button onclick="sendMobileChat()">Gửi</button></div>
         <div class="disclaimer">Thông tin AI chỉ dùng để tham khảo, không thay thế lệnh vận hành hoặc quyết định của cấp có thẩm quyền.</div>
+      </div>
+
+      <div id="more-qt2138" class="more-panel card">
+        <button class="panel-back" onclick="closeMorePanel()">← Quay lại</button>
+        <div class="cardHead"><b style="color:#2dd4bf;">📘 Hỏi đáp Quy trình 2138</b><button type="button" onclick="qtNewConversation()" style="width:auto;padding:6px 10px;font-size:11px;">Tình huống mới</button></div>
+        <div class="qt-intro">Quy trình vận hành liên hồ Vu Gia – Thu Bồn (QĐ 2138/QĐ-TTg, 06/11/2026). Hỏi tra cứu quy định, hoặc nhập tình huống: ngày, MNH, Q về, HAN (Ái Nghĩa), HHK (Hội Khách), có dự báo mưa lũ hay không.</div>
+        <div class="qt-groups">
+          <details class="qt-group" open>
+            <summary>Tra cứu quy định</summary>
+            <div class="quick-questions">
+              <button type="button" onclick="qtAsk('Mực nước đón lũ thấp nhất của hồ A Vương là bao nhiêu?')">Mực nước đón lũ (Bảng 2)</button>
+              <button type="button" onclick="qtAsk('Mực nước cao nhất trong điều kiện bình thường là bao nhiêu?')">Mực nước cao nhất (Bảng 1)</button>
+              <button type="button" onclick="qtAsk('Ngưỡng báo động và ngưỡng cắt giảm lũ là bao nhiêu?')">Ngưỡng Bảng 3</button>
+              <button type="button" onclick="qtAsk('Sau khi cắt, giảm lũ, khi nào được đưa MNH về mực nước Bảng 1?')">Khôi phục MNH sau lũ</button>
+              <button type="button" onclick="qtAsk('Mùa lũ quy định lưu lượng tối thiểu về hạ du?')">Lưu lượng xả tối thiểu</button>
+              <button type="button" onclick="qtAsk('Tích nước cuối mùa lũ quy định thế nào?')">Tích nước cuối mùa lũ</button>
+              <button type="button" onclick="qtAsk('Các thời kỳ mùa cạn quy định thế nào?')">Các thời kỳ mùa cạn</button>
+              <button type="button" onclick="qtAsk('Những trường hợp nào thuộc tình huống bất thường?')">Tình huống bất thường</button>
+            </div>
+          </details>
+          <details class="qt-group">
+            <summary>Tình huống mùa lũ</summary>
+            <div class="quick-questions">
+              <button type="button" onclick="qtAsk('Ngày 05/9, MNH 379m, HAN 6,2m, HHK 14m, Q về 300m3/s, có dự báo một đợt mưa lũ mới. Hồ cần chuẩn bị vận hành thế nào?')">Có dự báo lũ, MNH cao</button>
+              <button type="button" onclick="qtAsk('Ngày 20/10, MNH 372m, HAN 7,0m, HHK 14,8m, Q về 520m3/s, có dự báo mưa lũ. Hồ vận hành thế nào?')">Q về 450–600</button>
+              <button type="button" onclick="qtAsk('Ngày 10/10, MNH 375m, HAN 8,2m, HHK 15,7m, Q về 500m3/s, chưa có lệnh vận hành. Nên duy trì hay hạ tiếp?')">Trong khoảng Bảng 3</button>
+              <button type="button" onclick="qtAsk('Ngày 10/10, MNH 376m, HAN 7,5m, HHK 15m, Q về 650m3/s, có dự báo mưa lũ mới. Hồ thuộc nhánh vận hành nào?')">Q về vượt 600</button>
+              <button type="button" onclick="qtAsk('Tình huống mới: Ngày 12/10, quá trình giảm lũ đã kết thúc, MNH 380m, HAN 7,6m, HHK 15m, Q về 350m3/s, không còn dự báo mưa lũ mới. Có hạ không?')">Sau lũ</button>
+              <button type="button" onclick="qtAsk('Bổ sung: có dự báo một đợt mưa lũ mới.')">+ Có dự báo lũ mới</button>
+            </div>
+          </details>
+          <details class="qt-group">
+            <summary>Mùa cạn</summary>
+            <div class="quick-questions">
+              <button type="button" onclick="qtAsk('Ngày 20/3 thuộc thời kỳ mùa cạn nào và lưu lượng xả trung bình ngày cần đối chiếu ra sao?')">Ngày 20/3</button>
+              <button type="button" onclick="qtAsk('Ngày 15/5, MNH 368m. Tổng lưu lượng xả trung bình ngày cần duy trì bao nhiêu?')">15/5, MNH 368 m</button>
+              <button type="button" onclick="qtAsk('Trong mùa cạn, mỗi ngày hồ A Vương phải xả mấy đợt, bắt đầu và kết thúc lúc mấy giờ?')">Số đợt, giờ xả</button>
+              <button type="button" onclick="qtAsk('Khi hồ về mực nước chết thì lưu lượng xả tối thiểu về hạ du là bao nhiêu?')">Hồ về MNC</button>
+            </div>
+          </details>
+        </div>
+        <div id="qtChatLog" class="chat-log qt-chat-log"><div class="chat-msg ai">Xin chào. Tôi trả lời theo Quy trình 2138/QĐ-TTg. Bạn có thể bổ sung dần từng thông số; tôi nhớ tình huống đang phân tích cho đến khi bấm "Tình huống mới".</div></div>
+        <div class="chat-compose"><textarea id="qtChatInput" placeholder="Nhập câu hỏi hoặc tình huống..." onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();qtSend();}"></textarea><button type="button" id="qtSendBtn" onclick="qtSend()">Gửi</button></div>
+        <div class="disclaimer">Nội dung chỉ dùng để tra cứu, đào tạo; quyết định vận hành phải theo lệnh của người có thẩm quyền.</div>
       </div>
 
       <div id="more-bulletins" class="more-panel card">
@@ -7755,6 +7836,179 @@
 
     return div;
   }
+
+  /* =========================================================
+   * HỎI ĐÁP QUY TRÌNH 2138 – gọi Apps Script (JSONP)
+   * Backend: Code.gs "Trợ lý Quy trình 2138" (api=chat).
+   * ========================================================= */
+  const QT2138_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzwZ-zHQ4srBvD0EX7npHAFD01tM6_MA1UFjzzk0UjlW7bS1fpViNR9v4pqHNB0PRJg/exec";
+  const QT2138_SESSION_KEY = "qt2138_session_id";
+  const qt2138State = { busy:false, history:[] };
+
+  function qtSessionId(renew){
+    let id = null;
+    try { id = renew ? null : localStorage.getItem(QT2138_SESSION_KEY); } catch(e) {}
+    if(!id){
+      id = "PWA_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,10);
+      try { localStorage.setItem(QT2138_SESSION_KEY, id); } catch(e) {}
+    }
+    return id;
+  }
+
+  function qtJsonp(payload, timeoutMs){
+    return new Promise((resolve, reject) => {
+      const cb = "qtcb_" + Date.now() + "_" + Math.floor(Math.random()*1e6);
+      const script = document.createElement("script");
+      let done = false;
+      const cleanup = () => {
+        done = true;
+        clearTimeout(timer);
+        try { delete window[cb]; } catch(e) { window[cb] = undefined; }
+        script.remove();
+      };
+      const timer = setTimeout(() => {
+        if(done) return;
+        cleanup();
+        reject(new Error("Quá thời gian chờ phản hồi (" + Math.round(timeoutMs/1000) + " giây)"));
+      }, timeoutMs);
+      window[cb] = data => { if(done) return; cleanup(); resolve(data); };
+      script.onerror = () => { if(done) return; cleanup(); reject(new Error("Không kết nối được máy chủ Apps Script")); };
+      /* Chỉ gửi 4 tin gần nhất, rút gọn: Apps Script đã tự nhớ hội thoại theo sessionId. */
+      const body = {
+        question: payload.question,
+        sessionId: payload.sessionId,
+        history: (payload.history || []).slice(-4).map(h => ({ role:h.role, text:String(h.text||"").slice(0,300) }))
+      };
+      let encoded = encodeURIComponent(JSON.stringify(body));
+      if(encoded.length > 6000){ body.history = []; encoded = encodeURIComponent(JSON.stringify(body)); }
+      script.src = QT2138_WEBAPP_URL + "?api=chat&callback=" + cb + "&payload=" + encoded + "&_=" + Date.now();
+      document.body.appendChild(script);
+    });
+  }
+
+  function qtAddMessage(role, text){
+    const log = $("qtChatLog");
+    const div = document.createElement("div");
+    div.className = "chat-msg " + role;
+    div.textContent = text;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+    return div;
+  }
+
+  function qtRenderAnswer(div, res){
+    div.classList.remove("chat-loading");
+    div.innerHTML = "";
+
+    const answer = document.createElement("div");
+    answer.className = "qt-answer";
+    if(res.answerHtml){
+      /* answerHtml đã được Apps Script escape HTML trước khi tô màu. */
+      answer.innerHTML = String(res.answerHtml).replace(/^AI TRẢ LỜI(?:<br>)+/, "");
+    } else {
+      answer.style.whiteSpace = "pre-wrap";
+      answer.textContent = String(res.answer || "").replace(/^AI TRẢ LỜI\s*/, "");
+    }
+    div.appendChild(answer);
+
+    const mg = res.missingGuidance;
+    if(mg && Array.isArray(mg.instructions) && mg.instructions.length){
+      const box = document.createElement("div");
+      box.className = "qt-missing";
+      const t = document.createElement("b");
+      t.textContent = mg.title || "Cần bổ sung";
+      box.appendChild(t);
+      const ul = document.createElement("ul");
+      mg.instructions.forEach(item => { const li = document.createElement("li"); li.textContent = item; ul.appendChild(li); });
+      box.appendChild(ul);
+      if(mg.example){
+        const ex = document.createElement("div");
+        ex.textContent = "Ví dụ: " + mg.example;
+        box.appendChild(ex);
+      }
+      div.appendChild(box);
+    }
+
+    if(res.executionNote && res.responseMode === "RULE_ENGINE"){
+      const note = document.createElement("div");
+      note.className = "qt-note";
+      note.textContent = res.executionNote;
+      div.appendChild(note);
+    }
+
+    if(res.referenceTitle){
+      const ref = document.createElement("div");
+      ref.className = "qt-ref";
+      ref.textContent = "Căn cứ: " + res.referenceTitle;
+      if(res.referenceContent){
+        const sp = document.createElement("span");
+        sp.textContent = res.referenceContent;
+        ref.appendChild(sp);
+      }
+      div.appendChild(ref);
+    }
+
+    if(res.confidence && res.confidence.label){
+      const meta = document.createElement("div");
+      meta.className = "qt-meta";
+      meta.textContent = res.confidence.label;
+      div.appendChild(meta);
+    }
+
+    const log = $("qtChatLog");
+    log.scrollTop = log.scrollHeight;
+  }
+
+  async function qtAsk(question){
+    const q = String(question || "").trim();
+    if(!q || qt2138State.busy) return;
+    qt2138State.busy = true;
+    const btn = $("qtSendBtn");
+    if(btn) btn.disabled = true;
+
+    qtAddMessage("user", q);
+    const loading = qtAddMessage("ai", "Đang đối chiếu Quy trình 2138...");
+    loading.classList.add("chat-loading");
+
+    try {
+      const res = await qtJsonp({ question:q, sessionId:qtSessionId(false), history:qt2138State.history }, 60000);
+      if(!res || res.success === false){
+        throw new Error((res && (res.error || res.answer)) || "Máy chủ không trả kết quả");
+      }
+      qtRenderAnswer(loading, res);
+      qt2138State.history.push({ role:"user", text:q });
+      qt2138State.history.push({ role:"assistant", text:String(res.answer || "") });
+      qt2138State.history = qt2138State.history.slice(-8);
+    } catch(error) {
+      loading.classList.remove("chat-loading");
+      loading.textContent = "Không lấy được câu trả lời: " + (error && error.message ? error.message : "lỗi không xác định") + ". Kiểm tra kết nối mạng rồi thử lại.";
+    } finally {
+      qt2138State.busy = false;
+      if(btn) btn.disabled = false;
+    }
+  }
+
+  function qtSend(){
+    const input = $("qtChatInput");
+    if(!input) return;
+    const q = input.value;
+    input.value = "";
+    qtAsk(q);
+  }
+
+  function qtNewConversation(){
+    qtSessionId(true);
+    qt2138State.history = [];
+    const log = $("qtChatLog");
+    if(log){
+      log.innerHTML = "";
+      qtAddMessage("ai", "Đã bắt đầu tình huống mới. Hãy nhập câu hỏi hoặc tình huống.");
+    }
+  }
+
+  window.qtAsk = qtAsk;
+  window.qtSend = qtSend;
+  window.qtNewConversation = qtNewConversation;
 
   async function askQuickAI(question){
     const cleanQuestion =
